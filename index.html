@@ -275,10 +275,10 @@
                 
                 <div class="social-fab-container">
                     <button id="btnToggleMode" class="btn-float orange" onclick="toggleModeMenu()" title="Modo de Búsqueda">📍</button>
-                    <div class="social-links" id="modeLinks">
-                        <div class="social-mini" onclick="setMode('provincia')" title="Modo Provincia">🗺️</div>
-                        <div class="social-mini" onclick="setMode('ruta')" title="Modo Ruta">🛣️</div>
-                        <div class="social-mini" onclick="setMode('zona')" title="Modo Zona">📍</div>
+                    <div class="social-links" id="modeLinks" style="align-items: flex-end; right: 0;">
+                        <div class="social-mini" onclick="setMode('provincia')" style="width: auto; padding: 0 16px; border-radius: 20px; font-size: 13px; font-weight: bold; gap: 8px;">🗺️ Provincia</div>
+                        <div class="social-mini" onclick="setMode('ruta')" style="width: auto; padding: 0 16px; border-radius: 20px; font-size: 13px; font-weight: bold; gap: 8px;">🛣️ Ruta</div>
+                        <div class="social-mini" onclick="setMode('zona')" style="width: auto; padding: 0 16px; border-radius: 20px; font-size: 13px; font-weight: bold; gap: 8px;">📍 Zona</div>
                     </div>
                 </div>
 
@@ -356,6 +356,12 @@
 
         let favoritos = [];
         try { favoritos = JSON.parse(localStorage.getItem('gasofaFavs')) || []; } catch(e) { favoritos = []; }
+        // Variables para descartar gasolineras inaccesibles en ruta
+        window.descartadasRuta = [];
+        window.descartarGasolinera = function(id) {
+            window.descartadasRuta.push(id);
+            fetchGasolineras(); // Recalculamos todo sin esa gasolinera
+        };
         
         let descuentosGuardados = [];
         try { descuentosGuardados = JSON.parse(localStorage.getItem('gasofaDesc')) || []; } catch(e) { descuentosGuardados = []; }
@@ -1641,8 +1647,7 @@
                                     <span style="background:#f1c40f; color:#000; padding:3px 8px; border-radius:10px; font-weight:bold; font-size:10px;">PARADA ${mejor.paradaNum}</span>
                                     <span style="font-weight:bold; color:var(--text-main); font-size:13px; margin-left:6px;">${mejor.sentido}</span>
                                 </div>
-                                <button onclick="event.stopPropagation(); window.descartarGasolinera('${mejor.IDEESS}')" style="background:#e74c3c; color:#fff; border:none; padding:4px 8px; border-radius:6px; font-size:10px; font-weight:bold; cursor:pointer; box-shadow:0 2px 4px rgba(0,0,0,0.2);">❌ IGNORAR</button>
-                            </div>
+                                <button onclick="event.preventDefault(); event.stopPropagation(); window.descartarGasolinera('${mejor.IDEESS}'); return false;" style="background:#e74c3c; color:#fff; border:none; padding:4px 8px; border-radius:6px; font-size:10px; font-weight:bold; cursor:pointer; box-shadow:0 2px 4px rgba(0,0,0,0.2); z-index:10;">❌ IGNORAR</button>
                             <div style="font-size:14px; margin-bottom:4px;">🏆 <b>${mejor.Rótulo}</b></div>
                             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
                                 <div style="display:flex; align-items:center; gap:6px;">
