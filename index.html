@@ -1224,8 +1224,13 @@
                     const lon = parseFloat(g["Longitud (WGS84)"].replace(",", "."));
 
                     if (searchMode === 'provincia') {
-                        // Comprobamos la provincia (ignoramos distancia y autonomía)
-                        if (valProv && (!g.Provincia || !g.Provincia.toUpperCase().includes(valProv))) return false;
+                        if (valProv) {
+                            if (!g.Provincia) return false;
+                            // Limpiamos tanto la base de datos como tu búsqueda (adiós tildes y eñes) para que coincidan 100%
+                            let provLimpia = g.Provincia.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
+                            let busquedaLimpia = valProv.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
+                            if (!provLimpia.includes(busquedaLimpia)) return false;
+                        }
                         g.distHaversine = 0; 
                     }else if (searchMode === 'zona') {
                         const d = getDistance(userCoords[0], userCoords[1], lat, lon);
