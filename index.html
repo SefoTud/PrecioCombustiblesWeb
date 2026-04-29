@@ -1434,24 +1434,61 @@
                     });
 
                     function generarPlan(indicesVariantes) {
-                        let kmActual = 0; let distRestante = distTotalViaje; let paradaNum = 0; let paradas = []; let ahorroTotalPlan = 0;
+                        let distRestante = distTotalViaje;
+                        let paradaNum = 0;
+                        let paradas = [];
+                        let ahorroTotalPlan = 0;
+                        let kmUltimoRepostaje = 0; // Aquí guardamos dónde paramos por última vez
+
+                        // Ordenar por distancia de ruta de principio a fin
+                        let estacionesRuta = encuentros.slice().sort((a, b) => a.kmTravesia - b.kmTravesia);
+
                         while (distRestante > autonomia && paradaNum < 15) {
                             paradaNum++;
-                            let kmMaxReachable = kmActual + autonomia; let kmMinDesirable = kmActual + (autonomia * 0.4); 
-                            let alcanzables = encuentros.filter(e => e.kmTravesia > kmActual && e.kmTravesia <= kmMaxReachable);
-                            if (alcanzables.length === 0) return null;
-                            let deseables = alcanzables.filter(e => e.kmTravesia >= kmMinDesirable);
-                            let candidatas = deseables.length > 0 ? deseables : alcanzables;
-                            
-                            candidatas.sort((a, b) => b.aNeto - a.aNeto);
-                            
+                            let limiteKm = kmUltimoRepostaje + autonomia; // Hasta aquí llegamos con este depósito
+
+                            // Lo lógico es repostar cuando nos quede medio depósito o menos, no cada 2 km.
+                            // Buscamos gasolineras entre el 40% del depósito consumido y el 100%.
+                            let kmInicioVentana = kmUltimoRepostaje + (autonomia * 0.4);
+                            let candidatas = estacionesRuta.filter(e => e.kmTravesia > kmInicioVentana && e.kmTravesia <= limiteKm);
+
+                            // Si no hay ninguna en la zona ideal, buscamos desesperadamente cualquiera antes de quedarnos tirados
+                            if (candidatas.length === 0) {
+                                candidatas = estacionesRuta.filter(e => e.kmTravesia > kmUltimoRepostaje && e.kmTravesia <= limiteKm);
+                            }
+
+                            // Si sigue sin haber, la ruta es imposible con esa autonomía
+                            if (candidatas.length === 0) return null;
+
+                            // Calcular el ahorro REAL: si paras a los 10km, solo compras 0.5 Litros, el ahorro es casi cero.
+                            candidatas.forEach(c => {
+                                let kmConducidos = c.kmTravesia - kmUltimoRepostaje;
+                                let litrosAComprar = (kmConducidos / 100) * consumo;
+                                if (litrosAComprar > lts) litrosAComprar = lts; // Por si acaso
+
+                                let ahorroBrutoReal = (globalMaxP - c.pN) * litrosAComprar;
+                                let costoDesvioReal = (c.distCalculada * 2) * (consumo / 100) * c.pN;
+                                c.ahorroRealTemporal = ahorroBrutoReal - costoDesvioReal;
+                            });
+
+                            // Ordenamos por la que nos dé mejor rentabilidad REAL
+                            candidatas.sort((a, b) => b.ahorroRealTemporal - a.ahorroRealTemporal);
+
                             let idx = (paradaNum - 1) < indicesVariantes.length ? indicesVariantes[paradaNum - 1] : 0;
                             let elegida = candidatas.length > idx ? candidatas[idx] : candidatas[0];
 
-                            paradas.push({ ...elegida, paradaNum: paradaNum });
-                            ahorroTotalPlan += elegida.aNeto;
-                            kmActual = elegida.kmTravesia; distRestante = distTotalViaje - kmActual;
+                            // Clonamos y ajustamos aNeto para que en la pantallita visual salga el ahorro de ESA parada concreta
+                            elegida = { ...elegida, aNeto: elegida.ahorroRealTemporal, paradaNum: paradaNum };
+
+                            paradas.push(elegida);
+                            ahorroTotalPlan += elegida.ahorroRealTemporal;
+
+                            kmUltimoRepostaje = elegida.kmTravesia;
+                            distRestante = distTotalViaje - kmUltimoRepostaje;
                         }
+
+                        if (distRestante > autonomia) return null; // No pudo llegar al destino final
+
                         return { paradas: paradas, ahorroTotal: ahorroTotalPlan, idUnico: paradas.map(p=>p.IDEESS).join('-') };
                     }
 
