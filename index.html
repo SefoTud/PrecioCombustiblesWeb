@@ -195,14 +195,14 @@
    <div id="controls">
         <div id="zona-ui">
             <div class="row">
-                <div style="position:relative; display:flex;flex:1;align-items:center;background:var(--bg-input);border:1px solid var(--border-color);border-radius:8px;padding:0 5px;overflow:visible;">
+                <div style="position:relative; display:flex; flex:1; align-items:center; background:var(--bg-input); border:1px solid var(--border-color); border-radius:8px; padding:0 5px; overflow:visible; min-width:0;">
                     <span id="cityName" style="font-size:11px;color:#fff;background:#3498db;font-weight:bold;white-space:nowrap;padding:4px 8px;border-radius:5px;display:none;margin-right:5px;"></span>
-                    <input type="text" id="cpInput" autocomplete="off" placeholder="Pueblo o Ciudad (ej: Tudela)..." style="border:none;background:transparent;flex:1;outline:none;padding:10px 5px;font-size:14px;color:var(--text-main);min-width:0;">
+                    <input type="text" id="cpInput" autocomplete="off" placeholder="Ciudad (ej: Tudela)" style="border:none; background:transparent; flex:1; outline:none; padding:10px 5px; font-size:14px; color:var(--text-main); min-width:0; width:100%;">
                     
                     <div id="autocomplete-list" style="display:none; position:absolute; top:100%; left:0; right:0; background:var(--bg-panel); border:2px solid #3498db; border-radius:8px; z-index:3000; max-height:250px; overflow-y:auto; box-shadow:0 6px 15px rgba(0,0,0,0.3); margin-top:4px;"></div>
                 </div>
-                <button onclick="buscarPorCP()" style="flex:none;">BUSCAR</button>
-                <select id="radioBusqueda" style="max-width:80px; flex:none; padding:10px 5px;"><option value="1" selected>1km</option><option value="5">5km</option><option value="10">10km</option><option value="25">25km</option><option value="50">50km</option></select>
+                <button onclick="buscarPorCP()" style="flex:none; padding:10px 8px;">BUSCAR</button>
+                <select id="radioBusqueda" style="width:75px; flex:none; padding:10px 2px;"><option value="1" selected>1 km</option><option value="5">5 km</option><option value="10">10 km</option><option value="25">25 km</option><option value="50">50 km</option></select>
             </div>
         </div>
 
@@ -478,7 +478,7 @@
                                 
                                 // ¿Qué pasa al hacer clic en una sugerencia?
                                 div.onclick = function() {
-                                    q("cpInput").value = nombrePrincipal;
+                                    q("cpInput").value = ""; // Vaciamos la cajita
                                     list.style.display = "none";
                                     
                                     // Volamos directos a las coordenadas sin volver a buscar
@@ -1076,11 +1076,11 @@
                         const a = d.address, c = a.city || a.town || a.village || a.municipality || "Ubicación"; 
                         if(cn) { cn.innerText = "📍 " + c; cn.style.display = "inline-block"; }
                         if(cnRuta) { cnRuta.innerText = "📍 " + c; cnRuta.style.display = "inline-block"; }
-                        if(a.postcode) {
-                            q("cpInput").value = a.postcode;
-                            if(q("origenInput").value === "" || q("origenInput").value === "Mi Ubicación") {
-                                q("origenInput").value = a.postcode;
-                            }
+                        // Vaciamos la cajita de búsqueda para que se vea el texto fantasma
+                        q("cpInput").value = "";
+                        
+                        if(q("origenInput").value === "" || q("origenInput").value === "Mi Ubicación") {
+                            q("origenInput").value = c; // Ponemos el nombre de la ciudad en la ruta, no el CP
                         }
                     } else {
                         if(cn) cn.style.display = "none";
@@ -1127,6 +1127,7 @@
                     if(cn) cn.innerText = "📍 " + c; 
                     if(cnRuta) cnRuta.innerText = "📍 " + c; 
                     
+                    q("cpInput").value = ""; // Vaciamos la cajita
                     fetchGasolineras();
                 } else { 
                     if(cn) cn.innerText = "❌ Error"; 
