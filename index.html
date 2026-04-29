@@ -1552,6 +1552,58 @@
                 q("litrosInput").value = 50; searchMode = 'zona'; 
             } 
         }
+
+        function cargarPreferencias() { 
+            const s = localStorage.getItem("gasofaPrefs"); 
+            if(s) { 
+                try {
+                    const p = JSON.parse(s); 
+                    q("marcaInput").value = p.m || ""; 
+                    q("litrosInput").value = p.l || 50; 
+                    q("consumoInput").value = p.cons || ""; 
+                    if(q("autonomiaInput")) q("autonomiaInput").value = p.auto || "";
+                    q("idaVueltaInput").checked = p.idV !== undefined ? p.idV : true; 
+                    q("tipoCombustible").value = p.c || "Precio Gasoleo A"; 
+                    q("radioBusqueda").value = p.r || "10"; 
+                    q("ordenarPor").value = p.o || "precio"; 
+                    q("abiertasInput").checked = p.a || false; 
+                    searchMode = p.sMode || 'zona'; 
+                    if(q("desvioInput")) q("desvioInput").value = p.desvio || "5"; 
+                } catch(e) {
+                    q("litrosInput").value = 50; searchMode = 'zona';
+                }
+            } else { 
+                q("litrosInput").value = 50; searchMode = 'zona'; 
+            } 
+        }
+
+        // --- AQUÍ PEGAS LA LÓGICA DE INSTALACIÓN ---
+        let eventoInstalacion;
+        const btnInstalar = document.getElementById('btnInstalar');
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            // Evita que el navegador muestre su propio aviso por defecto
+            e.preventDefault();
+            // Guarda el evento para usarlo luego
+            eventoInstalacion = e;
+            // Muestra nuestro botón naranja
+            btnInstalar.style.display = 'block';
+        });
+
+        btnInstalar.addEventListener('click', async () => {
+            if (eventoInstalacion) {
+                // Muestra la ventana de instalación del móvil/PC
+                eventoInstalacion.prompt();
+                // Espera a ver si el usuario le da a "Instalar" o a "Cancelar"
+                const { outcome } = await eventoInstalacion.userChoice;
+                if (outcome === 'accepted') {
+                    btnInstalar.style.display = 'none'; // Escondemos el botón si ya la ha instalado
+                }
+                eventoInstalacion = null;
+            }
+        });
+        // -------------------------------------------
+
     </script>
 </body>
 </html>
