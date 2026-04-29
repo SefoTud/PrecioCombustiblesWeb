@@ -1226,11 +1226,13 @@
                     if (searchMode === 'provincia') {
                         if (valProv) {
                             if (!g.Provincia) return false;
-                            // Le quitamos las tildes a la base de datos para que la búsqueda sea perfecta
+                            // Limpiamos tanto la base de datos como tu búsqueda (adiós tildes y eñes) para que coincidan 100%
                             let provLimpia = g.Provincia.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
-                            if (!provLimpia.includes(valProv)) return false;
+                            let busquedaLimpia = valProv.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
+                            if (!provLimpia.includes(busquedaLimpia)) return false;
                         }
                         g.distHaversine = 0; 
+                    }
                     }
                     else if (searchMode === 'zona') {
                         const d = getDistance(userCoords[0], userCoords[1], lat, lon);
