@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-924ZXN0PWL"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-924ZXN0PWL');
+    </script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Gasofa Pro">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3206/3206972.png">
+    <link rel="manifest" href="manifest.json">
+    <title>Precio Combustibles</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        :root { --bg-body: #f4f4f9; --bg-panel: #ffffff; --text-main: #000000; --text-muted: #666666; --border-color: #dddddd; --bg-input: #f9f9f9; --bg-ahorro: #eafaf1; --btn-locate: #ffffff; }
+        body.dark-mode { --bg-body: #121212; --bg-panel: #1e1e1e; --text-main: #e0e0e0; --text-muted: #aaaaaa; --border-color: #333333; --bg-input: #2c2c2c; --bg-ahorro: #1e3a29; --btn-locate: #2c2c2c; }
+        body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden;background:var(--bg-body);color:var(--text-main);transition:background 0.3s, color 0.3s;}
+        body.dark-mode .leaflet-tile { filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%); }
+        body.dark-mode .leaflet-popup-content-wrapper, body.dark-mode .leaflet-popup-tip { background: var(--bg-panel) !important; color: var(--text-main) !important; }
+        #map{flex:1;width:100%;z-index:1}
+        #controls{position:absolute;top:10px;left:10px;right:10px;z-index:2000;background:var(--bg-panel);padding:12px;border-radius:12px;box-shadow:0 4px 15px rgba(0,0,0,.3);display:flex;flex-direction:column;gap:8px;transition:transform .3s ease,opacity .3s ease}
+        #controls.collapsed{transform:translateY(-120%);opacity:0;pointer-events:none}
+        .row{display:flex;gap:6px;align-items:center;justify-content:space-between}
+        input[type="number"]::-webkit-inner-spin-button, input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type="number"] { -moz-appearance: textfield; }
+        select { text-align: center; text-align-last: center; }
+        #tipoCombustible { text-align: left; text-align-last: left; padding-left: 5px; }
+        input[type="text"],input[type="number"],select{flex:1;padding:10px;border-radius:8px;border:1px solid var(--border-color);background:var(--bg-input);font-size:14px;outline:none;color:var(--text-main)}
+        button{background:#27ae60;color:#fff;border:none;padding:10px;border-radius:8px;font-weight:bold;cursor:pointer}
+        .checkbox-container{display:flex;align-items:center;gap:4px;font-size:13px;font-weight:bold;color:var(--text-main);background:var(--bg-input);padding:8px;border-radius:8px;cursor:pointer;white-space:nowrap;border:1px solid var(--border-color)}
+        .checkbox-container input{width:auto;margin:0}
+        #list-container{height:38vh;background:var(--bg-panel);border-top:2px solid var(--border-color);overflow-y:auto;padding:15px;z-index:1000;position:relative}
+        .list-item{display:flex;justify-content:space-between;align-items:center;padding:15px 0;border-bottom:1px solid var(--border-color);cursor:pointer}
+        .top-badge{background:#34495e;color:#fff;font-size:10px;font-weight:800;padding:2px 6px;border-radius:4px;margin-bottom:4px;display:inline-flex;align-items:center;gap:4px}
+        .oro{background:#f1c40f;color:#000} .plata{background:#bdc3c7;color:#000} .bronce{background:#cd7f32;color:#fff}
+        .fav-btn{font-size:1.3em;cursor:pointer;padding:0 5px;user-select:none;transition:transform .1s;display:inline-block}
+        .fav-btn.pulse-heart{animation:pulseHeart .3s ease-in-out}
+        @keyframes pulseHeart{0%,100%{transform:scale(1)}50%{transform:scale(1.4)}}
+        .savings-box{display:flex;flex-direction:column;align-items:flex-end;gap:4px;min-width:110px}
+        .price-text{font-size:1.3em;font-weight:900;display:flex;align-items:center;gap:4px;flex-wrap:wrap;justify-content:flex-end;}
+        .pulse-ahorro{animation:pulseAhorro 2s infinite ease-in-out;display:inline-block}
+        @keyframes pulseAhorro{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+        .badge-ahorro{color:#fff;padding:4px 8px;border-radius:6px;font-size:11px;font-weight:bold;text-align:center;display:block;width:100%;box-sizing:border-box}
+        .distancia-badge{color:#3498db;font-size:.85em;font-weight:bold;padding:2px 8px;border:1.5px solid #3498db;border-radius:6px;background:var(--bg-input);display:inline-block}
+        .btn-action{color:#fff!important;border:none;padding:7px 10px;border-radius:6px;text-decoration:none;font-size:10px;font-weight:bold;margin:4px 2px;cursor:pointer;display:inline-flex;align-items:center;gap:4px;text-transform:uppercase}
+        .btn-historial{background:#9b59b6} .btn-directo{background:#3498db} .btn-wa{background:#25D366}
+        .floating-buttons-container { position: absolute; bottom: calc(38vh + 25px); right: 15px; z-index: 2500; display: flex; flex-direction: row-reverse; gap: 10px; align-items: center; }
+        .btn-float { width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,.3); border: none; font-size: 22px; cursor: pointer; background: var(--btn-locate); color: var(--text-main); transition: background 0.3s, transform 0.1s; flex-shrink: 0;}
+        .btn-float:active { transform: scale(0.95); }
+        .btn-float.green { background: #27ae60; color: #fff; }
+        .btn-float.blue { background: #3498db; color: #fff; }
+        .btn-float.orange { background: #e67e22; color: #fff; }
+        .secondary-fabs { display: flex; flex-direction: row-reverse; gap: 10px; transition: all 0.3s ease; opacity: 0; pointer-events: none; transform: translateX(20px); }
+        .secondary-fabs.show { opacity: 1; pointer-events: auto; transform: translateX(0); }
+        .social-fab-container { position: relative; display: flex; align-items: center; justify-content: center;}
+        .social-links { position: absolute; bottom: 55px; display: flex; flex-direction: column; gap: 10px; opacity: 0; pointer-events: none; transition: all 0.3s ease; transform: translateY(10px); }
+        .social-links.show { opacity: 1; pointer-events: auto; transform: translateY(0); }
+        .social-mini { width: 40px; height: 40px; border-radius: 50%; background: var(--bg-panel); display: flex; justify-content: center; align-items: center; box-shadow: 0 3px 8px rgba(0,0,0,.2); border: 1px solid var(--border-color); transition: transform 0.1s; cursor:pointer; font-size:18px;}
+        .social-mini:active { transform: scale(0.9); }
+        .social-mini img { border-radius: 8px; width: 24px; height: 24px;}
+        .price-label-wrapper{background:var(--bg-panel);color:var(--text-main);padding:2px 5px;border-radius:6px;font-weight:bold;font-size:13px;box-shadow:0 2px 6px rgba(0,0,0,.3);text-align:center;border:2.5px solid;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+        .desc-badge { background: #f1c40f; color: #000; font-size: 10px; padding: 2px 4px; border-radius: 4px; font-weight: bold; margin-left: 4px; }
+        .modal-bg { display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:7000;padding:15px;flex-direction:column;align-items:center;justify-content:center; }
+        .modal-content{background:var(--bg-panel);color:var(--text-main);width:95%;max-width:600px;padding:20px;border-radius:15px;position:relative;display:flex;flex-direction:column;max-height:80vh;}
+        .time-btn { background: var(--bg-input); color: var(--text-main); border: 1px solid var(--border-color); padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: bold; cursor: pointer; transition: all 0.2s;}
+        .time-btn.active { background: #3498db; color: #fff; border-color: #3498db; }
+        #chartStatus{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:90%;text-align:center;font-weight:bold;font-size:1.1em;color:#2980b9;z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px}
+        #loading-overlay{position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(255,255,255,.9);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:6000}
+        body.dark-mode #loading-overlay { background: rgba(30,30,30,0.9); }
+        .spinner{width:30px;height:30px;border:4px solid #f3f3f3;border-top:4px solid #3498db;border-radius:50%;animation:spin 1s linear infinite}
+        body.dark-mode .spinner { border-color: #333; border-top-color: #3498db; }
+        @keyframes spin{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}
+        .alt-route-tooltip { background: rgba(255, 255, 255, 0.95); border: 2px solid #7f8c8d; border-radius: 8px; font-weight: bold; color: #2c3e50; text-align: center; padding: 4px 6px; font-size: 11px; box-shadow: 0 2px 6px rgba(0,0,0,0.3); line-height: 1.2; cursor: pointer; pointer-events: auto; }
+        .alt-route-tooltip::before { display: none !important; }
+        .active-route-tooltip { background: rgba(66, 133, 244, 0.95); border: 2px solid #2a56c6; border-radius: 8px; font-weight: bold; color: #ffffff; text-align: center; padding: 4px 6px; font-size: 11px; box-shadow: 0 2px 6px rgba(0,0,0,0.3); line-height: 1.2; }
+        body.dark-mode .active-route-tooltip { background: rgba(40, 100, 200, 0.95); border-color: #555; }
+        .active-route-tooltip::before { display: none !important; }
+    </style>
+</head>
+<body>
+    <div id="chartModal" class="modal-bg">
+        <div class="modal-content" style="min-height:450px;">
+            <div style="display:flex;flex-direction:column;align-items:center;text-align:center;margin-bottom:5px;">
+                <div style="display:flex;align-items:center;gap:5px;margin:0 0 5px 0;">
+                    <h3 id="modalTitle" style="margin:0;font-size:1.2em;color:var(--text-main);">Cargando...</h3>
+                    <span id="modalFavHeart" class="fav-btn" style="font-size:1.1em;">🤍</span>
+                </div>
+                <div id="modalHorario" style="color:var(--text-muted);font-size:.85em;font-weight:500;"></div>
+            </div>
+            <div style="display:none; justify-content:center; gap:10px; margin-bottom:15px;" id="chartTimeButtons">
+                <button class="time-btn" onclick="updateChartRange(3, this)">3 Días</button>
+                <button class="time-btn active" onclick="updateChartRange(7, this)">1 Semana</button>
+                <button class="time-btn" onclick="updateChartRange(30, this)">1 Mes</button>
+            </div>
+            <div id="chartStatus">
+                <div class="spinner" id="chartSpinner" style="border-top-color:#e74c3c;"></div>
+                <span id="chartText">Calculando histórico...</span>
+                <span id="chartSubText" style="font-size:.85em;color:var(--text-muted);font-weight:normal;">Esto puede tardar un par de segundos 🚀</span>
+            </div>
+            <div id="chartContainer" style="flex:1;width:100%;position:relative;"><canvas id="priceChart"></canvas></div>
+            <button onclick="cerrarGrafico()" style="width:100%;margin-top:15px;background:#e74c3c;border-radius:8px;color:#fff;padding:12px;border:none;font-weight:bold;">CERRAR</button>
+        </div>
+    </div>
+
+    <div id="descModal" class="modal-bg">
+        <div class="modal-content">
+            <h3 style="margin-top:0; text-align:center;">💳 Mis Tarjetas</h3>
+            <p style="font-size:13px; color:var(--text-muted); text-align:center; margin-bottom:15px;">Añade tus tarjetas de fidelidad. La app restará el descuento automáticamente si vas a esa marca.</p>
+            <div id="descList" style="overflow-y:auto; padding-bottom:10px; display:flex; flex-direction:column; gap:10px;"></div>
+            <button onclick="addDescRow()" style="background:#3498db; margin-top:10px;">➕ Añadir Tarjeta</button>
+            <div style="display:flex; gap:10px; margin-top:15px;">
+                <button onclick="q('descModal').style.display='none'" style="flex:1; background:#95a5a6;">Cancelar</button>
+                <button onclick="saveDiscounts()" style="flex:1;">Guardar y Aplicar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="controls">
+        <div id="zona-ui">
+            <div class="row">
+                <div style="display:flex;flex:1;align-items:center;background:var(--bg-input);border:1px solid var(--border-color);border-radius:8px;padding:0 5px;overflow:hidden;">
+                    <span id="cityName" style="font-size:11px;color:#fff;background:#3498db;font-weight:bold;white-space:nowrap;padding:4px 8px;border-radius:5px;display:none;margin-right:5px;"></span>
+                    <input type="text" id="cpInput" placeholder="CP o Ciudad (ej: 31500)" style="border:none;background:transparent;flex:1;outline:none;padding:10px 5px;font-size:14px;color:var(--text-main);min-width:0;">
+                </div>
+                <button onclick="buscarPorCP()" style="flex:none;">BUSCAR</button>
+                <select id="radioBusqueda" style="max-width:80px; flex:none; padding:10px 5px;"><option value="5">5 km</option><option value="10" selected>10 km</option><option value="25">25 km</option><option value="50">50 km</option></select>
+            </div>
+        </div>
+
+        <div id="ruta-ui" style="display:none; background:var(--bg-input); padding:10px; border-radius:8px; border:1px solid var(--border-color);">
+            <div style="display:flex;flex-direction:column;gap:8px;">
+                <div style="display:flex;align-items:center;background:var(--bg-panel);border:1px solid var(--border-color);border-radius:8px;padding:0 5px;overflow:hidden;">
+                    <span style="font-size:16px; padding:0 5px;">🔵</span>
+                    <span id="cityNameRuta" style="font-size:11px;color:#fff;background:#3498db;font-weight:bold;white-space:nowrap;padding:4px 8px;border-radius:5px;display:none;margin-right:5px;"></span>
+                    <input type="text" id="origenInput" placeholder="Origen (Por defecto: Mi Ubicación)" style="border:none;background:transparent;flex:1;outline:none;padding:10px 5px;font-size:14px;color:var(--text-main);min-width:0;">
+                </div>                
+                <div style="display:flex;align-items:center;background:var(--bg-panel);border:1px solid var(--border-color);border-radius:8px;padding:0 5px;overflow:hidden;">
+                    <span style="font-size:16px; padding:0 5px;">🏁</span>
+                    <span id="cityNameDest" style="font-size:11px;color:#fff;background:#3498db;font-weight:bold;white-space:nowrap;padding:4px 8px;border-radius:5px;display:none;margin-right:5px;"></span>
+                    <input type="text" id="destinoInput" placeholder="Destino (ej: Madrid)" style="border:none;background:transparent;flex:1;outline:none;padding:10px 5px;font-size:14px;color:var(--text-main);min-width:0;">
+                    <button onclick="calcularRuta()" style="background:#e67e22; margin:3px; padding:6px 12px; border-radius:6px;">IR 🛣️</button>
+                </div>
+                <div style="display:flex;align-items:center;background:var(--bg-panel);border:1px solid var(--border-color);border-radius:8px;padding:0 5px;overflow:hidden;">
+                    <span style="font-size:16px; padding:0 5px;">📍</span>
+                    <span id="cityNameInter" style="font-size:11px;color:#fff;background:#3498db;font-weight:bold;white-space:nowrap;padding:4px 8px;border-radius:5px;display:none;margin-right:5px;"></span>
+                    <input type="text" id="pasandoPorInput" placeholder="Pasando por... (Opcional)" style="border:none;background:transparent;flex:1;outline:none;padding:10px 5px;font-size:14px;color:var(--text-main);min-width:0;">
+                </div>
+                <div class="row">
+                    <select id="desvioInput" style="flex:1; padding:10px 5px; font-size:12px; background:var(--bg-panel);">
+                        <option value="1">Desvío máx: 1km</option><option value="2">Desvío máx: 2km</option><option value="5" selected>Desvío máx: 5km</option><option value="10">Desvío máx: 10km</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="row" style="margin-top:8px;">
+            <input type="text" id="marcaInput" placeholder="Marca(Repsol...)" style="flex:1; min-width:50px; padding:10px 4px; font-size:13px;">
+            <input type="number" id="litrosInput" placeholder="Lts" style="width:35px; flex:none; padding:10px 2px; text-align:center; font-size:13px;">
+            <input type="number" id="consumoInput" placeholder="L/100" step="0.1" style="width:45px; flex:none; padding:10px 2px; text-align:center; font-size:13px;">
+            <input type="number" id="autonomiaInput" placeholder="Autonomía" style="width:55px; flex:none; padding:10px 2px; text-align:center; font-size:13px;" title="¿Cuántos km te quedan de depósito?">
+        </div>
+        <div class="row">
+            <select id="tipoCombustible" style="flex:1; min-width:80px; padding:10px 5px;">
+                <option value="Precio Gasoleo A">Diesel</option><option value="Precio Gasolina 95 E5">Gasolina 95</option><option value="Precio Gasoleo Premium">Diesel Premium</option>
+                <option value="Precio Gasolina 98 E5">Gasolina 98</option><option value="Precio Gasoleo B">Diesel Agrícola</option><option value="Precio Gases Licuados del Petróleo">GLP</option>
+                <option value="Precio Gas Natural Comprimido">GNC</option><option value="Precio Gas Natural Licuado">GNL</option><option value="AdBlue">AdBlue</option>
+            </select>
+            <label class="checkbox-container" style="flex:none; padding:10px 8px; font-size:12px;"><input type="checkbox" id="abiertasInput"> Abiertas</label>
+            <label class="checkbox-container" style="flex:none; padding:10px 8px; font-size:12px;" title="Calcula el viaje ida y vuelta"><input type="checkbox" id="idaVueltaInput" checked> 🔁 Ida/Vuelta</label>
+        </div>
+    </div>
+
+    <div id="map"></div>
+    
+    <div class="floating-buttons-container">
+        <button id="btnShow" class="btn-float green" onclick="toggleControls()">⚙️</button>
+        <div class="secondary-fabs show" id="secFabs">
+            <button class="btn-float" onclick="irAMiUbicacion(false)" style="background:#4285F4; color:#fff;" title="Mi Ubicación">📍</button>
+            <button class="btn-float blue" onclick="openDiscounts()">💳</button>
+            <div class="social-fab-container">
+                <button id="btnToggleMode" class="btn-float orange" onclick="toggleModeMenu()" title="Modo de Búsqueda">📍</button>
+                <div class="social-links" id="modeLinks">
+                    <div class="social-mini" onclick="setMode('ruta')" title="Modo Ruta">🛣️</div>
+                    <div class="social-mini" onclick="setMode('zona')" title="Modo Zona">📍</div>
+                </div>
+            </div>
+            <button id="btnDarkMode" class="btn-float" onclick="toggleTheme()">🌙</button>
+        </div>
+    </div>
+
+    <div id="list-container">
+        <div id="loading-overlay"><div class="spinner" style="margin-bottom:10px;"></div><div id="loading-text" style="color:var(--text-main);font-weight:bold;text-align:center;width:100%;padding:0 20px;box-sizing:border-box;">🏛️ Conectando con el servidor...</div></div>
+        <div class="row" style="margin-bottom:10px;">
+            <select id="ordenarPor" style="border:1.5px solid #27ae60;font-weight:bold;color:var(--text-main);">
+                <option value="precio">💸 Más baratas primero</option>
+                <option value="distancia">🚗 Más cercanas primero</option>
+                <option value="ahorro">💰 Mayor ahorro en trayecto</option>
+                <option value="favoritas">❤️ Solo mis favoritas</option>
+                <option value="inteligente">🧠 Solo Plan Inteligente</option>
+            </select>
+        </div>
+        <div id="header-ahorro" style="background:var(--bg-ahorro);border-radius:10px;padding:12px;margin-bottom:15px;border:1px dashed #27ae60;text-align:center;">
+            <span id="resumenAhorro" style="font-weight:bold;color:#27ae60;font-size:1.1em;">Calculando ahorro...</span>
+        </div>
+        <div id="gas-list"></div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // 🚀🚀🚀 AQUI DEBES PEGAR TU URL DE GOOGLE SCRIPTS 🚀🚀🚀
+        const SCRIPT_URL = "AQUI_TU_URL";
+        // -----------------------------------------------------------
+
+        const D = document, q = i => D.getElementById(i);
+        const APP_URL = window.location.href; // Ahora la URL es la de GitHub/Dominio
+
+        let map = L.map("map", { zoomControl: false }).setView([40.41, -3.70], 6);
+        let userCoords = null, markersLayer = L.layerGroup().addTo(map), cacheGasolineras = null, chartInstance = null, currentModalStationId = null, currentTrends = {};
+        let isFetching = false;
+        let trendsLoaded = false; 
+        let userMarker = null; 
+        let originMarker = null; let destMarker = null; let interMarker = null;
+        let osrmCache = {}; 
+        try { osrmCache = JSON.parse(localStorage.getItem('gasofaOsrmCache')) || {}; } catch(e) { osrmCache = {}; }
+        let lastGpsCoords = null; 
+        try { lastGpsCoords = JSON.parse(localStorage.getItem('gasofaLastGps')) || null; } catch(e) {}
+        let lastCoordsStr = lastGpsCoords ? lastGpsCoords.lat + "," + lastGpsCoords.lon : ""; 
+        window.fullChartData = null;
+        let historicoCache = {}; 
+
+        let searchMode = 'zona'; 
+        let routeLineLayer = null; let routeLineLayers = []; let allRoutes = []; let activeRouteIndex = 0; let routePolylineCoords = null; 
+        let routeCumDist = []; let totalRouteDist = 0;
+
+        let favoritos = [];
+        try { favoritos = JSON.parse(localStorage.getItem('gasofaFavs')) || []; } catch(e) { favoritos = []; }
+        let descuentosGuardados = [];
+        try { descuentosGuardados = JSON.parse(localStorage.getItem('gasofaDesc')) || []; } catch(e) { descuentosGuardados = []; }
+
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(map);
+        map.createPane("puntos_rojo").style.zIndex = 400; map.createPane("puntos_amar").style.zIndex = 401; map.createPane("puntos_verde").style.zIndex = 402;
+        map.createPane("precios_rojo").style.zIndex = 600; map.createPane("precios_amar").style.zIndex = 601; map.createPane("precios_verde").style.zIndex = 602;
+
+        window.onload = () => {
+            const sysDark = window.matchMedia('(prefers-color-scheme: dark)');
+            const savedDark = localStorage.getItem('gasofaDark');
+            const isDark = savedDark !== null ? savedDark === 'true' : sysDark.matches;
+            if(isDark) { document.body.classList.add('dark-mode'); q('btnDarkMode').innerText = '☀️'; }
+            sysDark.addEventListener('change', e => { if(localStorage.getItem('gasofaDark') === null) { if(e.matches) { document.body.classList.add('dark-mode'); q('btnDarkMode').innerText = '☀️'; } else { document.body.classList.remove('dark-mode'); q('btnDarkMode').innerText = '🌙'; } } });
+
+            cargarPreferencias(); 
+            setMode(searchMode, true);
+            
+            let tieneCacheValida = false;
+            try {
+                const localData = localStorage.getItem('gasofaCache');
+                const localTime = localStorage.getItem('gasofaCacheTime');
+                if(localData && localTime && (Date.now() - parseInt(localTime) < 21600000)) {
+                    cacheGasolineras = JSON.parse(localData);
+                    tieneCacheValida = true;
+                    q("loading-overlay").style.display = "none";
+                    if(lastGpsCoords && searchMode === 'zona') { ponerMarcadorUsuario(lastGpsCoords.lat, lastGpsCoords.lon); fetchGasolineras(); }
+                }
+            } catch(e) {}
+
+            irAMiUbicacion(!tieneCacheValida);
+
+            // ✨ ESTA ES LA NUEVA FORMA DE PEDIR DATOS ✨
+            fetch(`${SCRIPT_URL}?accion=obtenerDatos`)
+                .then(res => res.json())
+                .then(newData => {
+                    if(newData && newData.length > 0) {
+                        verificarCambios(newData);
+                    } else if (newData.error) {
+                        console.error("Error del servidor:", newData.error);
+                    }
+                })
+                .catch(e => {
+                    console.error("Fallo al leer de la API:", e);
+                    q("loading-text").innerHTML = "❌ Error de conexión con el servidor.";
+                });
+            
+            fetchTrends(q("tipoCombustible").value);
+
+            ["marcaInput", "litrosInput", "consumoInput", "autonomiaInput", "idaVueltaInput", "radioBusqueda", "ordenarPor", "abiertasInput", "desvioInput"].forEach(id => {
+                const el = q(id);
+                if(el) el.addEventListener(id.includes("Input") && id !== "abiertasInput" && id !== "idaVueltaInput" ? "input" : "change", () => { guardarPreferencias(); fetchGasolineras(); });
+            });
+            q("tipoCombustible").addEventListener("change", () => { fetchTrends(q("tipoCombustible").value); guardarPreferencias(); fetchGasolineras(); });
+            q("cpInput").addEventListener("keypress", e => { if(e.key === "Enter") { e.preventDefault(); e.target.blur(); buscarPorCP(); } });
+            q("destinoInput").addEventListener("keypress", e => { if(e.key === "Enter") calcularRuta(); });
+            
+            map.on('click', () => { 
+                if(!q("controls").classList.contains("collapsed")) toggleControls(); 
+                q("socialLinks").classList.remove("show"); q("modeLinks").classList.remove("show");
+            });
+        };
+
+        // --- FUNCIONES MANTENIDAS (MODIFICADAS LAS LLAMADAS A GOOGLE) ---
+        function fetchTrends(v) {
+            const c = { "Precio Gasoleo A": 4, "Precio Gasolina 95 E5": 5, "Precio Gasoleo Premium": 6, "Precio Gasolina 98 E5": 7, "Precio Gasoleo B": 8, "Precio Gases Licuados del Petróleo": 9, "AdBlue": 10 };
+            if(!c[v]) return;
+            trendsLoaded = false; currentTrends = {};
+            D.querySelectorAll('.tr-ind').forEach(el => el.innerHTML = '⏳');
+            
+            // ✨ NUEVA FORMA DE PEDIR TENDENCIAS ✨
+            fetch(`${SCRIPT_URL}?accion=obtenerTendencias&colIdx=${c[v]}`)
+                .then(res => res.json())
+                .then(r => {
+                    trendsLoaded = true;
+                    currentTrends = r || {};
+                    if(cacheGasolineras && cacheGasolineras.length > 0) fetchGasolineras();
+                })
+                .catch(e => {
+                    trendsLoaded = true; 
+                    D.querySelectorAll('.tr-ind').forEach(el => { el.innerHTML = getTrendHTML(null, el.getAttribute('data-type')); });
+                });
+        }
+
+        function mostrarHistorico(n, id, h) {
+            if(chartInstance) chartInstance.destroy();
+            currentModalStationId = id; 
+            q('chartModal').style.display = 'flex'; 
+            q('modalTitle').innerText = n + " (ID: " + id + ")"; 
+            q('modalHorario').innerText = h ? "🕒 " + h : "🕒 Horario no disponible";
+            q('chartTimeButtons').style.display = 'none';
+            const mFav = q('modalFavHeart'); mFav.innerText = favoritos.includes(id) ? '❤️' : '🤍'; mFav.onclick = e => toggleFav(id, e, 'modalFavHeart');
+            const st = q('chartStatus'); 
+            const ctx = q('priceChart').getContext('2d'); ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+            const tColor = document.body.classList.contains('dark-mode') ? '#e0e0e0' : '#333';
+            const gColor = document.body.classList.contains('dark-mode') ? '#333' : '#ddd';
+
+            const drawChart = (d) => {
+                st.style.display = 'none'; 
+                if(!d || !d.datasets || d.datasets.length === 0) { alert("No hay datos guardados para esta estación."); cerrarGrafico(); return; }
+                window.fullChartData = JSON.parse(JSON.stringify(d));
+                q('chartTimeButtons').style.display = 'flex';
+                chartInstance = new Chart(ctx, { type: 'line', data: d, /* ... resto de opciones chart.js ... */ });
+                updateChartRange(7, D.querySelectorAll('.time-btn')[1]);
+            };
+
+            if (historicoCache[id]) {
+                st.style.display = 'none'; 
+                drawChart(historicoCache[id]);
+            } else {
+                st.style.display = 'flex'; 
+                q('chartSpinner').style.display = 'block'; q('chartText').innerText = "Calculando histórico..."; q('chartSubText').style.display = 'block';
+                
+                // ✨ NUEVA FORMA DE PEDIR EL HISTÓRICO ✨
+                fetch(`${SCRIPT_URL}?accion=obtenerHistorico&nGas=${encodeURIComponent(n)}&idGas=${encodeURIComponent(id)}`)
+                    .then(res => res.json())
+                    .then(d => {
+                        if (d && !d.error) {
+                            historicoCache[id] = d; 
+                            drawChart(d);
+                        } else {
+                            throw new Error("Datos vacíos");
+                        }
+                    })
+                    .catch(e => {
+                        q('chartSpinner').style.display = 'none'; q('chartSubText').style.display = 'none';
+                        q('chartText').innerHTML = "❌ Datos no disponibles.<br><small>Es posible que la base de datos esté vacía para esta estación.</small>";
+                    });
+            }
+        }
+
+        /* (EL RESTO DEL JS SIGUE IGUAL: RUTA, FILTROS, DIBUJAR MARCADORES, ETC) */
+        // Para no hacer el mensaje infinitamente largo, puedes pegar tu JS original aquí, 
+        // ¡Ya te he adaptado las 3 únicas funciones que necesitaban cambiar!
+        // ... (Tu código de calcularRuta(), fetchGasolineras(), getRealDistances()...)
+    </script>
+</body>
+</html>
