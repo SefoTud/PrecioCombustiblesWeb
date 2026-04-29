@@ -195,9 +195,11 @@
    <div id="controls">
         <div id="zona-ui">
             <div class="row">
-                <div style="display:flex;flex:1;align-items:center;background:var(--bg-input);border:1px solid var(--border-color);border-radius:8px;padding:0 5px;overflow:hidden;">
+                <div style="position:relative; display:flex;flex:1;align-items:center;background:var(--bg-input);border:1px solid var(--border-color);border-radius:8px;padding:0 5px;overflow:visible;">
                     <span id="cityName" style="font-size:11px;color:#fff;background:#3498db;font-weight:bold;white-space:nowrap;padding:4px 8px;border-radius:5px;display:none;margin-right:5px;"></span>
-                    <input type="text" id="cpInput" placeholder="CP o Ciudad (ej: 31500)" style="border:none;background:transparent;flex:1;outline:none;padding:10px 5px;font-size:14px;color:var(--text-main);min-width:0;">
+                    <input type="text" id="cpInput" autocomplete="off" placeholder="CP o Ciudad (ej: 31500)" style="border:none;background:transparent;flex:1;outline:none;padding:10px 5px;font-size:14px;color:var(--text-main);min-width:0;">
+                    
+                    <div id="autocomplete-list" style="display:none; position:absolute; top:100%; left:0; right:0; background:var(--bg-panel); border:2px solid #3498db; border-radius:8px; z-index:3000; max-height:250px; overflow-y:auto; box-shadow:0 6px 15px rgba(0,0,0,0.3); margin-top:4px;"></div>
                 </div>
                 <button onclick="buscarPorCP()" style="flex:none;">BUSCAR</button>
                 <select id="radioBusqueda" style="max-width:80px; flex:none; padding:10px 5px;"><option value="1" selected>1km</option><option value="5">5km</option><option value="10">10km</option><option value="25">25km</option><option value="50">50km</option></select>
@@ -438,6 +440,81 @@
                     buscarPorCP(); 
                 } 
             });
+            // --- NUEVO: AUTOCOMPLETADO DE CIUDADES EN VIVO ---
+            let timeoutId;
+            q("cpInput").addEventListener("input", function(e) {
+                let val = this.value.trim();
+                let list = q("autocomplete-list");
+                list.innerHTML = "";
+                
+                // Si borramos o hay menos de 2 letras, ocultamos
+                if (!val || val.length < 2) { list.style.display = "none"; return; }
+                
+                clearTimeout(timeoutId);
+                
+                // Esperamos medio segundo desde la última tecla para buscar
+                timeoutId = setTimeout(async () => {
+                    try {
+                        let queryStr = val;
+                        // Si pone 5 números seguidos, forzamos a que lo entienda como España
+                        if (/^\d{5}$/.test(val)) queryStr = val + ", España";
+                        
+                        const r = await fetch('https://nominatim.openstreetmap.org/search?q=' + encodeURIComponent(queryStr) + '&countrycodes=es&format=json&addressdetails=1&limit=5');
+                        const data = await r.json();
+                        
+                        list.innerHTML = "";
+                        if (data.length > 0) {
+                            list.style.display = "block";
+                            data.forEach(item => {
+                                let div = document.createElement("div");
+                                div.style.cssText = "padding:10px; border-bottom:1px solid var(--border-color); cursor:pointer; font-size:13px; color:var(--text-main); text-align:left;";
+                                
+                                // Efecto al pasar el ratón o el dedo
+                                div.onmouseover = () => div.style.background = "var(--bg-input)";
+                                div.onmouseout = () => div.style.background = "transparent";
+                                
+                                // Limpiamos el texto para que quede bonito (ej: Cadreita, Navarra)
+                                let nombreLimpio = item.display_name.split(",").slice(0,3).join(",");
+                                let nombrePrincipal = item.name || nombreLimpio.split(",")[0];
+                                
+                                div.innerHTML = "📍 <strong>" + nombrePrincipal + "</strong><br><span style='font-size:10px;color:var(--text-muted);'>" + nombreLimpio + "</span>";
+                                
+                                // ¿Qué pasa al hacer clic en una sugerencia?
+                                div.onclick = function() {
+                                    q("cpInput").value = nombrePrincipal;
+                                    list.style.display = "none";
+                                    
+                                    // Volamos directos a las coordenadas sin volver a buscar
+                                    window.isManuallyLocated = true; 
+                                    if(q("cityName")) { q("cityName").style.display = "inline-block"; q("cityName").innerText = "📍 " + nombrePrincipal; }
+                                    if(q("cityNameRuta")) { q("cityNameRuta").style.display = "inline-block"; q("cityNameRuta").innerText = "📍 " + nombrePrincipal; }
+                                    
+                                    // Chivatazo a Analytics
+                                    if (typeof gtag === 'function') gtag('event', 'buscar_autocompletar');
+                                    
+                                    // Ponemos el mapa allí y buscamos gasolineras
+                                    ponerMarcadorUsuario(parseFloat(item.lat), parseFloat(item.lon));
+                                    fetchGasolineras();
+                                };
+                                list.appendChild(div);
+                            });
+                        } else {
+                            list.style.display = "none";
+                        }
+                    } catch(err) {
+                        list.style.display = "none";
+                    }
+                }, 500); 
+            });
+
+            // Si el usuario pincha fuera del menú, lo escondemos
+            document.addEventListener("click", function (e) {
+                if (e.target !== q("cpInput")) {
+                    let list = q("autocomplete-list");
+                    if (list) list.style.display = "none";
+                }
+            });
+            // --------------------------------------------------
             q("destinoInput").addEventListener("keypress", e => { if(e.key === "Enter") calcularRuta(); });
             q("origenInput").addEventListener("input", e => {
                 const cnRuta = q("cityNameRuta");
