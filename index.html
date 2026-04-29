@@ -62,22 +62,17 @@
         .btn-action{color:#fff!important;border:none;padding:7px 10px;border-radius:6px;text-decoration:none;font-size:10px;font-weight:bold;margin:4px 2px;cursor:pointer;display:inline-flex;align-items:center;gap:4px;text-transform:uppercase}
         .btn-historial{background:#9b59b6} .btn-directo{background:#3498db} .btn-wa{background:#25D366}
         
-        .floating-buttons-container { position: absolute; bottom: calc(20vh + 0px); right: 15px; z-index: 2500; display: flex; flex-direction: row-reverse; gap: 10px; align-items: center; }
-        .btn-float { width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,.3); border: none; font-size: 22px; cursor: pointer; background: var(--btn-locate); color: var(--text-main); transition: background 0.3s, transform 0.1s; flex-shrink: 0;}
-        .btn-float:active { transform: scale(0.95); }
-        .btn-float.green { background: #27ae60; color: #fff; }
-        .btn-float.blue { background: #3498db; color: #fff; }
-        .btn-float.orange { background: #e67e22; color: #fff; }
-
-        .secondary-fabs { display: flex; flex-direction: row-reverse; gap: 10px; transition: all 0.3s ease; opacity: 0; pointer-events: none; transform: translateX(20px); }
-        .secondary-fabs.show { opacity: 1; pointer-events: auto; transform: translateX(0); }
-
-        .social-fab-container { position: relative; display: flex; align-items: center; justify-content: center;}
-        .social-links { position: absolute; bottom: 55px; display: flex; flex-direction: column; gap: 10px; opacity: 0; pointer-events: none; transition: all 0.3s ease; transform: translateY(10px); }
-        .social-links.show { opacity: 1; pointer-events: auto; transform: translateY(0); }
-        .social-mini { width: 40px; height: 40px; border-radius: 50%; background: var(--bg-panel); display: flex; justify-content: center; align-items: center; box-shadow: 0 3px 8px rgba(0,0,0,.2); border: 1px solid var(--border-color); transition: transform 0.1s; cursor:pointer; font-size:18px;}
-        .social-mini:active { transform: scale(0.9); }
-        .social-mini img { border-radius: 8px; width: 24px; height: 24px;}
+       .floating-buttons-container { 
+            position: absolute; 
+            /* Ahora 'bottom' cuenta desde el final del mapa, no desde el final de la pantalla */
+            bottom: 15px; 
+            right: 15px; 
+            z-index: 2500; 
+            display: flex; 
+            flex-direction: row-reverse; 
+            gap: 10px; 
+            align-items: center; 
+        }
 
         .price-label-wrapper{background:var(--bg-panel);color:var(--text-main);padding:2px 5px;border-radius:6px;font-weight:bold;font-size:13px;box-shadow:0 2px 6px rgba(0,0,0,.3);text-align:center;border:2.5px solid;cursor:pointer;display:flex;align-items:center;justify-content:center;}
         .desc-badge { background: #f1c40f; color: #000; font-size: 10px; padding: 2px 4px; border-radius: 4px; font-weight: bold; margin-left: 4px; }
@@ -234,29 +229,33 @@
 
     <div id="map"></div>
     
-    <div class="floating-buttons-container">
-        <button id="btnShow" class="btn-float green" onclick="toggleControls()">⚙️</button>
+    <div style="flex: 1; position: relative; width: 100%; overflow: hidden;">
+        <div id="map" style="height: 100%; width: 100%;"></div>
         
-        <div class="secondary-fabs show" id="secFabs">
-            <button class="btn-float" onclick="irAMiUbicacion(false)" style="background:#4285F4; color:#fff;" title="Mi Ubicación">
-                <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3c-.46-4.17-3.77-7.48-7.94-7.94V1h-2v2.06C6.83 3.52 3.52 6.83 3.06 11H1v2h2.06c.46 4.17 3.77 7.48 7.94 7.94V23h2v-2.06c4.17-.46 7.48-3.77 7.94-7.94H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg>
-            </button>
-            <button class="btn-float blue" onclick="openDiscounts()">💳</button>
+        <div class="floating-buttons-container">
+            <button id="btnShow" class="btn-float green" onclick="toggleControls()">⚙️</button>
             
-            <div class="social-fab-container">
-                <button id="btnToggleMode" class="btn-float orange" onclick="toggleModeMenu()" title="Modo de Búsqueda">📍</button>
-                <div class="social-links" id="modeLinks">
-                    <div class="social-mini" onclick="setMode('ruta')" title="Modo Ruta">🛣️</div>
-                    <div class="social-mini" onclick="setMode('zona')" title="Modo Zona">📍</div>
+            <div class="secondary-fabs show" id="secFabs">
+                <button class="btn-float" onclick="irAMiUbicacion(false)" style="background:#4285F4; color:#fff;" title="Mi Ubicación">
+                    <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3c-.46-4.17-3.77-7.48-7.94-7.94V1h-2v2.06C6.83 3.52 3.52 6.83 3.06 11H1v2h2.06c.46 4.17 3.77 7.48 7.94 7.94V23h2v-2.06c4.17-.46 7.48-3.77 7.94-7.94H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg>
+                </button>
+                <button class="btn-float blue" onclick="openDiscounts()">💳</button>
+                
+                <div class="social-fab-container">
+                    <button id="btnToggleMode" class="btn-float orange" onclick="toggleModeMenu()" title="Modo de Búsqueda">📍</button>
+                    <div class="social-links" id="modeLinks">
+                        <div class="social-mini" onclick="setMode('ruta')" title="Modo Ruta">🛣️</div>
+                        <div class="social-mini" onclick="setMode('zona')" title="Modo Zona">📍</div>
+                    </div>
                 </div>
-            </div>
 
-            <button id="btnDarkMode" class="btn-float" onclick="toggleTheme()">🌙</button>
-            <div class="social-fab-container">
-                <button class="btn-float" onclick="toggleSocial()" style="color:#e84393;">📱</button>
-                <div class="social-links" id="socialLinks">
-                    <a href="https://instagram.com/preciocombustibles" target="_blank" class="social-mini"><img src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png" alt="IG" style="width:24px; height:24px;"></a>
-                    <a href="https://tiktok.com/@preciocombustibles" target="_blank" class="social-mini"><img src="https://img.icons8.com/color/512/tiktok.png" alt="TikTok" style="width:24px; height:24px;"></a>
+                <button id="btnDarkMode" class="btn-float" onclick="toggleTheme()">🌙</button>
+                <div class="social-fab-container">
+                    <button class="btn-float" onclick="toggleSocial()" style="color:#e84393;">📱</button>
+                    <div class="social-links" id="socialLinks">
+                        <a href="https://instagram.com/preciocombustibles" target="_blank" class="social-mini"><img src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png" alt="IG" style="width:24px; height:24px;"></a>
+                        <a href="https://tiktok.com/@preciocombustibles" target="_blank" class="social-mini"><img src="https://img.icons8.com/color/512/tiktok.png" alt="TikTok" style="width:24px; height:24px;"></a>
+                    </div>
                 </div>
             </div>
         </div>
