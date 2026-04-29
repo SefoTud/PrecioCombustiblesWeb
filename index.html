@@ -1,6 +1,17 @@
 <!DOCTYPE html>
 <html>
 <head>
+
+    <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-FSMS4VRM96"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-FSMS4VRM96');
+</script>
+    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="mobile-web-app-capable" content="yes">
@@ -528,6 +539,9 @@
         async function calcularRuta() {
             let orig = q("origenInput").value.trim();
             let dest = q("destinoInput").value.trim();
+            if (dest && typeof gtag === 'function') {
+                gtag('event', 'calculo_ruta');
+            }
             if(!dest) { alert("Por favor, introduce un destino."); return; }
 
             if (!q("controls").classList.contains("collapsed")) toggleControls();
@@ -1011,6 +1025,9 @@
 
         async function buscarPorCP() {
             const v = q("cpInput").value.trim();
+            if (v.length >= 2 && typeof gtag === 'function') {
+                gtag('event', 'busqueda_zona', { 'codigo_buscado': v });
+            }
             const cn = q("cityName"); 
             const cnRuta = q("cityNameRuta"); 
             
@@ -1645,6 +1662,12 @@
         });
 
         btnInstalar.addEventListener('click', async () => {
+            // --- CHIVATAZO A GOOGLE ANALYTICS ---
+            if (typeof gtag === 'function') {
+                gtag('event', 'clic_instalar_app');
+            }
+            // ------------------------------------
+            
             if (eventoInstalacion) {
                 // Muestra la ventana de instalación del móvil/PC
                 eventoInstalacion.prompt();
