@@ -247,7 +247,7 @@
             </div>
         </div>
 
-        <div class="row" style="margin-top:8px;">
+        <div class="row">
             <input type="text" id="marcaInput" placeholder="Marca(Repsol, Plenergy...)" style="flex:1; min-width:50px; padding:10px 4px; font-size:13px;">
             <input type="number" id="litrosInput" placeholder="Lts" style="width:35px; flex:none; padding:10px 2px; text-align:center; font-size:13px;">
             <input type="number" id="consumoInput" placeholder="L/100" step="0.1" style="width:45px; flex:none; padding:10px 2px; text-align:center; font-size:13px;">
@@ -467,12 +467,16 @@
                     let list = q(listId);
                     list.innerHTML = "";
                     
+                    // Si el usuario empieza a escribir, ocultamos la píldora para que no moleste
+                    if (inputId === "origenInput" && q("cityNameRuta")) q("cityNameRuta").style.display = "none";
+                    if (inputId === "destinoInput" && q("cityNameDest")) q("cityNameDest").style.display = "none";
+                    if (inputId === "pasandoPorInput" && q("cityNameInter")) q("cityNameInter").style.display = "none";
+                    
                     if (!val || val.length < 2) { list.style.display = "none"; return; }
                     
                     clearTimeout(timeoutId);
                     timeoutId = setTimeout(async () => {
                         try {
-                            // Solo buscamos letras/ciudades, adiós a los códigos postales numéricos
                             const r = await fetch('https://nominatim.openstreetmap.org/search?q=' + encodeURIComponent(val) + '&countrycodes=es&format=json&addressdetails=1&limit=5');
                             const data = await r.json();
                             
@@ -492,23 +496,19 @@
                                     
                                     div.onclick = function() {
                                         list.style.display = "none";
+                                        input.value = ""; // Vaciamos SIEMPRE la caja para ver el texto fantasma
                                         
                                         if (isZona) {
-                                            // En Modo Zona: Vaciamos la caja y volamos al sitio
-                                            input.value = ""; 
                                             if(q("cityName")) { q("cityName").style.display = "inline-block"; q("cityName").innerText = "📍 " + nombrePrincipal; }
                                             if(q("cityNameRuta")) { q("cityNameRuta").style.display = "inline-block"; q("cityNameRuta").innerText = "📍 " + nombrePrincipal; }
                                             window.isManuallyLocated = true; 
                                             ponerMarcadorUsuario(parseFloat(item.lat), parseFloat(item.lon));
                                             fetchGasolineras();
                                         } else {
-                                            // En Modo Ruta: Dejamos el nombre escrito en la cajita (estilo Google Maps)
-                                            input.value = nombrePrincipal;
-                                            
-                                            // Ocultamos las viejas "píldoras azules" que pudieras tener ahí, ya que el texto queda bonito en la caja
-                                            if (inputId === "origenInput" && q("cityNameRuta")) q("cityNameRuta").style.display = "none";
-                                            if (inputId === "destinoInput" && q("cityNameDest")) q("cityNameDest").style.display = "none";
-                                            if (inputId === "pasandoPorInput" && q("cityNameInter")) q("cityNameInter").style.display = "none";
+                                            // En Modo Ruta, encendemos la píldora azul que toque
+                                            if (inputId === "origenInput" && q("cityNameRuta")) { q("cityNameRuta").style.display = "inline-block"; q("cityNameRuta").innerText = "📍 " + nombrePrincipal; }
+                                            if (inputId === "destinoInput" && q("cityNameDest")) { q("cityNameDest").style.display = "inline-block"; q("cityNameDest").innerText = "📍 " + nombrePrincipal; }
+                                            if (inputId === "pasandoPorInput" && q("cityNameInter")) { q("cityNameInter").style.display = "inline-block"; q("cityNameInter").innerText = "📍 " + nombrePrincipal; }
                                         }
                                     };
                                     list.appendChild(div);
@@ -641,13 +641,18 @@
         }
 
         async function calcularRuta() {
+            // Leemos la caja, y si está vacía, leemos el nombre de la píldora
             let orig = q("origenInput").value.trim();
+            if (orig === "" && q("cityNameRuta") && q("cityNameRuta").style.display !== "none") orig = q("cityNameRuta").innerText.replace("📍 ", "").trim();
+
             let dest = q("destinoInput").value.trim();
+            if (dest === "" && q("cityNameDest") && q("cityNameDest").style.display !== "none") dest = q("cityNameDest").innerText.replace("📍 ", "").trim();
+
             if(!dest) { alert("Por favor, introduce un destino."); return; }
 
             if (!q("controls").classList.contains("collapsed")) toggleControls();
 
-            q("list-container").scrollTop = 0; // <--- TE LLEVA ARRIBA DEL TODO
+            q("list-container").scrollTop = 0;
             q("loading-overlay").style.display = "flex";
             q("loading-text").innerText = "Trazando ruta...";
 
@@ -684,7 +689,9 @@
                     if(q("cityNameDest")) { q("cityNameDest").innerText = "📍 " + c; q("cityNameDest").style.display = "inline-block"; }
                 } else throw "No se encuentra el destino ingresado.";
 
+                // Leemos la caja intermedia, y si está vacía, leemos la píldora
                 let inter = q("pasandoPorInput").value.trim();
+                if (inter === "" && q("cityNameInter") && q("cityNameInter").style.display !== "none") inter = q("cityNameInter").innerText.replace("📍 ", "").trim();
                 let coordInter = null;
                 if (inter !== "") {
                     q("loading-text").innerText = "Ubicando punto intermedio...";
