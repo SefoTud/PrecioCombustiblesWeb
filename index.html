@@ -62,18 +62,49 @@
         .btn-action{color:#fff!important;border:none;padding:7px 10px;border-radius:6px;text-decoration:none;font-size:10px;font-weight:bold;margin:4px 2px;cursor:pointer;display:inline-flex;align-items:center;gap:4px;text-transform:uppercase}
         .btn-historial{background:#9b59b6} .btn-directo{background:#3498db} .btn-wa{background:#25D366}
         
-        .floating-buttons-container { position: absolute; bottom: calc(38vh + 25px); right: 15px; z-index: 2500; display: flex; flex-direction: row-reverse; gap: 10px; align-items: center; }
+        /* EL CONTENEDOR PRINCIPAL: Aquí controlamos la altura */
+        .floating-buttons-container { 
+            position: absolute; 
+            /* Esto los pega justo encima de la lista (38vh es lo que mide la lista) */
+            bottom: calc(38vh + 10px); 
+            right: 15px; 
+            z-index: 2500; 
+            display: flex; 
+            flex-direction: row-reverse; /* Despliegue horizontal hacia la izquierda */
+            gap: 10px; 
+            align-items: center; 
+        }
         .btn-float { width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,.3); border: none; font-size: 22px; cursor: pointer; background: var(--btn-locate); color: var(--text-main); transition: background 0.3s, transform 0.1s; flex-shrink: 0;}
         .btn-float:active { transform: scale(0.95); }
         .btn-float.green { background: #27ae60; color: #fff; }
         .btn-float.blue { background: #3498db; color: #fff; }
         .btn-float.orange { background: #e67e22; color: #fff; }
 
-        .secondary-fabs { display: flex; flex-direction: row-reverse; gap: 10px; transition: all 0.3s ease; opacity: 0; pointer-events: none; transform: translateX(20px); }
+        /* LOS BOTONES SECUNDARIOS */
+        .secondary-fabs { 
+            display: flex; 
+            flex-direction: row-reverse; /* Horizontal */
+            gap: 10px; 
+            transition: all 0.3s ease; 
+            opacity: 0; 
+            pointer-events: none; 
+            transform: translateX(20px); 
+        }
         .secondary-fabs.show { opacity: 1; pointer-events: auto; transform: translateX(0); }
 
+        /* LOS SUB-MENÚS (Instagram, Tiktok, Modo ruta) */
         .social-fab-container { position: relative; display: flex; align-items: center; justify-content: center;}
-        .social-links { position: absolute; bottom: 55px; display: flex; flex-direction: column; gap: 10px; opacity: 0; pointer-events: none; transition: all 0.3s ease; transform: translateY(10px); }
+        .social-links { 
+            position: absolute; 
+            bottom: 55px; /* Salen hacia arriba desde su botón padre para no tapar a los demás */
+            display: flex; 
+            flex-direction: column; 
+            gap: 10px; 
+            opacity: 0; 
+            pointer-events: none; 
+            transition: all 0.3s ease; 
+            transform: translateY(10px); 
+        }
         .social-links.show { opacity: 1; pointer-events: auto; transform: translateY(0); }
         .social-mini { width: 40px; height: 40px; border-radius: 50%; background: var(--bg-panel); display: flex; justify-content: center; align-items: center; box-shadow: 0 3px 8px rgba(0,0,0,.2); border: 1px solid var(--border-color); transition: transform 0.1s; cursor:pointer; font-size:18px;}
         .social-mini:active { transform: scale(0.9); }
