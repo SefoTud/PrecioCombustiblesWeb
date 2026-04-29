@@ -200,7 +200,7 @@
                     <input type="text" id="cpInput" placeholder="CP o Ciudad (ej: 31500)" style="border:none;background:transparent;flex:1;outline:none;padding:10px 5px;font-size:14px;color:var(--text-main);min-width:0;">
                 </div>
                 <button onclick="buscarPorCP()" style="flex:none;">BUSCAR</button>
-                <select id="radioBusqueda" style="max-width:80px; flex:none; padding:10px 5px;"><option value="1">1km</option><option value="5">5km</option><option value="10" selected>10km</option><option value="25">25km</option><option value="50">50km</option></select>
+                <select id="radioBusqueda" style="max-width:80px; flex:none; padding:10px 5px;"><option value="1" selected>1km</option><option value="5">5km</option><option value="10">10km</option><option value="25">25km</option><option value="50">50km</option></select>
             </div>
         </div>
 
@@ -1610,16 +1610,16 @@
                     if(q("autonomiaInput")) q("autonomiaInput").value = p.auto || "";
                     q("idaVueltaInput").checked = p.idV !== undefined ? p.idV : true; 
                     q("tipoCombustible").value = p.c || "Precio Gasoleo A"; 
-                    q("radioBusqueda").value = p.r || "10"; 
+                    q("radioBusqueda").value = p.r || "1"; // <--- Ahora el por defecto es 1 si falla
                     q("ordenarPor").value = p.o || "precio"; 
                     q("abiertasInput").checked = p.a || false; 
                     searchMode = p.sMode || 'zona'; 
                     if(q("desvioInput")) q("desvioInput").value = p.desvio || "5"; 
                 } catch(e) {
-                    q("litrosInput").value = 50; searchMode = 'zona';
+                    q("litrosInput").value = 50; q("radioBusqueda").value = "1"; searchMode = 'zona';
                 }
             } else { 
-                q("litrosInput").value = 50; searchMode = 'zona'; 
+                q("litrosInput").value = 50; q("radioBusqueda").value = "1"; searchMode = 'zona'; // <--- Para los usuarios 100% nuevos
             } 
         }
 
