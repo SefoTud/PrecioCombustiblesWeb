@@ -426,7 +426,10 @@
                 const el = q(id);
                 if(el) el.addEventListener(id.includes("Input") && id !== "abiertasInput" && id !== "idaVueltaInput" ? "input" : "change", () => { guardarPreferencias(); fetchGasolineras(); });
             });
-            q("tipoCombustible").addEventListener("change", () => { fetchTrends(q("tipoCombustible").value); guardarPreferencias(); fetchGasolineras(); });
+            q("tipoCombustible").addEventListener("change", () => { 
+                if (typeof gtag === 'function') gtag('event', 'filtro_combustible', { 'tipo': q("tipoCombustible").options[q("tipoCombustible").selectedIndex].text });
+                fetchTrends(q("tipoCombustible").value); guardarPreferencias(); fetchGasolineras(); 
+            });
             q("provinciaInput").addEventListener("change", () => { guardarPreferencias(); fetchGasolineras(); });
             q("cpInput").addEventListener("keypress", e => { 
                 if(e.key === "Enter") { 
@@ -539,9 +542,6 @@
         async function calcularRuta() {
             let orig = q("origenInput").value.trim();
             let dest = q("destinoInput").value.trim();
-            if (dest && typeof gtag === 'function') {
-                gtag('event', 'calculo_ruta');
-            }
             if(!dest) { alert("Por favor, introduce un destino."); return; }
 
             if (!q("controls").classList.contains("collapsed")) toggleControls();
@@ -1024,11 +1024,9 @@
         }
 
         async function buscarPorCP() {
+            if (typeof gtag === 'function') gtag('event', 'buscar_zona');
             const v = q("cpInput").value.trim();
-            if (v.length >= 2 && typeof gtag === 'function') {
-                gtag('event', 'busqueda_zona', { 'codigo_buscado': v });
-            }
-            const cn = q("cityName"); 
+            const cn = q("cityName");
             const cnRuta = q("cityNameRuta"); 
             
             if (v.length < 2) return;
@@ -1095,8 +1093,9 @@
 
         // CAMBIO APLICADO: Fetch con anti-caché y redirecciones forzadas
         function mostrarHistorico(n, id, h) {
+            if (typeof gtag === 'function') gtag('event', 'ver_historico', { 'gasolinera': n });
             if(chartInstance) chartInstance.destroy();
-            currentModalStationId = id; 
+            currentModalStationId = id;
             q('chartModal').style.display = 'flex'; 
             q('modalTitle').innerText = n + " (ID: " + id + ")"; 
             q('modalHorario').innerText = h ? "🕒 " + h : "🕒 Horario no disponible";
