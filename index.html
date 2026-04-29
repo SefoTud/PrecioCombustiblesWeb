@@ -1647,7 +1647,7 @@
                                     <span style="background:#f1c40f; color:#000; padding:3px 8px; border-radius:10px; font-weight:bold; font-size:10px;">PARADA ${mejor.paradaNum}</span>
                                     <span style="font-weight:bold; color:var(--text-main); font-size:13px; margin-left:6px;">${mejor.sentido}</span>
                                 </div>
-                                <button onclick="event.preventDefault(); event.stopPropagation(); window.descartarGasolinera('${mejor.IDEESS}'); return false;" style="background:#e74c3c; color:#fff; border:none; padding:4px 8px; border-radius:6px; font-size:10px; font-weight:bold; cursor:pointer; box-shadow:0 2px 4px rgba(0,0,0,0.2); z-index:10;">❌ IGNORAR</button>
+                                <button onclick="event.stopPropagation(); window.descartarGasolinera('${mejor.IDEESS}')" style="background:#e74c3c; color:#fff; border:none; padding:4px 8px; border-radius:6px; font-size:10px; font-weight:bold; cursor:pointer; box-shadow:0 2px 4px rgba(0,0,0,0.2);">❌ IGNORAR</button>
                             <div style="font-size:14px; margin-bottom:4px;">🏆 <b>${mejor.Rótulo}</b></div>
                             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
                                 <div style="display:flex; align-items:center; gap:6px;">
