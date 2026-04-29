@@ -197,7 +197,7 @@
             <div class="row">
                 <div style="position:relative; display:flex;flex:1;align-items:center;background:var(--bg-input);border:1px solid var(--border-color);border-radius:8px;padding:0 5px;overflow:visible;">
                     <span id="cityName" style="font-size:11px;color:#fff;background:#3498db;font-weight:bold;white-space:nowrap;padding:4px 8px;border-radius:5px;display:none;margin-right:5px;"></span>
-                    <input type="text" id="cpInput" autocomplete="off" placeholder="CP o Ciudad (ej: 31500)" style="border:none;background:transparent;flex:1;outline:none;padding:10px 5px;font-size:14px;color:var(--text-main);min-width:0;">
+                    <input type="text" id="cpInput" autocomplete="off" placeholder="Pueblo o Ciudad (ej: Tudela)..." style="border:none;background:transparent;flex:1;outline:none;padding:10px 5px;font-size:14px;color:var(--text-main);min-width:0;">
                     
                     <div id="autocomplete-list" style="display:none; position:absolute; top:100%; left:0; right:0; background:var(--bg-panel); border:2px solid #3498db; border-radius:8px; z-index:3000; max-height:250px; overflow-y:auto; box-shadow:0 6px 15px rgba(0,0,0,0.3); margin-top:4px;"></div>
                 </div>
@@ -455,11 +455,8 @@
                 // Esperamos medio segundo desde la última tecla para buscar
                 timeoutId = setTimeout(async () => {
                     try {
-                        let queryStr = val;
-                        // Si pone 5 números seguidos, forzamos a que lo entienda como España
-                        if (/^\d{5}$/.test(val)) queryStr = val + ", España";
-                        
-                        const r = await fetch('https://nominatim.openstreetmap.org/search?q=' + encodeURIComponent(queryStr) + '&countrycodes=es&format=json&addressdetails=1&limit=5');
+                        // Buscamos directamente el texto (pueblo o ciudad) en España
+                        const r = await fetch('https://nominatim.openstreetmap.org/search?q=' + encodeURIComponent(val) + '&countrycodes=es&format=json&addressdetails=1&limit=5');
                         const data = await r.json();
                         
                         list.innerHTML = "";
@@ -1114,13 +1111,8 @@
             if(cnRuta) { cnRuta.style.display = "inline-block"; cnRuta.innerText = "⏳..."; }
             
             try {
-                let queryStr = v;
-                // Si son exactamente 5 números, le añadimos ", España" para que el mapa no lo confunda con el número de un edificio
-                if (/^\d{5}$/.test(v)) {
-                    queryStr = v + ", España";
-                }
-                
-                const r = await fetch('https://nominatim.openstreetmap.org/search?q=' + encodeURIComponent(queryStr) + '&countrycodes=es&format=json&addressdetails=1');
+                // Buscamos directamente el texto (pueblo o ciudad) en España sin parches de CP
+                const r = await fetch('https://nominatim.openstreetmap.org/search?q=' + encodeURIComponent(v) + '&countrycodes=es&format=json&addressdetails=1');
                 const d = await r.json();
                 
                 if(d.length > 0) {
