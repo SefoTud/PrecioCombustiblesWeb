@@ -226,7 +226,6 @@
             <div class="row">
                 <select id="provinciaInput" style="flex:1; padding:10px 5px; border:2px solid #3498db; font-weight:bold;">
                     <option value="">🗺️ Selecciona una provincia...</option>
-                    <option value="ESPAÑA">ESPAÑA ENTERA</option>
                     <option value="ALAVA">Álava</option><option value="ALBACETE">Albacete</option><option value="ALICANTE">Alicante</option><option value="ALMERIA">Almería</option><option value="ASTURIAS">Asturias</option><option value="AVILA">Ávila</option><option value="BADAJOZ">Badajoz</option><option value="BALEARS">Baleares</option><option value="BARCELONA">Barcelona</option><option value="BURGOS">Burgos</option><option value="CACERES">Cáceres</option><option value="CADIZ">Cádiz</option><option value="CANTABRIA">Cantabria</option><option value="CASTELLON">Castellón</option><option value="CEUTA">Ceuta</option><option value="CIUDAD REAL">Ciudad Real</option><option value="CORDOBA">Córdoba</option><option value="CORUÑA">A Coruña</option><option value="CUENCA">Cuenca</option><option value="GIRONA">Girona</option><option value="GRANADA">Granada</option><option value="GUADALAJARA">Guadalajara</option><option value="GIPUZKOA">Guipúzcoa</option><option value="HUELVA">Huelva</option><option value="HUESCA">Huesca</option><option value="JAEN">Jaén</option><option value="LEON">León</option><option value="LLEIDA">Lleida</option><option value="LUGO">Lugo</option><option value="MADRID">Madrid</option><option value="MALAGA">Málaga</option><option value="MELILLA">Melilla</option><option value="MURCIA">Murcia</option><option value="NAVARRA">Navarra</option><option value="OURENSE">Ourense</option><option value="PALENCIA">Palencia</option><option value="PALMAS">Las Palmas</option><option value="PONTEVEDRA">Pontevedra</option><option value="RIOJA">La Rioja</option><option value="SALAMANCA">Salamanca</option><option value="SEGOVIA">Segovia</option><option value="SEVILLA">Sevilla</option><option value="SORIA">Soria</option><option value="TARRAGONA">Tarragona</option><option value="SANTA CRUZ DE TENERIFE">S.C. Tenerife</option><option value="TERUEL">Teruel</option><option value="TOLEDO">Toledo</option><option value="VALENCIA">Valencia</option><option value="VALLADOLID">Valladolid</option><option value="BIZKAIA">Vizcaya</option><option value="ZAMORA">Zamora</option><option value="ZARAGOZA">Zaragoza</option>
                 </select>
             </div>
@@ -519,8 +518,8 @@
 
                 if (q("provinciaInput").value) fetchGasolineras();
                 else {
-                    q('gas-list').innerHTML = "<div style='text-align:center;padding:20px;color:var(--text-muted);'>Selecciona una provincia o España entera arriba.</div>";
-                    q('resumenAhorro').innerText = "Esperando selección...";
+                    q('gas-list').innerHTML = "<div style='text-align:center;padding:20px;color:var(--text-muted);'>Selecciona una provincia arriba para ver todas sus gasolineras.</div>";
+                    q('resumenAhorro').innerText = "Esperando provincia...";
                 }
             }
             guardarPreferencias();
@@ -1209,8 +1208,7 @@
                     const lon = parseFloat(g["Longitud (WGS84)"].replace(",", "."));
 
                     if (searchMode === 'provincia') {
-                        // Si elige una provincia normal, filtramos. Si elige "ESPAÑA", nos saltamos el filtro y mostramos todas.
-                        if (valProv && valProv !== "ESPAÑA") {
+                        if (valProv) {
                             if (!g.Provincia) return false;
                             // Le quitamos las tildes a la base de datos para que la búsqueda sea perfecta
                             let provLimpia = g.Provincia.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
