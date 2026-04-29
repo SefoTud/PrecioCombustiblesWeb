@@ -415,6 +415,7 @@
                 if(el) el.addEventListener(id.includes("Input") && id !== "abiertasInput" && id !== "idaVueltaInput" ? "input" : "change", () => { guardarPreferencias(); fetchGasolineras(); });
             });
             q("tipoCombustible").addEventListener("change", () => { fetchTrends(q("tipoCombustible").value); guardarPreferencias(); fetchGasolineras(); });
+            q("provinciaInput").addEventListener("change", () => { guardarPreferencias(); fetchGasolineras(); });
             q("cpInput").addEventListener("keypress", e => { 
                 if(e.key === "Enter") { 
                     e.preventDefault(); 
@@ -456,17 +457,16 @@
             q('modeLinks').classList.remove('show');
             
             const optInteligente = q("ordenarPor").querySelector('option[value="inteligente"]');
+            const optDistancia = q("ordenarPor").querySelector('option[value="distancia"]');
+            const optAhorro = q("ordenarPor").querySelector('option[value="ahorro"]');
 
             if(mode === 'zona') {
-                q('btnToggleMode').innerText = '📍'; 
-                q('btnToggleMode').title = 'Modo Zona';
-                q('zona-ui').style.display = 'block';
-                q('ruta-ui').style.display = 'none';
+                q('btnToggleMode').innerText = '📍'; q('btnToggleMode').title = 'Modo Zona';
+                q('zona-ui').style.display = 'block'; q('ruta-ui').style.display = 'none'; q('provincia-ui').style.display = 'none';
                 
-                if (optInteligente) {
-                    optInteligente.disabled = true;
-                    optInteligente.innerText = "🧠 Solo Plan Inteligente (Solo en Ruta)";
-                }
+                if (optInteligente) { optInteligente.disabled = true; optInteligente.innerText = "🧠 Solo Plan Inteligente (En Ruta)"; }
+                if (optDistancia) optDistancia.disabled = false;
+                if (optAhorro) optAhorro.disabled = false;
                 if (q("ordenarPor").value === "inteligente") q("ordenarPor").value = "precio";
 
                 if(routeLineLayer) { map.removeLayer(routeLineLayer); routeLineLayer = null; routePolylineCoords = null; }
@@ -475,26 +475,50 @@
                 if(destMarker) { map.removeLayer(destMarker); destMarker = null; }
                 if(interMarker) { map.removeLayer(interMarker); interMarker = null; }
                 if(!isInit && userCoords) { map.setView(userCoords, 14); fetchGasolineras(); }
-            } else {
-                q('btnToggleMode').innerText = '🛣️';
-                q('btnToggleMode').title = 'Modo Ruta';
-                q('zona-ui').style.display = 'none';
-                q('ruta-ui').style.display = 'block';
+            
+            } else if (mode === 'ruta') {
+                q('btnToggleMode').innerText = '🛣️'; q('btnToggleMode').title = 'Modo Ruta';
+                q('zona-ui').style.display = 'none'; q('ruta-ui').style.display = 'block'; q('provincia-ui').style.display = 'none';
 
-                if (optInteligente) {
-                    optInteligente.disabled = false;
-                    optInteligente.innerText = "🧠 Solo Plan Inteligente";
-                }
+                if (optInteligente) { optInteligente.disabled = false; optInteligente.innerText = "🧠 Solo Plan Inteligente"; }
+                if (optDistancia) optDistancia.disabled = false;
+                if (optAhorro) optAhorro.disabled = false;
 
                 if (q("origenInput").value.trim() === "" || q("origenInput").value.trim() === "Mi Ubicación") {
                     q("origenInput").value = q("cpInput").value;
                 }
                 markersLayer.clearLayers();
-                if(routePolylineCoords) {
-                    fetchGasolineras();
-                } else {
+                if(routePolylineCoords) fetchGasolineras();
+                else {
                     q('gas-list').innerHTML = "<div style='text-align:center;padding:20px;color:var(--text-muted);'>Escribe tu destino y pulsa <b>IR 🛣️</b> para trazar la ruta.</div>";
                     q('resumenAhorro').innerText = "Esperando ruta...";
+                }
+            
+            } else if (mode === 'provincia') {
+                q('btnToggleMode').innerText = '🗺️'; q('btnToggleMode').title = 'Modo Provincia';
+                q('zona-ui').style.display = 'none'; q('ruta-ui').style.display = 'none'; q('provincia-ui').style.display = 'block';
+
+                // En provincia no tiene sentido calcular distancia a ti ni plan inteligente, las bloqueamos
+                if (optInteligente) { optInteligente.disabled = true; optInteligente.innerText = "🧠 Solo Plan Inteligente (En Ruta)"; }
+                if (optDistancia) optDistancia.disabled = true;
+                if (optAhorro) optAhorro.disabled = true;
+                
+                // Forzamos ordenar por precio
+                if (["inteligente", "distancia", "ahorro"].includes(q("ordenarPor").value)) {
+                    q("ordenarPor").value = "precio"; 
+                }
+
+                if(routeLineLayer) { map.removeLayer(routeLineLayer); routeLineLayer = null; routePolylineCoords = null; }
+                routeLineLayers.forEach(l => map.removeLayer(l)); routeLineLayers = []; allRoutes = [];
+                if(originMarker) { map.removeLayer(originMarker); originMarker = null; }
+                if(destMarker) { map.removeLayer(destMarker); destMarker = null; }
+                if(interMarker) { map.removeLayer(interMarker); interMarker = null; }
+                markersLayer.clearLayers();
+
+                if (q("provinciaInput").value) fetchGasolineras();
+                else {
+                    q('gas-list').innerHTML = "<div style='text-align:center;padding:20px;color:var(--text-muted);'>Selecciona una provincia arriba para ver todas sus gasolineras.</div>";
+                    q('resumenAhorro').innerText = "Esperando provincia...";
                 }
             }
             guardarPreferencias();
@@ -1146,11 +1170,15 @@
         async function fetchGasolineras() {
             if(!userCoords || !cacheGasolineras || isFetching) return;
             if(searchMode === 'ruta' && !routePolylineCoords) return;
+            if(searchMode === 'provincia' && !q("provinciaInput").value) return;
 
             isFetching = true;
+            q("list-container").classList.add("bloqueado"); // BLOQUEAR SCROLL
+
             try {
                 const fT = q("tipoCombustible").value, fTN = q("tipoCombustible").options[q("tipoCombustible").selectedIndex].text, mD = parseFloat(q("radioBusqueda").value), fM = q("marcaInput").value.toUpperCase(), o = q("ordenarPor").value, lts = parseFloat(q("litrosInput").value) || 0, consumo = parseFloat(q("consumoInput").value) || 0, idV = q("idaVueltaInput").checked, sA = q("abiertasInput").checked, lD = q("gas-list");
                 
+                const valProv = q("provinciaInput") ? q("provinciaInput").value : "";
                 const valAuto = q("autonomiaInput").value;
                 const autonomia = valAuto ? parseFloat(valAuto) : Infinity;
                 const tieneAutonomia = !isNaN(autonomia) && autonomia > 0 && autonomia !== Infinity;
@@ -1176,7 +1204,12 @@
                     
                     const lat = parseFloat(g.Latitud.replace(",", "."));
                     const lon = parseFloat(g["Longitud (WGS84)"].replace(",", "."));
-                        if (searchMode === 'zona') {
+                    
+                    if (searchMode === 'provincia') {
+                        // Comprobamos la provincia (ignoramos distancia y autonomía)
+                        if (valProv && (!g.Provincia || !g.Provincia.toUpperCase().includes(valProv))) return false;
+                        g.distHaversine = 0; 
+                    } else if (searchMode === 'zona') {
                         const d = getDistance(userCoords[0], userCoords[1], lat, lon);
                         if(d > mD) return false;
                         
@@ -1184,7 +1217,6 @@
                             const distNecesaria = idV ? (d * 2) : d;
                             if (distNecesaria > autonomia) return false; 
                         }
-
                         g.distHaversine = d; 
                     } else {
                         if(lat < bounds.getSouth() - pad || lat > bounds.getNorth() + pad || lon < bounds.getWest() - pad || lon > bounds.getEast() + pad) return false;
@@ -1226,8 +1258,8 @@
                 });
                 
                 if(enRadio.length === 0) { 
-                    lD.innerHTML = "<div style='text-align:center;padding:20px;color:var(--text-muted);'>Sin resultados o fuera de tu autonomía (" + autonomia + "km).</div>"; 
-                    markersLayer.clearLayers(); isFetching = false; q("loading-overlay").style.display = "none"; return; 
+                    lD.innerHTML = "<div style='text-align:center;padding:20px;color:var(--text-muted);'>Sin resultados.</div>"; 
+                    markersLayer.clearLayers(); return; 
                 }
                 
                 let allPrices = enRadio.map(g => g.pN);
@@ -1238,9 +1270,10 @@
 
                 if(filtradas.length === 0) { 
                     lD.innerHTML = "<div style='text-align:center;padding:20px;color:var(--text-muted);'>No tienes gasolineras favoritas aquí.</div>"; 
-                    markersLayer.clearLayers(); isFetching = false; q("loading-overlay").style.display = "none"; return; 
+                    markersLayer.clearLayers(); return; 
                 }
                 
+                // NO calculamos rutas OSRM complejas en modo provincia
                 if (searchMode === 'zona') {
                     let needsRouting = filtradas.filter(g => osrmCache[g.IDEESS] === undefined);
                     if(needsRouting.length > 0) {
@@ -1262,9 +1295,10 @@
                         } else {
                             g.distCalculada = g.distHaversine; g.tiempoCalculado = null;
                         }
-                    } else {
-                        g.distCalculada = g.distHaversine; 
-                        g.tiempoCalculado = null; 
+                    } else if (searchMode === 'ruta') {
+                        g.distCalculada = g.distHaversine; g.tiempoCalculado = null; 
+                    } else { // provincia
+                        g.distCalculada = 0; g.tiempoCalculado = null;
                     }
                 });
 
@@ -1273,7 +1307,7 @@
                 filtradas.forEach(g => {
                     g.aBruto = (globalMaxP - g.pN) * lts;
                     let mult = searchMode === 'zona' ? (idV ? 2 : 1) : 2; 
-                    g.cViaje = consumo > 0 ? (g.distCalculada * mult) * (consumo / 100) * g.pN : 0; 
+                    g.cViaje = (consumo > 0 && searchMode !== 'provincia') ? (g.distCalculada * mult) * (consumo / 100) * g.pN : 0; 
                     g.aNeto = g.aBruto - g.cViaje;
                 });
 
@@ -1322,11 +1356,7 @@
                         return { paradas: paradas, ahorroTotal: ahorroTotalPlan, idUnico: paradas.map(p=>p.IDEESS).join('-') };
                     }
 
-                    let matrices = [
-                        [0,0,0,0,0], [1,1,1,1,1], [2,2,2,2,2], [3,3,3,3,3],
-                        [1,0,0,0,0], [0,1,0,0,0], [2,0,0,0,0], [0,2,0,0,0],
-                        [1,1,0,0,0], [2,2,0,0,0], [0,0,1,0,0], [0,0,2,0,0]
-                    ];
+                    let matrices = [[0,0,0,0,0], [1,1,1,1,1], [2,2,2,2,2], [3,3,3,3,3], [1,0,0,0,0], [0,1,0,0,0], [2,0,0,0,0], [0,2,0,0,0], [1,1,0,0,0], [2,2,0,0,0], [0,0,1,0,0], [0,0,2,0,0]];
                     let planesBrutos = matrices.map(m => generarPlan(m));
 
                     let idsVistos = new Set();
@@ -1343,7 +1373,6 @@
                     if (window.selectedSmartPlanIndex >= window.planesUnicosGlobal.length) window.selectedSmartPlanIndex = 0;
                 }
 
-                markersLayer.clearLayers();
                 let gasolinerasParaPintar = filtradas;
                 
                 if (o === "inteligente" && window.planesUnicosGlobal.length > 0) {
@@ -1381,17 +1410,19 @@
                     const mU = "https://www.google.com/maps/dir/?api=1&destination=" + lat + "," + ln, sN = g.Rótulo.replace(/'/g, ""), iM = 'heart_map_' + g.IDEESS;
                     
                     let htmlAhorroMap = "";
-                    if (consumo > 0) {
+                    if (consumo > 0 && searchMode !== 'provincia') {
                         if (g.aNeto > 0) htmlAhorroMap = '<div class="pulse-ahorro" style="background:'+cS+';color:#fff;padding:5px;border-radius:5px;margin:5px 0;font-weight:bold;text-align:center;">AHORRO NETO: '+g.aNeto.toFixed(2)+'€<br><span style="font-size:13px;font-weight:bold;color:#1e3a29;">('+(searchMode==='zona'?'Viaje':'Desvío')+' descontado: -'+g.cViaje.toFixed(2)+'€)</span></div>';
                         else htmlAhorroMap = '<div style="background:#e74c3c;color:#fff;padding:5px;border-radius:5px;margin:5px 0;font-weight:bold;text-align:center;">PIERDES '+Math.abs(g.aNeto).toFixed(2)+'€<br><span style="font-size:13px;font-weight:bold;color:#4a0000;">('+(searchMode==='zona'?'Viaje':'Desvío')+': -'+g.cViaje.toFixed(2)+'€)</span></div>';
                     } else if (g.aBruto > 0) {
                         htmlAhorroMap = '<div class="pulse-ahorro" style="background:'+cS+';color:#fff;padding:5px;border-radius:5px;margin:5px 0;font-weight:bold;text-align:center;">Ahorras '+g.aBruto.toFixed(2)+'€</div>';
                     }
 
-                    let timeStr = g.tiempoCalculado ? ' | ⏱️ ' + g.tiempoCalculado + ' min' : '';
-                    let msgDist = searchMode === 'zona' ? '🚗 ' + g.distCalculada.toFixed(2) + ' km' + timeStr : '⤴️ Desvío: ' + g.distCalculada.toFixed(2) + ' km';
+                    let msgDist = '';
+                    if (searchMode === 'zona') msgDist = '🚗 ' + g.distCalculada.toFixed(2) + ' km' + (g.tiempoCalculado ? ' | ⏱️ ' + g.tiempoCalculado + ' min' : '');
+                    else if (searchMode === 'ruta') msgDist = '⤴️ Desvío: ' + g.distCalculada.toFixed(2) + ' km';
+                    else msgDist = '📍 En tu provincia';
 
-                    let msgAhorroWa = consumo > 0 ? (g.aNeto > 0 ? "Ahorro Real Neto: " + g.aNeto.toFixed(2) + "€" : "¡Te cuesta más el " + (searchMode==='zona'?'viaje':'desvío') + " (" + g.cViaje.toFixed(2) + "€)!") : "Ahorras " + g.aBruto.toFixed(2) + "€ llenando hoy.";
+                    let msgAhorroWa = (consumo > 0 && searchMode !== 'provincia') ? (g.aNeto > 0 ? "Ahorro Real Neto: " + g.aNeto.toFixed(2) + "€" : "¡Te cuesta más el " + (searchMode==='zona'?'viaje':'desvío') + " (" + g.cViaje.toFixed(2) + "€)!") : "Ahorras " + g.aBruto.toFixed(2) + "€ llenando hoy.";
                     const waM = encodeURIComponent('⛽ ¡Ojo! ' + fTN + ' a ' + pN.toFixed(3) + '€/L en ' + g.Rótulo + ' (' + g.Dirección + '). ' + msgAhorroWa + ' 🚗💨\n\n📍 Míralo en Gasofa Pro:\n' + APP_URL);
                     const waB = '<a class="btn-action btn-wa" href="https://api.whatsapp.com/send?text=' + waM + '" target="_blank">💬 WA</a>';
                     
@@ -1401,9 +1432,15 @@
                     L.marker([lat, ln], { icon: L.divIcon({ className: '', html: '<div class="price-label-wrapper" style="border-color:' + cS + ';color:' + cS + ';">' + pStrVisualMap + '<span class="tr-ind" style="margin-left:4px;" data-type="map" data-id="' + g.IDEESS + '">' + tH_m + '</span></div>', iconSize: iconSz, iconAnchor: iconAnc }), pane: pPrecio, zIndexOffset: parseInt(10000 - (g.pN*1000)) }).addTo(markersLayer).bindPopup(pop);
                 });
 
+                // CENTRAR MAPA AUTOMÁTICAMENTE AL BUSCAR PROVINCIA
+                if (searchMode === 'provincia' && gasolinerasParaPintar.length > 0) {
+                    const group = new L.featureGroup(Object.values(markersLayer._layers));
+                    map.fitBounds(group.getBounds(), { padding: [20, 20] });
+                }
+
                 lD.innerHTML = ""; 
 
-                if (consumo > 0) {
+                if (consumo > 0 && searchMode !== 'provincia') {
                     if (necesitaPlanInteligente) {
                         q("header-ahorro").style.display = "none";
                     } else {
@@ -1470,13 +1507,11 @@
                     planViajeHtml += `</div></div>`;
                     
                     lD.innerHTML = planViajeHtml;
-                } else if (necesitaPlanInteligente && window.planesUnicosGlobal.length === 0) {
-                    lD.innerHTML = `<div style="background:#f8d7da; border:2px solid #e74c3c; border-radius:10px; padding:12px; margin-bottom:15px; text-align:center; font-size:12px; color:#e74c3c;">⚠️ No se ha encontrado ninguna gasolinera rentable en la ruta.</div>`;
                 }
 
                 if (o !== "inteligente") {
-                    if(o === "distancia") filtradas.sort((a, b) => a.distCalculada - b.distCalculada);
-                    else if(o === "ahorro") filtradas.sort((a, b) => b.aNeto - a.aNeto);
+                    if(o === "distancia" && searchMode !== 'provincia') filtradas.sort((a, b) => a.distCalculada - b.distCalculada);
+                    else if(o === "ahorro" && searchMode !== 'provincia') filtradas.sort((a, b) => b.aNeto - a.aNeto);
                     else filtradas.sort((a, b) => a.pN - b.pN); 
                     
                     filtradas.forEach((g, i) => g.rP = i + 1);
@@ -1500,17 +1535,19 @@
                         const mU = "https://www.google.com/maps/dir/?api=1&destination=" + lat + "," + ln, sN = g.Rótulo.replace(/'/g, ""), iL = 'heart_list_' + g.IDEESS;
                         
                         let htmlAhorroList = "";
-                        if (consumo > 0) {
+                        if (consumo > 0 && searchMode !== 'provincia') {
                             if (g.aNeto > 0) htmlAhorroList = '<span class="badge-ahorro pulse-ahorro" style="background:' + cS + '">AHORRO NETO ' + g.aNeto.toFixed(2) + '€</span><div style="font-size:13px;color:var(--text-muted);font-weight:bold;text-align:right;margin-top:2px;">' + (searchMode==='zona'?'Viaje':'Desvío') + ': -' + g.cViaje.toFixed(2) + '€</div>';
                             else htmlAhorroList = '<span class="badge-ahorro" style="background:#e74c3c">PIERDES ' + Math.abs(g.aNeto).toFixed(2) + '€</span><div style="font-size:13px;color:var(--text-muted);font-weight:bold;text-align:right;margin-top:2px;">' + (searchMode==='zona'?'Viaje':'Desvío') + ': -' + g.cViaje.toFixed(2) + '€</div>';
                         } else if (g.aBruto > 0) {
                             htmlAhorroList = '<span class="badge-ahorro pulse-ahorro" style="background:' + cS + '">AHORRA ' + g.aBruto.toFixed(2) + '€</span>';
                         }
 
-                        let timeStr = g.tiempoCalculado ? ' | ⏱️ ' + g.tiempoCalculado + ' min' : '';
-                        let msgDist = searchMode === 'zona' ? '🚗 ' + g.distCalculada.toFixed(2) + ' km' + timeStr : '⤴️ Desvío: ' + g.distCalculada.toFixed(2) + ' km';
+                        let msgDist = '';
+                        if (searchMode === 'zona') msgDist = '🚗 ' + g.distCalculada.toFixed(2) + ' km' + (g.tiempoCalculado ? ' | ⏱️ ' + g.tiempoCalculado + ' min' : '');
+                        else if (searchMode === 'ruta') msgDist = '⤴️ Desvío: ' + g.distCalculada.toFixed(2) + ' km';
+                        else msgDist = '📍 En tu provincia';
 
-                        let msgAhorroWa = consumo > 0 ? (g.aNeto > 0 ? "Ahorro Real Neto: " + g.aNeto.toFixed(2) + "€" : "¡Te cuesta más el " + (searchMode==='zona'?'viaje':'desvío') + " (" + g.cViaje.toFixed(2) + "€)!") : "Ahorras " + g.aBruto.toFixed(2) + "€ llenando hoy.";
+                        let msgAhorroWa = (consumo > 0 && searchMode !== 'provincia') ? (g.aNeto > 0 ? "Ahorro Real Neto: " + g.aNeto.toFixed(2) + "€" : "¡Te cuesta más el " + (searchMode==='zona'?'viaje':'desvío') + " (" + g.cViaje.toFixed(2) + "€)!") : "Ahorras " + g.aBruto.toFixed(2) + "€ llenando hoy.";
                         const waM = encodeURIComponent('⛽ ¡Ojo! ' + fTN + ' a ' + pN.toFixed(3) + '€/L en ' + g.Rótulo + ' (' + g.Dirección + '). ' + msgAhorroWa + ' 🚗💨\n\n📍 Míralo en Gasofa Pro:\n' + APP_URL);
                         
                         const item = D.createElement("div"); item.className = "list-item"; 
@@ -1526,6 +1563,7 @@
             } finally {
                 q("loading-overlay").style.display = "none";
                 isFetching = false;
+                q("list-container").classList.remove("bloqueado"); // DESBLOQUEAR SCROLL AL TERMINAR
             }
         }
         
