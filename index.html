@@ -1,23 +1,14 @@
 <!DOCTYPE html>
 <html>
 <head>
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-924ZXN0PWL"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-924ZXN0PWL');
-</script>
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Gasofa Pro">
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3206/3206972.png">
-    <link rel="manifest" id="mf-ph" href="manifest.json">
-    <title>Precio Combustibles</title>
+    <link rel="manifest" id="mf-ph">
+    <title>Gasofa Pro</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -275,7 +266,7 @@
     </div>
 
     <div id="list-container">
-        <div id="loading-overlay"><div class="spinner" style="margin-bottom:10px;"></div><div id="loading-text" style="color:var(--text-main);font-weight:bold;text-align:center;width:100%;padding:0 20px;box-sizing:border-box;">🏛️ Conectando con el servidor...</div></div>
+        <div id="loading-overlay"><div class="spinner" style="margin-bottom:10px;"></div><div id="loading-text" style="color:var(--text-main);font-weight:bold;text-align:center;width:100%;padding:0 20px;box-sizing:border-box;">🏛️ Conectando con el ministerio...</div></div>
         <div class="row" style="margin-bottom:10px;">
             <select id="ordenarPor" style="border:1.5px solid #27ae60;font-weight:bold;color:var(--text-main);">
                 <option value="precio">💸 Más baratas primero</option>
@@ -294,11 +285,8 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
         const D = document, q = i => D.getElementById(i);
-        
-        // 🚀🚀🚀 AQUI DEBES PEGAR TU URL DE GOOGLE SCRIPTS 🚀🚀🚀
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwFXjO_rSyru_c-Y_Z_G7znqr4MURm-Rgo4kq08hWBSw5mLEe2ny9xG9EbNh-rpMSVh4g/exec"; 
-        // -----------------------------------------------------------
-        const APP_URL = window.location.href; 
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwFXjO_rSyru_c-Y_Z_G7znqr4MURm-Rgo4kq08hWBSw5mLEe2ny9xG9EbNh-rpMSVh4g/exec"; // Pega la URL de tu nueva implementación de Apps Script
+        const APP_URL = window.location.href; // Usado para el botón de WhatsApp
 
         let map = L.map("map", { zoomControl: false }).setView([40.41, -3.70], 6);
         let userCoords = null, markersLayer = L.layerGroup().addTo(map), cacheGasolineras = null, chartInstance = null, currentModalStationId = null, currentTrends = {};
@@ -375,23 +363,22 @@
 
             irAMiUbicacion(!tieneCacheValida);
 
-            // LLAMADA A GOOGLE SCRIPTS PARA OBTENER LOS PRECIOS
-            fetch(`${SCRIPT_URL}?accion=obtenerDatos`, {
-    method: 'GET',
-    redirect: 'follow'
-})
-                .then(res => res.json())
-                .then(newData => {
-                    if(newData && newData.length > 0) {
-                        verificarCambios(newData);
-                    } else if (newData.error) {
-                        console.error("Error del servidor:", newData.error);
-                    }
-                })
-                .catch(e => {
-                    console.error("Fallo al leer de la API:", e);
-                    q("loading-text").innerHTML = "❌ Error de conexión con el servidor.";
-                });
+              fetch(WEB_APP_URL + "?accion=obtenerDatosDesdeDrive")
+  .then(res => res.text()) // Usamos text() porque tu función de Drive devuelve un String gigante
+  .then(dataStr => {
+    try {
+      const newData = JSON.parse(dataStr);
+      if(newData && newData.length > 0) {
+        verificarCambios(newData);
+      }
+    } catch(e) {
+      console.error("Error procesando datos de Drive:", e);
+    }
+  })
+  .catch(e => {
+    console.error("Fallo al leer de Drive:", e);
+    q("loading-text").innerHTML = "❌ Error de conexión con Drive.";
+  });
             
             fetchTrends(q("tipoCombustible").value);
 
@@ -493,12 +480,6 @@
         async function calcularRuta() {
             let orig = q("origenInput").value.trim();
             let dest = q("destinoInput").value.trim();
-            
-            // 🛡️ Escudo Anti-AdBlock enviando datos a Analytics
-            if (typeof gtag === 'function') {
-                gtag('event', 'uso_ruta', { 'origen': orig, 'destino': dest });
-            }
-
             if(!dest) { alert("Por favor, introduce un destino."); return; }
 
             // Oculta el panel si está abierto
@@ -832,7 +813,6 @@
             }
         }
 
-        // LLAMADA A TENDENCIAS CON EL NUEVO SISTEMA (FETCH)
         function fetchTrends(v) {
             const c = { "Precio Gasoleo A": 4, "Precio Gasolina 95 E5": 5, "Precio Gasoleo Premium": 6, "Precio Gasolina 98 E5": 7, "Precio Gasoleo B": 8, "Precio Gases Licuados del Petróleo": 9, "AdBlue": 10 };
             if(!c[v]) return;
@@ -840,18 +820,17 @@
             currentTrends = {};
             D.querySelectorAll('.tr-ind').forEach(el => el.innerHTML = '⏳');
             
-            fetch(`${SCRIPT_URL}?accion=obtenerTendencias&colIdx=${c[v]}`)
-                .then(res => res.json())
-                .then(r => {
-                    trendsLoaded = true;
-                    currentTrends = r || {};
-                    if(cacheGasolineras && cacheGasolineras.length > 0) fetchGasolineras();
-                })
-                .catch(e => {
-                    trendsLoaded = true; 
-                    D.querySelectorAll('.tr-ind').forEach(el => { el.innerHTML = getTrendHTML(null, el.getAttribute('data-type')); });
-                });
-        }
+            fetch(WEB_APP_URL + "?accion=obtenerTendencias&colIdx=" + c[v])
+    .then(res => res.json())
+    .then(r => {
+        trendsLoaded = true;
+        currentTrends = r || {};
+        if(cacheGasolineras && cacheGasolineras.length > 0) fetchGasolineras();
+    })
+    .catch(e => {
+        trendsLoaded = true; 
+        D.querySelectorAll('.tr-ind').forEach(el => { el.innerHTML = getTrendHTML(null, el.getAttribute('data-type')); });
+    });
 
         function addPulseHeart(id) { const h = q(id); if(h) { h.classList.remove('pulse-heart'); void h.offsetWidth; h.classList.add('pulse-heart'); } }
         
@@ -1002,14 +981,8 @@
 
         async function buscarPorCP() {
             const v = q("cpInput").value.trim();
-            
-            // 🛡️ Escudo Anti-AdBlock enviando datos a Analytics
-            if (typeof gtag === 'function') {
-                gtag('event', 'busqueda_zona', { 'codigo_postal': v });
-            }
-
             const cn = q("cityName"); 
-            const cnRuta = q("cityNameRuta"); 
+            const cnRuta = q("cityNameRuta"); // Cogemos también la pastilla de la ruta
             
             if (v.length < 2) return;
 
@@ -1077,7 +1050,6 @@
             chartInstance.update();
         };
 
-        // LLAMADA AL HISTÓRICO CON EL NUEVO SISTEMA (FETCH)
         function mostrarHistorico(n, id, h) {
             if(chartInstance) chartInstance.destroy();
             currentModalStationId = id; 
@@ -1136,20 +1108,16 @@
                 st.style.display = 'flex'; 
                 q('chartSpinner').style.display = 'block'; q('chartText').innerText = "Calculando histórico..."; q('chartSubText').style.display = 'block';
                 
-                fetch(`${SCRIPT_URL}?accion=obtenerHistorico&nGas=${encodeURIComponent(n)}&idGas=${encodeURIComponent(id)}`)
-                    .then(res => res.json())
-                    .then(d => {
-                        if (d && !d.error) {
-                            historicoCache[id] = d; 
-                            drawChart(d);
-                        } else {
-                            throw new Error("Error interno o datos vacíos");
-                        }
-                    })
-                    .catch(e => {
-                        q('chartSpinner').style.display = 'none'; q('chartSubText').style.display = 'none';
-                        q('chartText').innerHTML = "❌ Datos no disponibles.<br><small>Es posible que la base de datos esté vacía para esta estación.</small>";
-                    });
+                fetch(WEB_APP_URL + "?accion=obtenerHistoricoOptimizado&nGas=" + encodeURIComponent(n) + "&idGas=" + encodeURIComponent(id))
+    .then(res => res.json())
+    .then(d => {
+        historicoCache[id] = d; 
+        drawChart(d);
+    })
+    .catch(e => {
+        q('chartSpinner').style.display = 'none'; q('chartSubText').style.display = 'none';
+        q('chartText').innerHTML = "❌ Datos no disponibles.<br><small>Es posible que la base de datos esté vacía para esta estación.</small>";
+    });
             }
         }
 
