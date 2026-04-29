@@ -97,7 +97,6 @@
         body.dark-mode .spinner { border-color: #333; border-top-color: #3498db; }
         @keyframes spin{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}
 
-        /* Diseño para el bocadillo de rutas alternativas */
         .alt-route-tooltip {
             background: rgba(255, 255, 255, 0.95);
             border: 2px solid #7f8c8d;
@@ -109,15 +108,13 @@
             font-size: 11px;
             box-shadow: 0 2px 6px rgba(0,0,0,0.3);
             line-height: 1.2;
-            cursor: pointer; /* Hace que salga la "manita" en PC */
-            pointer-events: auto; /* Permite que el bocadillo atrape el click */
+            cursor: pointer; 
+            pointer-events: auto; 
         }
-        /* Oculta la flechita del tooltip para que parezca un botón flotante */
         .alt-route-tooltip::before { display: none !important; }
 
-        /* Diseño para el bocadillo de la ruta principal activa */
         .active-route-tooltip {
-            background: rgba(66, 133, 244, 0.95); /* Color azul de la ruta */
+            background: rgba(66, 133, 244, 0.95); 
             border: 2px solid #2a56c6;
             border-radius: 8px;
             font-weight: bold;
@@ -266,7 +263,7 @@
     </div>
 
     <div id="list-container">
-        <div id="loading-overlay"><div class="spinner" style="margin-bottom:10px;"></div><div id="loading-text" style="color:var(--text-main);font-weight:bold;text-align:center;width:100%;padding:0 20px;box-sizing:border-box;">🏛️ Conectando con el ministerio...</div></div>
+        <div id="loading-overlay"><div class="spinner" style="margin-bottom:10px;"></div><div id="loading-text" style="color:var(--text-main);font-weight:bold;text-align:center;width:100%;padding:0 20px;box-sizing:border-box;">🏛️ Conectando con la API...</div></div>
         <div class="row" style="margin-bottom:10px;">
             <select id="ordenarPor" style="border:1.5px solid #27ae60;font-weight:bold;color:var(--text-main);">
                 <option value="precio">💸 Más baratas primero</option>
@@ -285,8 +282,11 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
         const D = document, q = i => D.getElementById(i);
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby3i7LzTyUeWlOki109MB42VErjWMNDaN0yCH3WnwrLjotXB6sIa2X_djR4b_lAdYmhtw/exec"; // Pega la URL de tu nueva implementación de Apps Script
-        const APP_URL = window.location.href; // Usado para el botón de WhatsApp
+        
+        // --- CONFIGURACIÓN DE LA API ---
+        // ¡Súper importante! Si publicas una "Nueva Versión" en Apps Script y te da una URL distinta, actualízala aquí.
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby3i7LzTyUeWlOki109MB42VErjWMNDaN0yCH3WnwrLjotXB6sIa2X_djR4b_lAdYmhtw/exec"; 
+        const APP_URL = window.location.href;
 
         let map = L.map("map", { zoomControl: false }).setView([40.41, -3.70], 6);
         let userCoords = null, markersLayer = L.layerGroup().addTo(map), cacheGasolineras = null, chartInstance = null, currentModalStationId = null, currentTrends = {};
@@ -308,15 +308,14 @@
         window.fullChartData = null;
         let historicoCache = {}; 
 
-        // VARIABLES MODO RUTA Y RUTAS ALTERNATIVAS
         let searchMode = 'zona'; 
         let routeLineLayer = null;
-        let routeLineLayers = []; // Capas de múltiples rutas
-        let allRoutes = []; // Almacena todas las alternativas devueltas
-        let activeRouteIndex = 0; // Ruta actualmente seleccionada
+        let routeLineLayers = []; 
+        let allRoutes = []; 
+        let activeRouteIndex = 0; 
         let routePolylineCoords = null; 
-        let routeCumDist = []; // Distancia acumulada de la ruta
-        let totalRouteDist = 0; // Distancia total origen -> destino
+        let routeCumDist = []; 
+        let totalRouteDist = 0; 
 
         let favoritos = [];
         try { favoritos = JSON.parse(localStorage.getItem('gasofaFavs')) || []; } catch(e) { favoritos = []; }
@@ -363,22 +362,23 @@
 
             irAMiUbicacion(!tieneCacheValida);
 
-              fetch(WEB_APP_URL + "?accion=obtenerDatosDesdeDrive")
-  .then(res => res.text()) // Usamos text() porque tu función de Drive devuelve un String gigante
-  .then(dataStr => {
-    try {
-      const newData = JSON.parse(dataStr);
-      if(newData && newData.length > 0) {
-        verificarCambios(newData);
-      }
-    } catch(e) {
-      console.error("Error procesando datos de Drive:", e);
-    }
-  })
-  .catch(e => {
-    console.error("Fallo al leer de Drive:", e);
-    q("loading-text").innerHTML = "❌ Error de conexión con Drive.";
-  });
+            // --- LLAMADA A LA API PARA OBTENER DATOS PRINCIPALES ---
+            fetch(WEB_APP_URL + "?accion=obtenerDatosDesdeDrive")
+              .then(res => res.text())
+              .then(dataStr => {
+                try {
+                  const newData = JSON.parse(dataStr);
+                  if(newData && newData.length > 0) {
+                    verificarCambios(newData);
+                  }
+                } catch(e) {
+                  console.error("Error procesando datos de la API:", e);
+                }
+              })
+              .catch(e => {
+                console.error("Fallo al leer la API:", e);
+                q("loading-text").innerHTML = "❌ Error de conexión con el servidor.";
+              });
             
             fetchTrends(q("tipoCombustible").value);
 
@@ -389,16 +389,15 @@
             q("tipoCombustible").addEventListener("change", () => { fetchTrends(q("tipoCombustible").value); guardarPreferencias(); fetchGasolineras(); });
             q("cpInput").addEventListener("keypress", e => { 
                 if(e.key === "Enter") { 
-                    e.preventDefault(); // Evitamos que el navegador se vuelva loco
-                    e.target.blur(); // Escondemos el teclado del móvil automáticamente
-                    buscarPorCP(); // Buscamos las gasolineras
+                    e.preventDefault(); 
+                    e.target.blur(); 
+                    buscarPorCP(); 
                 } 
             });
             q("destinoInput").addEventListener("keypress", e => { if(e.key === "Enter") calcularRuta(); });
             q("origenInput").addEventListener("input", e => {
                 const cnRuta = q("cityNameRuta");
                 if(cnRuta) {
-                    // Se oculta solo si el texto es distinto al CP actual
                     if(e.target.value.trim() !== "" && e.target.value !== q("cpInput").value && e.target.value !== "Mi Ubicación") {
                         cnRuta.style.display = "none";
                     } else {
@@ -428,7 +427,6 @@
             searchMode = mode;
             q('modeLinks').classList.remove('show');
             
-            // Accedemos a la opción del Plan Inteligente en el desplegable
             const optInteligente = q("ordenarPor").querySelector('option[value="inteligente"]');
 
             if(mode === 'zona') {
@@ -437,12 +435,10 @@
                 q('zona-ui').style.display = 'block';
                 q('ruta-ui').style.display = 'none';
                 
-                // Bloqueamos la opción en el desplegable
                 if (optInteligente) {
                     optInteligente.disabled = true;
                     optInteligente.innerText = "🧠 Solo Plan Inteligente (Solo en Ruta)";
                 }
-                // Si el usuario tenía seleccionado "inteligente", lo cambiamos a "precio"
                 if (q("ordenarPor").value === "inteligente") q("ordenarPor").value = "precio";
 
                 if(routeLineLayer) { map.removeLayer(routeLineLayer); routeLineLayer = null; routePolylineCoords = null; }
@@ -457,7 +453,6 @@
                 q('zona-ui').style.display = 'none';
                 q('ruta-ui').style.display = 'block';
 
-                // Habilitamos la opción en el desplegable
                 if (optInteligente) {
                     optInteligente.disabled = false;
                     optInteligente.innerText = "🧠 Solo Plan Inteligente";
@@ -482,16 +477,13 @@
             let dest = q("destinoInput").value.trim();
             if(!dest) { alert("Por favor, introduce un destino."); return; }
 
-            // Oculta el panel si está abierto
             if (!q("controls").classList.contains("collapsed")) toggleControls();
 
             q("loading-overlay").style.display = "flex";
             q("loading-text").innerText = "Trazando ruta...";
 
             try {
-                // --- BUSCAR ORIGEN ---
                 let coordOrig = userCoords; 
-                // Usamos GPS exacto si coincide con tu CP actual o está en blanco. Si escribes otra cosa, lo buscamos en internet:
                 if (orig !== "" && orig.toLowerCase() !== "mi ubicacion" && orig.toLowerCase() !== "mi ubicación" && orig !== q("cpInput").value) {
                     q("loading-text").innerText = "Ubicando origen...";
                     const r1 = await fetch('https://nominatim.openstreetmap.org/search?q=' + encodeURIComponent(orig) + '&countrycodes=es&format=json&addressdetails=1&limit=1');
@@ -505,7 +497,6 @@
                     }
                     else throw "No se encuentra el origen ingresado.";
                 } else {
-                    // Si usamos tu GPS, forzamos a que se vuelva a ver la pastilla azul
                     if(q("cityNameRuta") && q("cityNameRuta").innerText !== "") {
                         q("cityNameRuta").style.display = "inline-block";
                     }
@@ -513,7 +504,6 @@
 
                 if(!coordOrig) throw "No tenemos tu ubicación actual. Escribe una ciudad de origen.";
 
-                // --- BUSCAR DESTINO ---
                 const r2 = await fetch('https://nominatim.openstreetmap.org/search?q=' + encodeURIComponent(dest) + '&countrycodes=es&format=json&addressdetails=1&limit=1');
                 const d2 = await r2.json();
                 let coordDest;
@@ -525,7 +515,6 @@
                     if(q("cityNameDest")) { q("cityNameDest").innerText = "📍 " + c; q("cityNameDest").style.display = "inline-block"; }
                 } else throw "No se encuentra el destino ingresado.";
 
-                // --- BUSCAR PUNTO INTERMEDIO ---
                 let inter = q("pasandoPorInput").value.trim();
                 let coordInter = null;
                 if (inter !== "") {
@@ -548,7 +537,6 @@
 
                 q("loading-text").innerText = "Trazando ruta...";
 
-                // --- CONSTRUIR RUTA OSRM (CON O SIN PARADA) ---
                 let coordsString = coordOrig[1] + ',' + coordOrig[0];
                 if (coordInter) coordsString += ';' + coordInter[1] + ',' + coordInter[0];
                 coordsString += ';' + coordDest[1] + ',' + coordDest[0];
@@ -562,7 +550,6 @@
 
                 allRoutes = d3.routes; 
                 
-                // --- MARCADORES ---
                 if(originMarker) map.removeLayer(originMarker);
                 if(destMarker) map.removeLayer(destMarker);
                 if(interMarker) map.removeLayer(interMarker);
@@ -584,7 +571,6 @@
                     zIndexOffset: 1000
                 }).addTo(map).bindPopup("<b>Destino</b>");
 
-                // Renderizamos la principal (índice 0)
                 renderActiveRoute(0);
 
             } catch(e) {
@@ -593,7 +579,6 @@
             }
         }
 
-        // FUNCIÓN PARA RENDERIZAR LA RUTA SELECCIONADA Y SUS ALTERNATIVAS
         window.renderActiveRoute = function(index) {
             activeRouteIndex = index;
             const route = allRoutes[index];
@@ -611,7 +596,6 @@
             routeLineLayers.forEach(l => map.removeLayer(l));
             routeLineLayers = [];
 
-            // Pequeña función para formatear el tiempo a horas y minutos
             const formatTime = (secs) => {
                 let mins = Math.round(secs / 60);
                 if (mins < 60) return mins + " min";
@@ -620,19 +604,17 @@
                 return h + "h " + (m < 10 ? "0" : "") + m + "m";
             };
 
-            // 1. Dibujar rutas inactivas (para que queden de fondo en el mapa)
             allRoutes.forEach((r, i) => {
                 if (i === activeRouteIndex) return;
                 let latlngs = r.geometry.coordinates.map(c => [c[1], c[0]]);
                 
                 let layer = L.polyline(latlngs, {color: '#7f8c8d', weight: 6, opacity: 0.9}).addTo(map);
                 
-                // Bocadillo interactivo (hace de botón)
                 layer.bindTooltip("⏱️ " + formatTime(r.duration) + "<br>🚗 " + (r.distance / 1000).toFixed(1) + " km", {
                     permanent: true, 
                     direction: 'center', 
                     className: 'alt-route-tooltip',
-                    interactive: true // <--- ESTO ES LO QUE HACE QUE EL CLICK FUNCIONE
+                    interactive: true 
                 });
 
                 layer.on('click', () => {
@@ -643,15 +625,13 @@
                 routeLineLayers.push(layer);
             });
 
-            // 2. Dibujar ruta activa (al frente)
             let activeLatlngs = routePolylineCoords.map(c => [c[1], c[0]]);
             routeLineLayer = L.polyline(activeLatlngs, {color: '#4285F4', weight: 6, opacity: 0.9}).addTo(map);
             
-            // Bocadillo permanente, azul y DESPLAZADO a la derecha para no tapar precios
             routeLineLayer.bindTooltip("🔵 Elegida<br>⏱️ " + formatTime(route.duration) + "<br>🚗 " + (route.distance / 1000).toFixed(1) + " km", {
                 permanent: true, 
-                direction: 'right',   // Lo sacamos del centro y lo ponemos a la derecha
-                offset: [40, 0],      // Le damos un empujón de 40 píxeles a la derecha para librar los marcadores
+                direction: 'right',   
+                offset: [40, 0],      
                 className: 'active-route-tooltip'
             });
             
@@ -659,7 +639,6 @@
             
             map.fitBounds(routeLineLayer.getBounds());
 
-            // 3. Recalcular las gasolineras para la ruta activa
             fetchGasolineras();
         };
 
@@ -813,6 +792,7 @@
             }
         }
 
+        // --- LLAMADA A LA API PARA OBTENER TENDENCIAS ---
         function fetchTrends(v) {
             const c = { "Precio Gasoleo A": 4, "Precio Gasolina 95 E5": 5, "Precio Gasoleo Premium": 6, "Precio Gasolina 98 E5": 7, "Precio Gasoleo B": 8, "Precio Gases Licuados del Petróleo": 9, "AdBlue": 10 };
             if(!c[v]) return;
@@ -821,16 +801,17 @@
             D.querySelectorAll('.tr-ind').forEach(el => el.innerHTML = '⏳');
             
             fetch(WEB_APP_URL + "?accion=obtenerTendencias&colIdx=" + c[v])
-    .then(res => res.json())
-    .then(r => {
-        trendsLoaded = true;
-        currentTrends = r || {};
-        if(cacheGasolineras && cacheGasolineras.length > 0) fetchGasolineras();
-    })
-    .catch(e => {
-        trendsLoaded = true; 
-        D.querySelectorAll('.tr-ind').forEach(el => { el.innerHTML = getTrendHTML(null, el.getAttribute('data-type')); });
-    });
+              .then(res => res.json())
+              .then(r => {
+                  trendsLoaded = true;
+                  currentTrends = r || {};
+                  if(cacheGasolineras && cacheGasolineras.length > 0) fetchGasolineras();
+              })
+              .catch(e => {
+                  trendsLoaded = true; 
+                  D.querySelectorAll('.tr-ind').forEach(el => { el.innerHTML = getTrendHTML(null, el.getAttribute('data-type')); });
+              });
+        }
 
         function addPulseHeart(id) { const h = q(id); if(h) { h.classList.remove('pulse-heart'); void h.offsetWidth; h.classList.add('pulse-heart'); } }
         
@@ -915,12 +896,9 @@
         function irAMiUbicacion(mostrarCargando) {
             window.isManuallyLocated = false;
             
-            // Cogemos las DOS etiquetas azules (Zona y Ruta)
             const cn = q("cityName"); 
             const cnRuta = q("cityNameRuta");
             
-            // Magia visual: Solo enseñamos el "Buscando..." si le has dado al botón a mano (mostrarCargando es true). 
-            // Si es al abrir la app, lo hace "en la sombra".
             if (mostrarCargando) {
                 if(cn) { cn.style.display = "inline-block"; cn.innerText = "📍 Buscando GPS..."; }
                 if(cnRuta) { cnRuta.style.display = "inline-block"; cnRuta.innerText = "📍 Buscando GPS..."; }
@@ -954,12 +932,10 @@
                 .then(d => {
                     if(d && d.address) { 
                         const a = d.address, c = a.city || a.town || a.village || a.municipality || "Ubicación"; 
-                        // Escribimos el nombre del pueblo y la HACEMOS VISIBLE
                         if(cn) { cn.innerText = "📍 " + c; cn.style.display = "inline-block"; }
                         if(cnRuta) { cnRuta.innerText = "📍 " + c; cnRuta.style.display = "inline-block"; }
                         if(a.postcode) {
                             q("cpInput").value = a.postcode;
-                            // Rellenamos el origen con el CP si está vacío o dice "Mi Ubicación"
                             if(q("origenInput").value === "" || q("origenInput").value === "Mi Ubicación") {
                                 q("origenInput").value = a.postcode;
                             }
@@ -982,14 +958,11 @@
         async function buscarPorCP() {
             const v = q("cpInput").value.trim();
             const cn = q("cityName"); 
-            const cnRuta = q("cityNameRuta"); // Cogemos también la pastilla de la ruta
+            const cnRuta = q("cityNameRuta"); 
             
             if (v.length < 2) return;
 
-            // Oculta el panel si está abierto
             if (!q("controls").classList.contains("collapsed")) toggleControls();
-            
-            if(cn) { cn.style.display = "inline-block"; cn.innerText = "⏳..."; }
             
             if(cn) { cn.style.display = "inline-block"; cn.innerText = "⏳..."; }
             if(cnRuta) { cnRuta.style.display = "inline-block"; cnRuta.innerText = "⏳..."; }
@@ -999,15 +972,14 @@
                 const d = await r.json();
                 
                 if(d.length > 0) {
-                    window.isManuallyLocated = true; // Avisamos de que has buscado a mano
-                    isFetching = false; // Desbloqueamos el buscador
+                    window.isManuallyLocated = true; 
+                    isFetching = false; 
                     
                     ponerMarcadorUsuario(parseFloat(d[0].lat), parseFloat(d[0].lon));
                     const a = d[0].address; 
                     let c = a.city || a.town || a.village || a.municipality || d[0].name || ""; 
                     if(!c || !isNaN(c)) c = v.toUpperCase();
                     
-                    // Actualizamos el nombre en las DOS pastillas
                     if(cn) cn.innerText = "📍 " + c; 
                     if(cnRuta) cnRuta.innerText = "📍 " + c; 
                     
@@ -1050,6 +1022,7 @@
             chartInstance.update();
         };
 
+        // --- LLAMADA A LA API PARA OBTENER EL HISTÓRICO ---
         function mostrarHistorico(n, id, h) {
             if(chartInstance) chartInstance.destroy();
             currentModalStationId = id; 
@@ -1109,15 +1082,15 @@
                 q('chartSpinner').style.display = 'block'; q('chartText').innerText = "Calculando histórico..."; q('chartSubText').style.display = 'block';
                 
                 fetch(WEB_APP_URL + "?accion=obtenerHistoricoOptimizado&nGas=" + encodeURIComponent(n) + "&idGas=" + encodeURIComponent(id))
-    .then(res => res.json())
-    .then(d => {
-        historicoCache[id] = d; 
-        drawChart(d);
-    })
-    .catch(e => {
-        q('chartSpinner').style.display = 'none'; q('chartSubText').style.display = 'none';
-        q('chartText').innerHTML = "❌ Datos no disponibles.<br><small>Es posible que la base de datos esté vacía para esta estación.</small>";
-    });
+                  .then(res => res.json())
+                  .then(d => {
+                      historicoCache[id] = d; 
+                      drawChart(d);
+                  })
+                  .catch(e => {
+                      q('chartSpinner').style.display = 'none'; q('chartSubText').style.display = 'none';
+                      q('chartText').innerHTML = "❌ Datos no disponibles.<br><small>Es posible que la base de datos esté vacía para esta estación.</small>";
+                  });
             }
         }
 
@@ -1150,7 +1123,6 @@
             try {
                 const fT = q("tipoCombustible").value, fTN = q("tipoCombustible").options[q("tipoCombustible").selectedIndex].text, mD = parseFloat(q("radioBusqueda").value), fM = q("marcaInput").value.toUpperCase(), o = q("ordenarPor").value, lts = parseFloat(q("litrosInput").value) || 0, consumo = parseFloat(q("consumoInput").value) || 0, idV = q("idaVueltaInput").checked, sA = q("abiertasInput").checked, lD = q("gas-list");
                 
-                // AUTONOMÍA
                 const valAuto = q("autonomiaInput").value;
                 const autonomia = valAuto ? parseFloat(valAuto) : Infinity;
                 const tieneAutonomia = !isNaN(autonomia) && autonomia > 0 && autonomia !== Infinity;
@@ -1180,16 +1152,13 @@
                         const d = getDistance(userCoords[0], userCoords[1], lat, lon);
                         if(d > mD) return false;
                         
-                        // FILTRO DE AUTONOMÍA EN MODO ZONA
                         if (tieneAutonomia) {
-                            // Si está marcado Ida/Vuelta, la distancia es el doble
                             const distNecesaria = idV ? (d * 2) : d;
-                            if (distNecesaria > autonomia) return false; // Si no llega, no la mostramos
+                            if (distNecesaria > autonomia) return false; 
                         }
 
                         g.distHaversine = d; 
                     } else {
-                        // Filtro rápido de área
                         if(lat < bounds.getSouth() - pad || lat > bounds.getNorth() + pad || lon < bounds.getWest() - pad || lon > bounds.getEast() + pad) return false;
                         
                         let minDist = Infinity;
@@ -1288,7 +1257,6 @@
                     }
                 });
 
-                // --- 1. CALCULAMOS EL PLAN INTELIGENTE ANTES DE PINTAR NADA ---
                 let planViajeHtml = "";
                 window.planesUnicosGlobal = [];
                 if (typeof window.selectedSmartPlanIndex === 'undefined') window.selectedSmartPlanIndex = 0;
@@ -1304,7 +1272,6 @@
                         if (idV) encuentros.push({ ...g, kmTravesia: distTotalViaje - g.distDesdeOrigen, sentido: "⬅️ A la VUELTA" });
                     });
 
-                    // Matriz avanzada: permite forzar la elección de la 1ª, 2ª, 3ª o 4ª mejor opción en cada parada
                     function generarPlan(indicesVariantes) {
                         let kmActual = 0; let distRestante = distTotalViaje; let paradaNum = 0; let paradas = []; let ahorroTotalPlan = 0;
                         while (distRestante > autonomia && paradaNum < 15) {
@@ -1327,7 +1294,6 @@
                         return { paradas: paradas, ahorroTotal: ahorroTotalPlan, idUnico: paradas.map(p=>p.IDEESS).join('-') };
                     }
 
-                    // Forzamos combinaciones cruzando las 3 mejores alternativas
                     let matrices = [
                         [0,0,0,0,0], [1,1,1,1,1], [2,2,2,2,2], [3,3,3,3,3],
                         [1,0,0,0,0], [0,1,0,0,0], [2,0,0,0,0], [0,2,0,0,0],
@@ -1344,12 +1310,11 @@
                     });
                     
                     window.planesUnicosGlobal.sort((a, b) => b.ahorroTotal - a.ahorroTotal);
-                    window.planesUnicosGlobal = window.planesUnicosGlobal.slice(0, 8); // Nos quedamos con las 8 mejores distintas
+                    window.planesUnicosGlobal = window.planesUnicosGlobal.slice(0, 8); 
                     
                     if (window.selectedSmartPlanIndex >= window.planesUnicosGlobal.length) window.selectedSmartPlanIndex = 0;
                 }
 
-                // --- 2. PINTAMOS EL MAPA (NORMAL O SOLO PLAN INTELIGENTE) ---
                 markersLayer.clearLayers();
                 let gasolinerasParaPintar = filtradas;
                 
@@ -1358,7 +1323,7 @@
                     let idsDelPlan = planActual.paradas.map(p => p.IDEESS);
                     gasolinerasParaPintar = filtradas.filter(g => idsDelPlan.includes(g.IDEESS));
                 } else if (o === "inteligente" && window.planesUnicosGlobal.length === 0) {
-                    gasolinerasParaPintar = []; // No hay plan, no pintamos nada
+                    gasolinerasParaPintar = []; 
                 }
 
                 gasolinerasParaPintar.forEach((g) => {
@@ -1408,8 +1373,7 @@
                     L.marker([lat, ln], { icon: L.divIcon({ className: '', html: '<div class="price-label-wrapper" style="border-color:' + cS + ';color:' + cS + ';">' + pStrVisualMap + '<span class="tr-ind" style="margin-left:4px;" data-type="map" data-id="' + g.IDEESS + '">' + tH_m + '</span></div>', iconSize: iconSz, iconAnchor: iconAnc }), pane: pPrecio, zIndexOffset: parseInt(10000 - (g.pN*1000)) }).addTo(markersLayer).bindPopup(pop);
                 });
 
-                // --- 3. CREAMOS EL HTML DEL PLAN Y DE LA LISTA ---
-                lD.innerHTML = ""; // Limpiamos
+                lD.innerHTML = ""; 
 
                 if (consumo > 0) {
                     if (necesitaPlanInteligente) {
@@ -1452,7 +1416,6 @@
                         planViajeHtml += `</select></div>`;
                     }
 
-                    // Renderizamos el HTML solo del plan activo
                     let planSeleccionado = window.planesUnicosGlobal[window.selectedSmartPlanIndex];
                     planViajeHtml += `<div id="plan-variante-activo">`;
                     planSeleccionado.paradas.forEach(mejor => {
@@ -1483,7 +1446,6 @@
                     lD.innerHTML = `<div style="background:#f8d7da; border:2px solid #e74c3c; border-radius:10px; padding:12px; margin-bottom:15px; text-align:center; font-size:12px; color:#e74c3c;">⚠️ No se ha encontrado ninguna gasolinera rentable en la ruta.</div>`;
                 }
 
-                // --- 4. LISTA NORMAL (LA OCULTAMOS SI ESTAMOS EN MODO SOLO INTELIGENTE) ---
                 if (o !== "inteligente") {
                     if(o === "distancia") filtradas.sort((a, b) => a.distCalculada - b.distCalculada);
                     else if(o === "ahorro") filtradas.sort((a, b) => b.aNeto - a.aNeto);
