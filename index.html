@@ -1037,15 +1037,13 @@
             if(cnRuta) { cnRuta.style.display = "inline-block"; cnRuta.innerText = "⏳..."; }
             
             try {
-                // Si el usuario escribe exactamente 5 números, forzamos a Nominatim a buscar por código postal
-                let urlSearch = '';
+                let queryStr = v;
+                // Si son exactamente 5 números, le añadimos ", España" para que el mapa no lo confunda con el número de un edificio
                 if (/^\d{5}$/.test(v)) {
-                    urlSearch = 'https://nominatim.openstreetmap.org/search?postalcode=' + encodeURIComponent(v) + '&countrycodes=es&format=json&addressdetails=1';
-                } else {
-                    urlSearch = 'https://nominatim.openstreetmap.org/search?q=' + encodeURIComponent(v) + '&countrycodes=es&format=json&addressdetails=1';
+                    queryStr = v + ", España";
                 }
                 
-                const r = await fetch(urlSearch);
+                const r = await fetch('https://nominatim.openstreetmap.org/search?q=' + encodeURIComponent(queryStr) + '&countrycodes=es&format=json&addressdetails=1');
                 const d = await r.json();
                 
                 if(d.length > 0) {
