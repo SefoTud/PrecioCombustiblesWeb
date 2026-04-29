@@ -620,6 +620,7 @@
 
             if (!q("controls").classList.contains("collapsed")) toggleControls();
 
+            q("list-container").scrollTop = 0; // <--- TE LLEVA ARRIBA DEL TODO
             q("loading-overlay").style.display = "flex";
             q("loading-text").innerText = "Trazando ruta...";
 
