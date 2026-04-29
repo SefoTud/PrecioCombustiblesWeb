@@ -275,10 +275,10 @@
                 
                 <div class="social-fab-container">
                     <button id="btnToggleMode" class="btn-float orange" onclick="toggleModeMenu()" title="Modo de Búsqueda">📍</button>
-                    <div class="social-links" id="modeLinks" style="align-items: flex-end; right: 0;">
-                        <div class="social-mini" onclick="setMode('provincia')" style="width: auto; padding: 0 16px; border-radius: 20px; font-size: 13px; font-weight: bold; gap: 8px;">🗺️ Provincia</div>
-                        <div class="social-mini" onclick="setMode('ruta')" style="width: auto; padding: 0 16px; border-radius: 20px; font-size: 13px; font-weight: bold; gap: 8px;">🛣️ Ruta</div>
-                        <div class="social-mini" onclick="setMode('zona')" style="width: auto; padding: 0 16px; border-radius: 20px; font-size: 13px; font-weight: bold; gap: 8px;">📍 Zona</div>
+                    <div class="social-links" id="modeLinks" style="align-items: center; right: -22px; width: max-content;">
+                        <div class="social-mini" onclick="setMode('provincia')" style="width: auto; padding: 0 16px; border-radius: 20px; font-size: 13px; font-weight: bold; gap: 6px; white-space: nowrap; display: flex; flex-direction: row; align-items: center; justify-content: center;">🗺️ Provincia</div>
+                        <div class="social-mini" onclick="setMode('ruta')" style="width: auto; padding: 0 16px; border-radius: 20px; font-size: 13px; font-weight: bold; gap: 6px; white-space: nowrap; display: flex; flex-direction: row; align-items: center; justify-content: center;">🛣️ Ruta</div>
+                        <div class="social-mini" onclick="setMode('zona')" style="width: auto; padding: 0 16px; border-radius: 20px; font-size: 13px; font-weight: bold; gap: 6px; white-space: nowrap; display: flex; flex-direction: row; align-items: center; justify-content: center;">📍 Zona</div>
                     </div>
                 </div>
 
@@ -1641,24 +1641,30 @@
                     planSeleccionado.paradas.forEach(mejor => {
                         let colorPrecio = mejor.pN <= (globalMinP + 0.03) ? "#27ae60" : mejor.pN < (globalMinP + globalMaxP) / 2 ? "#f39c12" : "#e74c3c";
                         planViajeHtml += `
-                        <div style="background:var(--bg-panel); border:1px solid #c3e6cb; padding:10px; border-radius:8px; margin-bottom:8px; font-size:12px; cursor:pointer;" onclick="window.centrarMapa(${parseFloat(mejor.Latitud.replace(',','.'))}, ${parseFloat(mejor['Longitud (WGS84)'].replace(',','.'))})">
-                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                                <div>
-                                    <span style="background:#f1c40f; color:#000; padding:3px 8px; border-radius:10px; font-weight:bold; font-size:10px;">PARADA ${mejor.paradaNum}</span>
-                                    <span style="font-weight:bold; color:var(--text-main); font-size:13px; margin-left:6px;">${mejor.sentido}</span>
+                       <div style="background:var(--bg-panel); border:1px solid #c3e6cb; padding:12px; border-radius:8px; margin-bottom:10px; cursor:pointer; display:flex; flex-direction:column; gap:8px;" onclick="window.centrarMapa(${parseFloat(mejor.Latitud.replace(',','.'))}, ${parseFloat(mejor['Longitud (WGS84)'].replace(',','.'))})">
+                            
+                            <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:8px;">
+                                <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                                    <span style="background:#f1c40f; color:#000; padding:4px 8px; border-radius:10px; font-weight:bold; font-size:10px; white-space:nowrap;">PARADA ${mejor.paradaNum}</span>
+                                    <span style="font-weight:bold; color:var(--text-main); font-size:12px; white-space:nowrap;">${mejor.sentido}</span>
                                 </div>
-                                <button onclick="event.stopPropagation(); window.descartarGasolinera('${mejor.IDEESS}')" style="background:#e74c3c; color:#fff; border:none; padding:4px 8px; border-radius:6px; font-size:10px; font-weight:bold; cursor:pointer; box-shadow:0 2px 4px rgba(0,0,0,0.2);">❌ IGNORAR</button>
-                            <div style="font-size:14px; margin-bottom:4px;">🏆 <b>${mejor.Rótulo}</b></div>
-                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-                                <div style="display:flex; align-items:center; gap:6px;">
-                                    <span style="color:${colorPrecio}; font-weight:900; font-size:16px;">${mejor.pN.toFixed(3)} €/L</span>
-                                    <span style="background:#27ae60; color:#fff; font-weight:bold; font-size:10px; padding:2px 6px; border-radius:6px;">+${mejor.aNeto.toFixed(2)}€</span>
-                                </div>
-                                <span style="background:var(--bg-input); border:1px solid var(--border-color); color:var(--text-main); font-weight:bold; font-size:11px; padding:3px 6px; border-radius:6px;">🚗 km ${mejor.kmTravesia.toFixed(0)}</span>
+                                <button onclick="event.preventDefault(); event.stopPropagation(); window.descartarGasolinera('${mejor.IDEESS}'); return false;" style="background:#e74c3c; color:#fff; border:none; padding:5px 10px; border-radius:6px; font-size:10px; font-weight:bold; cursor:pointer; box-shadow:0 2px 4px rgba(0,0,0,0.2); white-space:nowrap;">❌ IGNORAR</button>
                             </div>
-                            <div style="font-size:11px; color:#3498db; margin-top:6px; font-weight:bold; border-top:1px solid var(--border-color); padding-top:6px;">
+                            
+                            <div style="font-size:14px; line-height:1.3;">🏆 <b>${mejor.Rótulo}</b></div>
+                            
+                            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                                <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                                    <span style="color:${colorPrecio}; font-weight:900; font-size:17px; white-space:nowrap;">${mejor.pN.toFixed(3)} €/L</span>
+                                    <span style="background:#27ae60; color:#fff; font-weight:bold; font-size:11px; padding:3px 6px; border-radius:6px; white-space:nowrap;">+${mejor.aNeto.toFixed(2)}€</span>
+                                </div>
+                                <span style="background:var(--bg-input); border:1px solid var(--border-color); color:var(--text-main); font-weight:bold; font-size:11px; padding:4px 8px; border-radius:6px; white-space:nowrap;">🚗 km ${mejor.kmTravesia.toFixed(0)}</span>
+                            </div>
+                            
+                            <div style="font-size:11px; color:#3498db; font-weight:bold; border-top:1px solid var(--border-color); padding-top:8px; margin-top:2px;">
                                 ⤴️ Desvío: ${mejor.distCalculada.toFixed(1)} km
                             </div>
+                            
                         </div>`;
                     });
                     planViajeHtml += `</div></div>`;
