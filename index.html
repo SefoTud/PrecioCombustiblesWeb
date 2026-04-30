@@ -373,6 +373,16 @@
         map.createPane("puntos_rojo").style.zIndex = 400; map.createPane("puntos_amar").style.zIndex = 401; map.createPane("puntos_verde").style.zIndex = 402;
         map.createPane("precios_rojo").style.zIndex = 600; map.createPane("precios_amar").style.zIndex = 601; map.createPane("precios_verde").style.zIndex = 602;
 
+        // --- ANTIBLOQUEO PARA MÓVILES (Descongelar Pestaña) ---
+        document.addEventListener("visibilitychange", () => {
+            if (document.visibilityState === 'visible') {
+                isFetching = false; // Liberamos el motor de búsqueda
+                if(q("list-container")) q("list-container").classList.remove("bloqueado");
+                if(q("loading-overlay")) q("loading-overlay").style.display = "none";
+            }
+        });
+        // ------------------------------------------------------
+
         window.onload = () => {
             const sysDark = window.matchMedia('(prefers-color-scheme: dark)');
             const savedDark = localStorage.getItem('gasofaDark');
@@ -637,6 +647,17 @@
                     q('resumenAhorro').innerText = "Esperando provincia...";
                 }
             }
+            
+            // --- MAGIA DE INTERFAZ: Esconder lo que sobra en Provincia ---
+            let esProv = (mode === 'provincia');
+            if(q("litrosInput")) q("litrosInput").style.display = esProv ? "none" : "";
+            if(q("consumoInput")) q("consumoInput").style.display = esProv ? "none" : "";
+            if(q("autonomiaInput")) q("autonomiaInput").style.display = esProv ? "none" : "";
+            if(q("idaVueltaInput") && q("idaVueltaInput").parentElement) q("idaVueltaInput").parentElement.style.display = esProv ? "none" : "";
+            
+            isFetching = false; // Desbloqueo de seguridad extra al cambiar de modo
+            // -------------------------------------------------------------
+
             guardarPreferencias();
         }
 
