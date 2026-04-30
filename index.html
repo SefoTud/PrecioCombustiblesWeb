@@ -210,13 +210,13 @@
             <div style="display:flex;flex-direction:column;gap:8px;">
                 <div style="position:relative; display:flex;align-items:center;background:var(--bg-panel);border:1px solid var(--border-color);border-radius:8px;padding:0 5px;overflow:visible;">
                     <span style="font-size:16px; padding:0 5px;">🔵</span>
-                    <span id="cityNameRuta" onclick="this.style.display='none'" title="Toca para borrar" style="font-size:11px;color:#fff;background:#e74c3c;font-weight:bold;white-space:nowrap;padding:4px 8px;border-radius:5px;display:none;margin-right:5px;cursor:pointer;"></span>
+                    <span id="cityNameRuta" onclick="this.style.display='none'; document.getElementById('origenInput').value='';" title="Toca para borrar" style="font-size:11px;color:#fff;background:#27ae60;font-weight:bold;white-space:nowrap;padding:4px 8px;border-radius:5px;display:none;margin-right:5px;cursor:pointer;"></span>
                     <input type="text" id="origenInput" autocomplete="off" placeholder="Origen (Por defecto: Mi Ubicación)" style="border:none;background:transparent;flex:1;outline:none;padding:10px 5px;font-size:14px;color:var(--text-main);min-width:0;">
                     <div id="autocomplete-list-origen" style="display:none; position:absolute; top:100%; left:0; right:0; background:var(--bg-panel); border:2px solid #3498db; border-radius:8px; z-index:3000; max-height:250px; overflow-y:auto; box-shadow:0 6px 15px rgba(0,0,0,0.3); margin-top:4px;"></div>
                 </div>                
                 <div style="position:relative; display:flex;align-items:center;background:var(--bg-panel);border:1px solid var(--border-color);border-radius:8px;padding:0 5px;overflow:visible;">
                     <span style="font-size:16px; padding:0 5px;">🏁</span>
-                    <span id="cityNameDest" onclick="this.style.display='none'" title="Toca para borrar" style="font-size:11px;color:#fff;background:#3498db;font-weight:bold;white-space:nowrap;padding:4px 8px;border-radius:5px;display:none;margin-right:5px;cursor:pointer;"></span>
+                    <span id="cityNameDest" onclick="this.style.display='none'; document.getElementById('destinoInput').value='';" title="Toca para borrar" style="font-size:11px;color:#fff;background:#e74c3c;font-weight:bold;white-space:nowrap;padding:4px 8px;border-radius:5px;display:none;margin-right:5px;cursor:pointer;"></span>
                     <input type="text" id="destinoInput" autocomplete="off" placeholder="Destino (ej: Madrid)" style="border:none;background:transparent;flex:1;outline:none;padding:10px 5px;font-size:14px;color:var(--text-main);min-width:0;">
                     <button onclick="calcularRuta()" style="background:#e67e22; margin:3px; padding:6px 12px; border-radius:6px; z-index:10;">IR 🛣️</button>
                     <div id="autocomplete-list-destino" style="display:none; position:absolute; top:100%; left:0; right:0; background:var(--bg-panel); border:2px solid #3498db; border-radius:8px; z-index:3000; max-height:250px; overflow-y:auto; box-shadow:0 6px 15px rgba(0,0,0,0.3); margin-top:4px;"></div>
@@ -327,12 +327,12 @@
     </div>
 
     <!-- MODAL GARAJE -->
-<div id="garageModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:9999; align-items:center; justify-content:center; padding:15px;">
-    <div style="background:var(--bg-panel); width:100%; max-width:400px; border-radius:15px; padding:20px; box-shadow:0 10px 25px rgba(0,0,0,0.3); color:var(--text-main);">
-        <h3 style="margin-top:0; color:#3498db; border-bottom:1px solid var(--border-color); padding-bottom:10px;">🚗 Mi Garaje</h3>
+<div id="garageModal" class="modal-bg">
+    <div class="modal-content" style="max-width:400px; padding:20px;">
+        <h3 style="margin-top:0; color:#3498db; border-bottom:1px solid var(--border-color); padding-bottom:10px; flex-shrink:0;">🚗 Mi Garaje</h3>
         
-        <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:15px;">
-            <input type="hidden" id="editCarId"> <!-- Guarda el ID si estamos editando -->
+        <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:15px; flex-shrink:0;">
+            <input type="hidden" id="editCarId">
             <input type="text" id="carName" placeholder="Nombre (Ej: Mi Golf)" style="padding:10px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-input); color:var(--text-main);">
             
             <select id="carFuel" style="padding:10px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-input); color:var(--text-main);">
@@ -353,11 +353,11 @@
             <button onclick="saveCar()" style="background:#2ecc71; color:white; padding:12px; border:none; border-radius:8px; font-weight:bold; cursor:pointer; font-size:16px;">💾 Guardar Vehículo</button>
         </div>
 
-        <div id="carList" style="max-height:180px; overflow-y:auto; border-top:1px solid var(--border-color); padding-top:10px; display:flex; flex-direction:column; gap:8px;">
+        <div id="carList" style="overflow-y:auto; border-top:1px solid var(--border-color); padding-top:10px; display:flex; flex-direction:column; gap:8px; flex:1; min-height:50px;">
             <!-- Aquí aparecerán los coches -->
         </div>
 
-        <button onclick="closeGarage()" style="margin-top:15px; background:transparent; color:var(--text-main); border:1px solid var(--border-color); padding:10px; border-radius:8px; font-weight:bold; cursor:pointer; width:100%;">Cerrar</button>
+        <button onclick="closeGarage()" style="margin-top:15px; background:transparent; color:var(--text-main); border:1px solid var(--border-color); padding:10px; border-radius:8px; font-weight:bold; cursor:pointer; width:100%; flex-shrink:0;">Cerrar</button>
     </div>
 </div>
 
@@ -600,18 +600,27 @@
             });
             // --------------------------------------------------------------
             q("destinoInput").addEventListener("keypress", e => { if(e.key === "Enter") calcularRuta(); });
-            q("origenInput").addEventListener("input", e => {
-                const cnRuta = q("cityNameRuta");
-                if(cnRuta) {
-                    if(e.target.value.trim() !== "" && e.target.value !== q("cpInput").value && e.target.value !== "Mi Ubicación") {
-                        cnRuta.style.display = "none";
-                    } else {
-                        cnRuta.style.display = "inline-block";
-                    }
+            // --- MAGIA PARA BORRAR PÍLDORAS INTUITIVAMENTE (Con el teclado) ---
+            ["cpInput", "origenInput", "destinoInput", "pasandoPorInput"].forEach(id => {
+                const inpt = q(id);
+                if (inpt) {
+                    inpt.addEventListener("keydown", (e) => {
+                        // Relacionamos cada caja con su píldora
+                        const pillMap = { "cpInput": "cityName", "origenInput": "cityNameRuta", "destinoInput": "cityNameDest", "pasandoPorInput": "cityNameInter" };
+                        const pill = q(pillMap[id]);
+                        
+                        // Si la píldora se está mostrando y tocas cualquier tecla...
+                        if (pill && pill.style.display !== "none") {
+                            pill.style.display = "none"; // La fulminamos visualmente
+                            
+                            // Si justo tocaste la tecla Borrar/Retroceso, vaciamos la caja para que no quede basura
+                            if (e.key === "Backspace" || e.key === "Delete") {
+                                inpt.value = "";
+                            }
+                        }
+                    });
                 }
             });
-            q("pasandoPorInput").addEventListener("input", () => { if(q("cityNameInter")) q("cityNameInter").style.display = "none"; });
-            q("destinoInput").addEventListener("input", () => { if(q("cityNameDest")) q("cityNameDest").style.display = "none"; });
             map.on('click', () => { 
                 if(!q("controls").classList.contains("collapsed")) toggleControls(); 
                 q("socialLinks").classList.remove("show");
