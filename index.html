@@ -79,20 +79,22 @@
         .btn-action{color:#fff!important;border:none;padding:7px 10px;border-radius:6px;text-decoration:none;font-size:10px;font-weight:bold;margin:4px 2px;cursor:pointer;display:inline-flex;align-items:center;gap:4px;text-transform:uppercase}
         .btn-historial{background:#9b59b6} .btn-directo{background:#3498db} .btn-wa{background:#25D366}
         
-        /* CAMBIO APLICADO: Botones a 15px del fondo del contenedor */
-        .floating-buttons-container { position: absolute; bottom: 15px; right: 15px; z-index: 2500; display: flex; flex-direction: row-reverse; gap: 10px; align-items: center; }
+       /* 1. Contenedor principal abajo a la derecha */
+        .floating-buttons-container { position: absolute; bottom: 15px; right: 15px; z-index: 2500; display: flex; flex-direction: row-reverse; align-items: flex-end; gap: 10px; }
         .btn-float { width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,.3); border: none; font-size: 22px; cursor: pointer; background: var(--btn-locate); color: var(--text-main); transition: background 0.3s, transform 0.1s; flex-shrink: 0;}
         .btn-float:active { transform: scale(0.95); }
         .btn-float.green { background: #27ae60; color: #fff; }
         .btn-float.blue { background: #3498db; color: #fff; }
         .btn-float.orange { background: #e67e22; color: #fff; }
 
-        .secondary-fabs { display: flex; flex-direction: row-reverse; gap: 10px; transition: all 0.3s ease; opacity: 0; pointer-events: none; transform: translateX(20px); }
+       /* 2. Botones secundarios: Sin límite de ancho (max-width eliminado) para que no salten en PC */
+        .secondary-fabs { display: flex; flex-direction: row-reverse; flex-wrap: wrap-reverse; justify-content: flex-start; gap: 10px; transition: all 0.3s ease; opacity: 0; pointer-events: none; transform: translateX(20px); }
         .secondary-fabs.show { opacity: 1; pointer-events: auto; transform: translateX(0); }
 
-        .social-fab-container { position: relative; display: flex; align-items: center; justify-content: center;}
-        .social-links { position: absolute; bottom: 55px; display: flex; flex-direction: column; gap: 10px; opacity: 0; pointer-events: none; transition: all 0.3s ease; transform: translateY(10px); }
-        .social-links.show { opacity: 1; pointer-events: auto; transform: translateY(0); }
+        /* 3. Menú de Modos: Sale hacia ARRIBA en VERTICAL, ordenados de arriba a abajo, y por encima de todo */
+        .social-fab-container { position: relative; display: flex; align-items: center; justify-content: center; z-index: 20; }
+        .social-links { position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%) translateY(15px); margin-bottom: 12px; display: flex; flex-direction: column; gap: 10px; opacity: 0; pointer-events: none; transition: all 0.3s ease; z-index: 3000; }
+        .social-links.show { opacity: 1; pointer-events: auto; transform: translateX(-50%) translateY(0); }
         .social-mini { width: 40px; height: 40px; border-radius: 50%; background: var(--bg-panel); display: flex; justify-content: center; align-items: center; box-shadow: 0 3px 8px rgba(0,0,0,.2); border: 1px solid var(--border-color); transition: transform 0.1s; cursor:pointer; font-size:18px;}
         .social-mini:active { transform: scale(0.9); }
         .social-mini img { border-radius: 8px; width: 24px; height: 24px;}
@@ -284,10 +286,10 @@
                 <button class="btn-float" onclick="openGarage()" style="background:#34495e; color:#fff; font-size:24px; display:flex; align-items:center; justify-content:center; padding: 0 0 4px 0; line-height:1; text-shadow: 0px 2px 4px rgba(0,0,0,0.4);" title="Mi Garaje">🚗</button>
                 <div class="social-fab-container">
                     <button id="btnToggleMode" class="btn-float orange" onclick="toggleModeMenu()" title="Modo de Búsqueda">📍</button>
-                    <div class="social-links" id="modeLinks" style="align-items: center; right: -22px; width: max-content;">
-                        <div class="social-mini" onclick="setMode('provincia')" style="width: auto; padding: 0 16px; border-radius: 20px; font-size: 13px; font-weight: bold; gap: 6px; white-space: nowrap; display: flex; flex-direction: row; align-items: center; justify-content: center;">🗺️ Provincia</div>
-                        <div class="social-mini" onclick="setMode('ruta')" style="width: auto; padding: 0 16px; border-radius: 20px; font-size: 13px; font-weight: bold; gap: 6px; white-space: nowrap; display: flex; flex-direction: row; align-items: center; justify-content: center;">🛣️ Ruta</div>
-                        <div class="social-mini" onclick="setMode('zona')" style="width: auto; padding: 0 16px; border-radius: 20px; font-size: 13px; font-weight: bold; gap: 6px; white-space: nowrap; display: flex; flex-direction: row; align-items: center; justify-content: center;">📍 Zona</div>
+                    <div class="social-links" id="modeLinks">
+                         <div class="social-mini" onclick="setMode('provincia')" style="width: auto; padding: 0 16px; border-radius: 20px; font-size: 13px; font-weight: bold; gap: 6px; white-space: nowrap; display: flex; flex-direction: row; align-items: center; justify-content: center; box-shadow: 0 4px 6px rgba(0,0,0,0.2);">🗺️ Provincia</div>
+                        <div class="social-mini" onclick="setMode('ruta')" style="width: auto; padding: 0 16px; border-radius: 20px; font-size: 13px; font-weight: bold; gap: 6px; white-space: nowrap; display: flex; flex-direction: row; align-items: center; justify-content: center; box-shadow: 0 4px 6px rgba(0,0,0,0.2);">🛣️ Ruta</div>
+                        <div class="social-mini" onclick="setMode('zona')" style="width: auto; padding: 0 16px; border-radius: 20px; font-size: 13px; font-weight: bold; gap: 6px; white-space: nowrap; display: flex; flex-direction: row; align-items: center; justify-content: center; box-shadow: 0 4px 6px rgba(0,0,0,0.2);">📍 Zona</div>                      
                     </div>
                 </div>
 
@@ -345,9 +347,9 @@
                 <option value="Precio Gas Natural Licuado">GNL (Gas Natural Licuado)</option>
             </select>
 
-            <div style="display:flex; gap:10px;">
-                <input type="number" id="carConsumo" placeholder="Consumo (L/100)" step="0.1" style="flex:1; padding:10px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-input); color:var(--text-main);">
-                <input type="number" id="carDeposito" placeholder="Depósito Max (Litros)" style="flex:1; padding:10px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-input); color:var(--text-main);">
+            <div style="display:flex; gap:10px; width:100%;">
+                <input type="number" id="carConsumo" placeholder="Consumo (L/100)" step="0.1" style="flex:1; min-width:0; box-sizing:border-box; padding:10px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-input); color:var(--text-main);">
+                <input type="number" id="carDeposito" placeholder="Depósito Max (Litros)" style="flex:1; min-width:0; box-sizing:border-box; padding:10px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-input); color:var(--text-main);">
             </div>
             
             <button onclick="saveCar()" style="background:#2ecc71; color:white; padding:12px; border:none; border-radius:8px; font-weight:bold; cursor:pointer; font-size:16px;">💾 Guardar Vehículo</button>
@@ -1443,6 +1445,11 @@
                     const lat = parseFloat(g.Latitud.replace(",", "."));
                     const lon = parseFloat(g["Longitud (WGS84)"].replace(",", "."));
 
+                    // --- FILTRO ANTI "NULL ISLAND" ---
+                    // Si la coordenada está rota, vacía, o es 0,0 (África), ignoramos la gasolinera para que no rompa el mapa.
+                    // (Sabiendo que España y Canarias están por encima de la latitud 25)
+                    if (isNaN(lat) || isNaN(lon) || lat < 25) return false;
+
                     if (searchMode === 'provincia') {
                         if (valProv) {
                             if (!g.Provincia) return false;
@@ -1474,12 +1481,8 @@
                         
                         g.distHaversine = minDist; 
                         g.distDesdeOrigen = routeCumDist[closestIdx] + minDist; 
-
-                        if (tieneAutonomia) {
-                            g.alcanzableIda = g.distDesdeOrigen <= autonomia;
-                            g.alcanzableVuelta = idV && (totalRouteDist <= autonomia) && (((totalRouteDist * 2) - routeCumDist[closestIdx] + minDist) <= autonomia);
-                            if (!g.alcanzableIda && !g.alcanzableVuelta) return false;
-                        }
+                        // Hemos quitado el bloqueo de autonomía aquí para que el 
+                        // Plan Inteligente pueda ver las gasolineras del segundo y tercer repostaje.
                     }
                     
                     g.precioOficial = parseFloat(p.replace(",", "."));
@@ -1577,51 +1580,68 @@
                         if (idV) encuentros.push({ ...g, kmTravesia: distTotalViaje - g.distDesdeOrigen, sentido: "⬅️ A la VUELTA" });
                     });
 
-                    function generarPlan(indicesVariantes) {
+                   function generarPlan(indicesVariantes) {
                         let distRestante = distTotalViaje;
                         let paradaNum = 0;
                         let paradas = [];
                         let ahorroTotalPlan = 0;
-                        let kmUltimoRepostaje = 0; // Aquí guardamos dónde paramos por última vez
+                        let kmUltimoRepostaje = 0; 
 
-                        // Ordenar por distancia de ruta de principio a fin
+                        // 1. Calculamos la autonomía MÁXIMA del coche si está en el garaje
+                        let autonomiaMaximaCoche = (window.currentCarCapacity > 0 && consumo > 0) ? (window.currentCarCapacity / consumo) * 100 : autonomia;
+
                         let estacionesRuta = encuentros.slice().sort((a, b) => a.kmTravesia - b.kmTravesia);
+                        let autonomiaDisponible = autonomia; 
+                        
+                        // Sistema de seguridad por si la caja de litros está vacía
+                        let litrosEfectivos = lts > 0 ? lts : (window.currentCarCapacity > 0 ? window.currentCarCapacity : 50);
 
-                        while (distRestante > autonomia && paradaNum < 15) {
+                        while (distRestante > autonomiaDisponible && paradaNum < 15) {
                             paradaNum++;
-                            let limiteKm = kmUltimoRepostaje + autonomia; // Hasta aquí llegamos con este depósito
+                            let limiteKm = kmUltimoRepostaje + autonomiaDisponible; 
 
-                            // Lo lógico es repostar cuando nos quede medio depósito o menos, no cada 2 km.
-                            // Buscamos gasolineras entre el 40% del depósito consumido y el 100%.
-                            let kmInicioVentana = kmUltimoRepostaje + (autonomia * 0.4);
-                            let candidatas = estacionesRuta.filter(e => e.kmTravesia > kmInicioVentana && e.kmTravesia <= limiteKm);
+                            // ¡EL ARREGLO 1! En la PRIMERA parada, no exigimos mínimo de km. 
+                            // Buscamos desde el principio (km 0) para cazar las gangas iniciales.
+                            let kmInicioVentana = paradaNum === 1 ? 0 : kmUltimoRepostaje + (autonomiaDisponible * 0.4);
+                            
+                            let candidatas = estacionesRuta.filter(e => e.kmTravesia >= kmInicioVentana && e.kmTravesia <= limiteKm);
 
-                            // Si no hay ninguna en la zona ideal, buscamos desesperadamente cualquiera antes de quedarnos tirados
-                            if (candidatas.length === 0) {
-                                candidatas = estacionesRuta.filter(e => e.kmTravesia > kmUltimoRepostaje && e.kmTravesia <= limiteKm);
+                            if (candidatas.length === 0 && paradaNum > 1) {
+                                candidatas = estacionesRuta.filter(e => e.kmTravesia >= kmUltimoRepostaje && e.kmTravesia <= limiteKm);
                             }
 
-                            // Si sigue sin haber, la ruta es imposible con esa autonomía
                             if (candidatas.length === 0) return null;
 
-                            // Calcular el ahorro REAL: si paras a los 10km, solo compras 0.5 Litros, el ahorro es casi cero.
                             candidatas.forEach(c => {
                                 let kmConducidos = c.kmTravesia - kmUltimoRepostaje;
-                                let litrosAComprar = (kmConducidos / 100) * consumo;
-                                if (litrosAComprar > lts) litrosAComprar = lts; // Por si acaso
+                                let litrosAComprar = 0;
+
+                                // ¡EL ARREGLO 2! Cálculos lógicos de litros
+                                if (paradaNum === 1) {
+                                    // Echas lo que tenías pensado + lo que has gastado en llegar a esa parada
+                                    litrosAComprar = litrosEfectivos + ((kmConducidos / 100) * consumo);
+                                } else {
+                                    // Echas solo lo que has gastado desde la última parada (el depósito estaba lleno)
+                                    litrosAComprar = (kmConducidos / 100) * consumo;
+                                }
+
+                                // Topes de seguridad para no comprar más de lo que cabe en el coche
+                                if (window.currentCarCapacity > 0 && litrosAComprar > window.currentCarCapacity) {
+                                    litrosAComprar = window.currentCarCapacity;
+                                } else if (window.currentCarCapacity === 0 && litrosAComprar > litrosEfectivos && paradaNum === 1) {
+                                    litrosAComprar = litrosEfectivos; 
+                                }
 
                                 let ahorroBrutoReal = (globalMaxP - c.pN) * litrosAComprar;
                                 let costoDesvioReal = (c.distCalculada * 2) * (consumo / 100) * c.pN;
                                 c.ahorroRealTemporal = ahorroBrutoReal - costoDesvioReal;
                             });
 
-                            // Ordenamos por la que nos dé mejor rentabilidad REAL
                             candidatas.sort((a, b) => b.ahorroRealTemporal - a.ahorroRealTemporal);
 
                             let idx = (paradaNum - 1) < indicesVariantes.length ? indicesVariantes[paradaNum - 1] : 0;
                             let elegida = candidatas.length > idx ? candidatas[idx] : candidatas[0];
 
-                            // Clonamos y ajustamos aNeto para que en la pantallita visual salga el ahorro de ESA parada concreta
                             elegida = { ...elegida, aNeto: elegida.ahorroRealTemporal, paradaNum: paradaNum };
 
                             paradas.push(elegida);
@@ -1629,9 +1649,12 @@
 
                             kmUltimoRepostaje = elegida.kmTravesia;
                             distRestante = distTotalViaje - kmUltimoRepostaje;
+                            
+                            // Tras la primera parada, el depósito ya está lleno
+                            autonomiaDisponible = autonomiaMaximaCoche;
                         }
 
-                        if (distRestante > autonomia) return null; // No pudo llegar al destino final
+                        if (distRestante > autonomiaDisponible) return null; 
 
                         return { paradas: paradas, ahorroTotal: ahorroTotalPlan, idUnico: paradas.map(p=>p.IDEESS).join('-') };
                     }
@@ -2088,10 +2111,7 @@ function applyCarSettings() {
         window.currentCarCapacity = car.deposito; 
         if(btnFill) btnFill.style.display = 'block';
 
-        // 4. Actualizamos la Autonomía Máxima Teórica
-        if(autonomiaInput) {
-            autonomiaInput.value = Math.round((car.deposito / car.consumo) * 100);
-        }
+        
 
         // 5. ¡EL CAMBIO ESTÁ AQUÍ! Vaciamos la caja de litros al seleccionar/cambiar de coche
         if (litrosInput) {
