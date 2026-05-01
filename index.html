@@ -2008,7 +2008,6 @@
                 q("litrosInput").value = 50; q("radioBusqueda").value = "1"; searchMode = 'zona'; // <--- Para los usuarios 100% nuevos
             } 
         }
-
         // --- AQUÍ PEGAS LA LÓGICA DE INSTALACIÓN MEJORADA ---
         let eventoInstalacion;
         const btnInstalar = document.getElementById('btnInstalar');
@@ -2057,25 +2056,6 @@
             }
         });
         
-// ------ CHIVATAZO A GOOGLE ANALYTICS ---
-            if (typeof gtag === 'function') {
-                gtag('event', 'clic_instalar_app');
-            }
-            // ------------------------------------
-            
-            if (eventoInstalacion) {
-                // Muestra la ventana de instalación del móvil/PC
-                eventoInstalacion.prompt();
-                // Espera a ver si el usuario le da a "Instalar" o a "Cancelar"
-                const { outcome } = await eventoInstalacion.userChoice;
-                if (outcome === 'accepted') {
-                    btnInstalar.style.display = 'none'; // Escondemos el botón si ya la ha instalado
-                }
-                eventoInstalacion = null;
-            }
-        });
-        // -------------------------------------------
-
 // --- LÓGICA DEL GARAJE MEJORADA ---
 let myCars = JSON.parse(localStorage.getItem('gasofa_cars')) || [];
 window.currentCarCapacity = 0; 
