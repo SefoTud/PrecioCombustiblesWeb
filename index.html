@@ -254,17 +254,21 @@
         </select>
         <div class="row">
             <input type="text" id="marcaInput" placeholder="Marca(Repsol, Plenergy...)" style="flex:1; min-width:50px; padding:10px 4px; font-size:13px;">
-            <div style="display:flex; align-items:center; gap:4px; flex:none;">
+            <div id="contenedorLitrosManuales" style="display:flex; align-items:center; gap:4px; flex:none;">
                 <input type="number" id="litrosInput" placeholder="Lts" style="width:35px; padding:10px 2px; text-align:center;">
                 <button id="btnFill" onclick="llenarATope()" style="display:none; background:#2ecc71; color:white; border:none; padding:8px 5px; border-radius:5px; cursor:pointer; font-size:10px; font-weight:bold;" title="Llenar a tope">MAX</button>
             </div>
+            
+            <label id="modoLlenadoInteligente" class="checkbox-container" style="display:none; flex:none; padding:10px 8px; font-size:12px; background:#eafaf1; border-color:#27ae60; color:#27ae60; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                <input type="checkbox" id="llenarDepositoInput" checked> ⛽ Llenar depósito
+            </label>
             <input type="number" id="consumoInput" placeholder="L/100" step="0.1" style="width:45px; flex:none; padding:10px 2px; text-align:center; font-size:13px;">
             <input type="number" id="autonomiaInput" placeholder="Autonomía" style="width:55px; flex:none; padding:10px 2px; text-align:center; font-size:13px;" title="¿Cuántos km te quedan de depósito?">
         </div>
         <div class="row">
             <select id="tipoCombustible" style="flex:1; min-width:80px; padding:10px 5px;">
                 <option value="Precio Gasoleo A">Diesel</option><option value="Precio Gasolina 95 E5">Gasolina 95</option><option value="Precio Gasoleo Premium">Diesel Premium</option>
-                <option value="Precio Gasolina 98 E5">Gasolina 98</option><option value="Precio Gasoleo B">Diesel Agrícola</option><option value="Precio Gases Licuados del Petróleo">GLP</option>
+                <option value="Precio Gasolina 98 E5">Gasolina 98</option><option value="Precio Gasoleo B">Diesel Agrícola</option>
                 <option value="Precio Gas Natural Comprimido">GNC</option><option value="Precio Gas Natural Licuado">GNL</option><option value="AdBlue">AdBlue</option>
             </select>
             <label class="checkbox-container" style="flex:none; padding:10px 8px; font-size:12px;"><input type="checkbox" id="abiertasInput"> Abiertas</label>
@@ -342,7 +346,6 @@
                 <option value="Precio Gasoleo Premium">Diésel Premium</option>
                 <option value="Precio Gasolina 95 E5">Gasolina 95 E5</option>
                 <option value="Precio Gasolina 98 E5">Gasolina 98 E5</option>
-                <option value="Precio Gases licuados del petroleo">GLP (Gases Licuados)</option>
                 <option value="Precio Gas Natural Comprimido">GNC (Gas Natural Comprimido)</option>
                 <option value="Precio Gas Natural Licuado">GNL (Gas Natural Licuado)</option>
             </select>
@@ -639,6 +642,26 @@
             q('modeLinks').classList.remove('show');
         }
         
+        function actualizarInterfazLitros() {
+            let esProv = (searchMode === 'provincia');
+            let esRuta = (searchMode === 'ruta');
+            let cocheSeleccionado = q("activeCarSelect") && q("activeCarSelect").value !== "";
+
+            if (esProv) {
+                // En provincia no enseñamos nada
+                if(q("contenedorLitrosManuales")) q("contenedorLitrosManuales").style.display = "none";
+                if(q("modoLlenadoInteligente")) q("modoLlenadoInteligente").style.display = "none";
+            } else if (esRuta && cocheSeleccionado) {
+                // SOLO en Modo Ruta + Coche seleccionado mostramos el Llenado Inteligente
+                if(q("contenedorLitrosManuales")) q("contenedorLitrosManuales").style.display = "none";
+                if(q("modoLlenadoInteligente")) q("modoLlenadoInteligente").style.display = "flex";
+            } else {
+                // En Modo Zona, o si no hay coche, mostramos la caja de litros normal
+                if(q("contenedorLitrosManuales")) q("contenedorLitrosManuales").style.display = "flex";
+                if(q("modoLlenadoInteligente")) q("modoLlenadoInteligente").style.display = "none";
+            }
+        }
+        
         function setMode(mode, isInit = false) {
             searchMode = mode;
             q('modeLinks').classList.remove('show');
@@ -711,7 +734,7 @@
             
             // --- MAGIA DE INTERFAZ: Esconder lo que sobra en Provincia ---
             let esProv = (mode === 'provincia');
-            if(q("litrosInput")) q("litrosInput").style.display = esProv ? "none" : "";
+            actualizarInterfazLitros(); // <--- Llama al nuevo árbitro
             if(q("consumoInput")) q("consumoInput").style.display = esProv ? "none" : "";
             if(q("autonomiaInput")) q("autonomiaInput").style.display = esProv ? "none" : "";
             if(q("idaVueltaInput") && q("idaVueltaInput").parentElement) q("idaVueltaInput").parentElement.style.display = esProv ? "none" : "";
@@ -1078,8 +1101,9 @@
 
         // CAMBIO APLICADO: Fetch con anti-caché y redirecciones forzadas
         function fetchTrends(v) {
-            const c = { "Precio Gasoleo A": 4, "Precio Gasolina 95 E5": 5, "Precio Gasoleo Premium": 6, "Precio Gasolina 98 E5": 7, "Precio Gasoleo B": 8, "Precio Gases Licuados del Petróleo": 9, "AdBlue": 10 };
+            const c = { "Precio Gasoleo A": 4, "Precio Gasolina 95 E5": 5, "Precio Gasoleo Premium": 6, "Precio Gasolina 98 E5": 7, "Precio Gasoleo B": 8, "Precio Gas Natural Comprimido": 9, "AdBlue": 10, "Precio Gas Natural Licuado": 11 };
             if(!c[v]) return;
+            
             trendsLoaded = false;
             currentTrends = {};
             D.querySelectorAll('.tr-ind').forEach(el => el.innerHTML = '⏳');
@@ -1550,8 +1574,10 @@
 
                 filtradas.sort((a, b) => b.pN - a.pN);
 
+                let litrosEfectivos = lts > 0 ? lts : (window.currentCarCapacity > 0 ? window.currentCarCapacity : 50);
+
                 filtradas.forEach(g => {
-                    g.aBruto = (globalMaxP - g.pN) * lts;
+                    g.aBruto = (globalMaxP - g.pN) * litrosEfectivos;
                     let mult = searchMode === 'zona' ? (idV ? 2 : 1) : 2; 
                     g.cViaje = (consumo > 0 && searchMode !== 'provincia') ? (g.distCalculada * mult) * (consumo / 100) * g.pN : 0; 
                     g.aNeto = g.aBruto - g.cViaje;
@@ -1593,15 +1619,11 @@
                         let estacionesRuta = encuentros.slice().sort((a, b) => a.kmTravesia - b.kmTravesia);
                         let autonomiaDisponible = autonomia; 
                         
-                        // Sistema de seguridad por si la caja de litros está vacía
-                        let litrosEfectivos = lts > 0 ? lts : (window.currentCarCapacity > 0 ? window.currentCarCapacity : 50);
-
                         while (distRestante > autonomiaDisponible && paradaNum < 15) {
                             paradaNum++;
                             let limiteKm = kmUltimoRepostaje + autonomiaDisponible; 
 
-                            // ¡EL ARREGLO 1! En la PRIMERA parada, no exigimos mínimo de km. 
-                            // Buscamos desde el principio (km 0) para cazar las gangas iniciales.
+                            // En la PRIMERA parada, no exigimos mínimo de km. 
                             let kmInicioVentana = paradaNum === 1 ? 0 : kmUltimoRepostaje + (autonomiaDisponible * 0.4);
                             
                             let candidatas = estacionesRuta.filter(e => e.kmTravesia >= kmInicioVentana && e.kmTravesia <= limiteKm);
@@ -1612,25 +1634,47 @@
 
                             if (candidatas.length === 0) return null;
 
+                            // Comprobamos si estamos en "Modo Garaje Inteligente"
+                            let modoLlenadoActivo = (window.currentCarCapacity > 0 && q("llenarDepositoInput") && q("llenarDepositoInput").checked);
+
                             candidatas.forEach(c => {
                                 let kmConducidos = c.kmTravesia - kmUltimoRepostaje;
                                 let litrosAComprar = 0;
 
-                                // ¡EL ARREGLO 2! Cálculos lógicos de litros
-                                if (paradaNum === 1) {
-                                    // Echas lo que tenías pensado + lo que has gastado en llegar a esa parada
-                                    litrosAComprar = litrosEfectivos + ((kmConducidos / 100) * consumo);
+                                if (modoLlenadoActivo) {
+                                    // --- LÓGICA DE VIAJE REAL (Llenar depósito) ---
+                                    if (paradaNum === 1) {
+                                        // 1. ¿Cuántos litros teníamos al salir de casa según la autonomía?
+                                        let litrosAlSalir = (autonomia / 100) * consumo;
+                                        // 2. ¿Cuántos hemos quemado hasta llegar a esta gasolinera?
+                                        let litrosGastados = (kmConducidos / 100) * consumo;
+                                        // 3. Lo que nos queda en el tanque al llegar al surtidor
+                                        let litrosRestantesAlLlegar = litrosAlSalir - litrosGastados;
+                                        
+                                        // 4. Si llenamos a tope, echamos exactamente lo que falta para llegar a los litros máximos
+                                        litrosAComprar = window.currentCarCapacity - Math.max(0, litrosRestantesAlLlegar);
+                                    } else {
+                                        // En paradas posteriores, salimos con el depósito LLENO de la parada anterior
+                                        let litrosGastados = (kmConducidos / 100) * consumo;
+                                        litrosAComprar = litrosGastados; // Rellenamos a tope lo gastado
+                                    }
                                 } else {
-                                    // Echas solo lo que has gastado desde la última parada (el depósito estaba lleno)
-                                    litrosAComprar = (kmConducidos / 100) * consumo;
+                                    // --- LÓGICA ANTIGUA (Manual) ---
+                                    if (paradaNum === 1) {
+                                        litrosAComprar = litrosEfectivos + ((kmConducidos / 100) * consumo);
+                                    } else {
+                                        litrosAComprar = (kmConducidos / 100) * consumo;
+                                    }
+                                    // Topes de seguridad
+                                    if (window.currentCarCapacity > 0 && litrosAComprar > window.currentCarCapacity) {
+                                        litrosAComprar = window.currentCarCapacity;
+                                    } else if (window.currentCarCapacity === 0 && litrosAComprar > litrosEfectivos && paradaNum === 1) {
+                                        litrosAComprar = litrosEfectivos; 
+                                    }
                                 }
 
-                                // Topes de seguridad para no comprar más de lo que cabe en el coche
-                                if (window.currentCarCapacity > 0 && litrosAComprar > window.currentCarCapacity) {
-                                    litrosAComprar = window.currentCarCapacity;
-                                } else if (window.currentCarCapacity === 0 && litrosAComprar > litrosEfectivos && paradaNum === 1) {
-                                    litrosAComprar = litrosEfectivos; 
-                                }
+                                // Guardamos los litros calculados para poder enseñárselos al usuario luego
+                                c.litrosRepostados = litrosAComprar;
 
                                 let ahorroBrutoReal = (globalMaxP - c.pN) * litrosAComprar;
                                 let costoDesvioReal = (c.distCalculada * 2) * (consumo / 100) * c.pN;
@@ -1756,7 +1800,7 @@
                     }
                 } else {
                      q("header-ahorro").style.display = "block"; 
-                     q("resumenAhorro").innerHTML = "💰 AHORRO MÁXIMO ("+searchMode.toUpperCase()+"): " + ((globalMaxP - globalMinP) * lts).toFixed(2) + "€";
+                     q("resumenAhorro").innerHTML = "💰 AHORRO MÁXIMO ("+searchMode.toUpperCase()+"): " + ((globalMaxP - globalMinP) * litrosEfectivos).toFixed(2) + "€";
                 }
 
                 if (necesitaPlanInteligente && window.planesUnicosGlobal.length > 0) {
@@ -1789,7 +1833,7 @@
                     planSeleccionado.paradas.forEach(mejor => {
                         let colorPrecio = mejor.pN <= (globalMinP + 0.03) ? "#27ae60" : mejor.pN < (globalMinP + globalMaxP) / 2 ? "#f39c12" : "#e74c3c";
                         planViajeHtml += `
-                       <div style="background:var(--bg-panel); border:1px solid #c3e6cb; padding:12px; border-radius:8px; margin-bottom:10px; cursor:pointer; display:flex; flex-direction:column; gap:8px;" onclick="window.centrarMapa(${parseFloat(mejor.Latitud.replace(',','.'))}, ${parseFloat(mejor['Longitud (WGS84)'].replace(',','.'))})">
+                        <div style="background:var(--bg-panel); border:1px solid #c3e6cb; padding:12px; border-radius:8px; margin-bottom:10px; cursor:pointer; display:flex; flex-direction:column; gap:8px;" onclick="window.centrarMapa(${parseFloat(mejor.Latitud.replace(',','.'))}, ${parseFloat(mejor['Longitud (WGS84)'].replace(',','.'))})">
                             
                             <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:8px;">
                                 <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
@@ -1805,6 +1849,7 @@
                                 <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
                                     <span style="color:${colorPrecio}; font-weight:900; font-size:17px; white-space:nowrap;">${mejor.pN.toFixed(3)} €/L</span>
                                     <span style="background:#27ae60; color:#fff; font-weight:bold; font-size:11px; padding:3px 6px; border-radius:6px; white-space:nowrap;">+${mejor.aNeto.toFixed(2)}€</span>
+                                    <span style="background:#34495e; color:#fff; font-weight:bold; font-size:11px; padding:3px 6px; border-radius:6px; white-space:nowrap; margin-left:4px;">⛽ Echar ${mejor.litrosRepostados.toFixed(1)} L</span>
                                 </div>
                                 <span style="background:var(--bg-input); border:1px solid var(--border-color); color:var(--text-main); font-weight:bold; font-size:11px; padding:4px 8px; border-radius:6px; white-space:nowrap;">🚗 km ${mejor.kmTravesia.toFixed(0)}</span>
                             </div>
@@ -2093,6 +2138,8 @@ function applyCarSettings() {
         if(autonomiaInput) autonomiaInput.value = '';
         if(selectorCombustible) selectorCombustible.value = 'Precio Gasoleo A'; 
         
+        actualizarInterfazLitros(); // <--- Llama al nuevo árbitro
+        
         select.style.borderColor = '#3498db';
         return;
     }
@@ -2111,15 +2158,13 @@ function applyCarSettings() {
         window.currentCarCapacity = car.deposito; 
         if(btnFill) btnFill.style.display = 'block';
 
-        
-
-        // 5. ¡EL CAMBIO ESTÁ AQUÍ! Vaciamos la caja de litros al seleccionar/cambiar de coche
+        // 5. Vaciamos la caja de litros al seleccionar/cambiar de coche
         if (litrosInput) {
             litrosInput.value = ''; 
-            
-            // Si tienes alguna función que actualice totales automáticamente al borrar, la disparamos
             litrosInput.dispatchEvent(new Event('input'));
         }
+
+        actualizarInterfazLitros(); // <--- Llama al nuevo árbitro
 
         // Destello visual verde para confirmar
         select.style.borderColor = '#2ecc71';
