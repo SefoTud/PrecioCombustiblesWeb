@@ -681,6 +681,18 @@
             });
             map.on('click', () => { 
                 if(!q("controls").classList.contains("collapsed")) toggleControls(); 
+            });
+
+            // Truco para inyectar los servicios OSM en el PopUp al abrirlo
+            map.on('popupopen', function(e) {
+                let node = e.popup._contentNode;
+                let placeholder = node.querySelector('.osm-pop-placeholder');
+                if (placeholder) {
+                    let id = placeholder.getAttribute('data-id');
+                    if (window.osmCache && window.osmCache[id]) {
+                        placeholder.innerHTML = window.osmCache[id];
+                    }
+                }
                 q("socialLinks").classList.remove("show");
                 q("modeLinks").classList.remove("show");
             });
@@ -1826,7 +1838,9 @@
                     const waM = encodeURIComponent('⛽ ¡Ojo! ' + fTN + ' a ' + pN.toFixed(3) + '€/L en ' + g.Rótulo + ' (' + g.Dirección + '). ' + msgAhorroWa + ' 🚗💨\n\n📍 Míralo en Gasofa Pro:\n' + APP_URL);
                     const waB = '<a class="btn-action btn-wa" href="https://api.whatsapp.com/send?text=' + waM + '" target="_blank">💬 WA</a>';
                     
-                    const pop = '<div style="text-align:center;min-width:170px;"><div style="font-size:1.1em;margin-bottom:5px;"><strong>' + m + ' ' + g.Rótulo + '</strong> <span id="' + iM + '" class="fav-btn fav-btn-id-' + g.IDEESS + '" onclick="toggleFav(\'' + g.IDEESS + '\',event,\'' + iM + '\')">' + hIc + '</span></div>' + bSM + '<div style="color:' + cS + ';font-size:1.2em;font-weight:bold;display:flex;align-items:center;justify-content:center;gap:6px;">' + pStrVisualPop + ' <span class="tr-ind" data-type="list" data-id="' + g.IDEESS + '">' + tH + '</span></div><div style="margin: 4px 0;"><span class="distancia-badge" style="font-size:0.8em; padding: 2px 6px;">' + msgDist + '</span></div><div style="font-size:0.85em; color:var(--text-muted); margin-bottom:5px;">🕒 ' + (g.Horario||'') + '</div>' + htmlAhorroMap + '<div style="display:flex;justify-content:center;gap:2px;margin-top:5px;flex-wrap:wrap;"><button class="btn-action btn-historial" onclick="mostrarHistorico(\'' + sN + '\',\'' + g.IDEESS + '\',\'' + (g.Horario||'') + '\')">📈 HISTORICO</button>' + waB + '<a class="btn-action btn-directo" href="' + mU + '" target="_blank">COMO LLEGAR ↗</a></div></div>';
+                                        let osmCacheHtml = window.osmCache && window.osmCache[g.IDEESS] ? window.osmCache[g.IDEESS] : '<span style="font-size:11px;color:#3498db;font-weight:bold;">🔄 Buscando servicios...</span>';
+                    const pop = '<div style="text-align:center;min-width:170px;"><div style="font-size:1.1em;margin-bottom:5px;"><strong>' + m + ' ' + g.Rótulo + '</strong> <span id="' + iM + '" class="fav-btn fav-btn-id-' + g.IDEESS + '" onclick="toggleFav(\'' + g.IDEESS + '\',event,\'' + iM + '\')">' + hIc + '</span></div>' + bSM + '<div style="color:' + cS + ';font-size:1.2em;font-weight:bold;display:flex;align-items:center;justify-content:center;gap:6px;">' + pStrVisualPop + ' <span class="tr-ind" data-type="list" data-id="' + g.IDEESS + '">' + tH + '</span></div><div style="margin: 4px 0;"><span class="distancia-badge" style="font-size:0.8em; padding: 2px 6px;">' + msgDist + '</span></div><div style="font-size:0.85em; color:var(--text-muted); margin-bottom:5px;">🕒 ' + (g.Horario||'') + '</div><div class="osm-pop-placeholder" data-id="' + g.IDEESS + '" style="display:flex; flex-wrap:wrap; justify-content:center; gap:4px; margin:8px 0;">' + osmCacheHtml + '</div>' + htmlAhorroMap + '<div style="display:flex;justify-content:center;gap:2px;margin-top:5px;flex-wrap:wrap;"><button class="btn-action btn-historial" onclick="mostrarHistorico(\'' + sN + '\',\'' + g.IDEESS + '\',\'' + (g.Horario||'') + '\')">📈 HISTORICO</button>' + waB + '<a class="btn-action btn-directo" href="' + mU + '" target="_blank">COMO LLEGAR ↗</a></div></div>';
+
                     
                     L.circleMarker([lat, ln], { radius: 8, fillColor: cS, color: "#fff", weight: 2, fillOpacity: .9, pane: pPunto }).addTo(markersLayer).bindPopup(pop);
                     L.marker([lat, ln], { icon: L.divIcon({ className: '', html: '<div class="price-label-wrapper" style="border-color:' + cS + ';color:' + cS + ';">' + pStrVisualMap + '<span class="tr-ind" style="margin-left:4px;" data-type="map" data-id="' + g.IDEESS + '">' + tH_m + '</span></div>', iconSize: iconSz, iconAnchor: iconAnc }), pane: pPrecio, zIndexOffset: parseInt(10000 - (g.pN*1000)) }).addTo(markersLayer).bindPopup(pop);
@@ -2279,90 +2293,95 @@ document.addEventListener('DOMContentLoaded', () => {
 window.addEventListener('DOMContentLoaded', updateCarSelect);
 
 // --- MOTOR DE SERVICIOS OPENSTREETMAP (OVERPASS API) ---
+window.osmCache = window.osmCache || {}; // Memoria global para guardar los servicios
+
 async function cargarServiciosOSM(estacionesParaPintar) {
     if (!estacionesParaPintar || estacionesParaPintar.length === 0) return;
     
-    // Solo buscamos las 40 primeras para que sea instantáneo
+    // Solo buscamos las 40 primeras
     let estaciones = estacionesParaPintar.slice(0, 40); 
 
-    // Chivato visual
     estaciones.forEach(g => {
-        let div = document.getElementById('servicios-os-' + g.IDEESS);
-        if(div) div.innerHTML = '<span style="font-size:11px; color:#3498db; font-weight:bold;">🔄 Buscando servicios...</span>';
+        if(!window.osmCache[g.IDEESS]) {
+            let div = document.getElementById('servicios-os-' + g.IDEESS);
+            if(div) div.innerHTML = '<span style="font-size:11px; color:#3498db; font-weight:bold;">🔄 Buscando servicios...</span>';
+        }
     });
 
     let minLat = 90, maxLat = -90, minLon = 180, maxLon = -180;
     estaciones.forEach(g => {
         let lat = parseFloat(g.Latitud.replace(",", "."));
         let lon = parseFloat(g["Longitud (WGS84)"].replace(",", "."));
-        if(lat < minLat) minLat = lat;
-        if(lat > maxLat) maxLat = lat;
-        if(lon < minLon) minLon = lon;
-        if(lon > maxLon) maxLon = lon;
+        if(lat < minLat) minLat = lat; if(lat > maxLat) maxLat = lat;
+        if(lon < minLon) minLon = lon; if(lon > maxLon) maxLon = lon;
     });
 
-    // Margen de búsqueda
     minLat -= 0.005; maxLat += 0.005; minLon -= 0.005; maxLon += 0.005;
 
     const query = `[out:json][timeout:10];nwr["amenity"="fuel"](${minLat},${minLon},${maxLat},${maxLon});out center;`;
-    
-    // URL OFICIAL DIRECTA (Sin proxies intermediarios)
     const url = "https://overpass-api.de/api/interpreter";
 
     try {
-        // Hacemos la petición directa con método POST (Evita bloqueos de CORS en web reales)
         const res = await fetch(url, {
             method: "POST",
-            headers: {
-                "Content-Type": "application/x-www-form-urlencoded"
-            },
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
             body: "data=" + encodeURIComponent(query)
         });
         
         if(!res.ok) throw new Error("Fallo en el servidor de OSM");
         const data = await res.json();
 
+        // AQUÍ ESTÁ LA MAGIA DEL DISEÑO: Las "Píldoras"
+        const badgeStyle = "background:var(--bg-body); border:1px solid var(--border-color); padding:3px 8px; border-radius:8px; font-size:11px; font-weight:700; color:var(--text-main); display:inline-flex; align-items:center; gap:4px;";
+
         estaciones.forEach(g => {
             let lat = parseFloat(g.Latitud.replace(",", "."));
             let lon = parseFloat(g["Longitud (WGS84)"].replace(",", "."));
             
-            // Emparejar nuestra gasolinera con la de OSM
             let match = data.elements.find(el => {
                 let elLat = el.lat || (el.center && el.center.lat);
                 let elLon = el.lon || (el.center && el.center.lon);
                 return elLat && getDistance(lat, lon, elLat, elLon) < 0.15;
             });
 
-            let div = document.getElementById('servicios-os-' + g.IDEESS);
-            if (div) {
-                if (match && match.tags) {
-                    let t = match.tags;
-                    let html = '';
-                    
-                    if(t.shop) html += '<span title="Tienda">🛒</span> ';
-                    if(t.car_wash === 'yes' || t.amenity === 'car_wash') html += '<span title="Lavado">🧼</span> ';
-                    if(t.toilets === 'yes') html += '<span title="Aseos">🚽</span> ';
-                    if(t.amenity === 'cafe' || t.amenity === 'restaurant' || t.food === 'yes') html += '<span title="Cafetería">☕</span> ';
-                    if(t.compressed_air === 'yes' || t.water_point === 'yes') html += '<span title="Aire/Agua">💨</span> ';
-                    if(t.atm === 'yes') html += '<span title="Cajero">🏧</span> ';
-                    
-                    div.innerHTML = html !== '' ? html : '<span style="font-size:11px; color:#95a5a6;">Sin extras mapeados</span>';
-                } else {
-                    div.innerHTML = '<span style="font-size:11px; color:#95a5a6;">Sin extras mapeados</span>';
-                }
+            let html = '';
+            if (match && match.tags) {
+                let t = match.tags;
+                if(t.shop) html += `<span style="${badgeStyle}">🛒 Tienda</span>`;
+                if(t.car_wash === 'yes' || t.amenity === 'car_wash') html += `<span style="${badgeStyle}">🧼 Lavado</span>`;
+                if(t.toilets === 'yes') html += `<span style="${badgeStyle}">🚽 Aseos</span>`;
+                if(t.amenity === 'cafe' || t.amenity === 'restaurant' || t.food === 'yes') html += `<span style="${badgeStyle}">☕ Cafetería</span>`;
+                if(t.compressed_air === 'yes' || t.water_point === 'yes') html += `<span style="${badgeStyle}">💨 Aire/Agua</span>`;
+                if(t.atm === 'yes') html += `<span style="${badgeStyle}">🏧 Cajero</span>`;
             }
+            
+            if (html === '') html = `<span style="${badgeStyle} color:var(--text-muted); font-weight:normal;">Sin extras mapeados</span>`;
+
+            // 1. Guardamos en caché
+            window.osmCache[g.IDEESS] = html;
+
+            // 2. Pintamos en la tarjeta de la lista
+            let divList = document.getElementById('servicios-os-' + g.IDEESS);
+            if (divList) {
+                divList.style.display = "flex";
+                divList.style.flexWrap = "wrap";
+                divList.style.gap = "6px";
+                divList.innerHTML = html;
+            }
+
+            // 3. Pintamos en el PopUp (por si casualmente está abierto en este instante)
+            let openPop = document.querySelector(`.osm-pop-placeholder[data-id="${g.IDEESS}"]`);
+            if (openPop) openPop.innerHTML = html;
         });
     } catch(e) { 
-        console.error("Error al conectar con OSM:", e);
-        estaciones.forEach(g => {
-            let div = document.getElementById('servicios-os-' + g.IDEESS);
-            if(div) div.innerHTML = '<span style="font-size:11px; color:#e74c3c;">❌ Error de conexión OSM</span>';
-        });
+        console.error("Error OSM:", e);
     }
 }
+
 
 
 
     </script>
 </body>
 </html>
+
