@@ -355,8 +355,7 @@
         </div>
         
         <div id="gas-list"></div>
-<div style="padding: 20px; background: var(--bg-input); border-top: 1px solid var(--border-color); color: var(--text-muted); font-size: 13px; line-height: 1.6;">
-    <h2 style="font-size: 16px; color: var(--text-main); margin-bottom: 10px;">Encuentra Gasolineras Baratas en España</h2>
+<div style="padding: 20px; background: var(--bg-input); border-top: 1px solid var(--border-color); color: var(--text-muted); font-size: 13px; line-height: 1.6;">     <h2 style="font-size: 16px; color: var(--text-main); margin-bottom: 10px;">Encuentra Gasolineras Baratas en España</h2>
     <p>
         Bienvenido a <strong>Precio Combustibles</strong>, tu herramienta gratuita para ahorrar en cada repostaje. 
         Nuestro sistema se conecta en tiempo real con los datos oficiales del Ministerio de Industria para ofrecerte el 
@@ -384,7 +383,8 @@
 </div>
 
     </div>
-
+   
+    
     <!-- MODAL GARAJE -->
 <div id="garageModal" class="modal-bg">
     <div class="modal-content" style="max-width:400px; padding:20px;">
@@ -1907,11 +1907,12 @@
                                 <span style="background:var(--bg-input); border:1px solid var(--border-color); color:var(--text-main); font-weight:bold; font-size:11px; padding:4px 8px; border-radius:6px; white-space:nowrap;">🚗 km ${mejor.kmTravesia.toFixed(0)}</span>
                             </div>
                             
-                            <div style="font-size:11px; color:#3498db; font-weight:bold; border-top:1px solid var(--border-color); padding-top:8px; margin-top:2px;">
+                                                        <div style="font-size:11px; color:#3498db; font-weight:bold; border-top:1px solid var(--border-color); padding-top:8px; margin-top:2px;">
                                 ⤴️ Desvío: ${mejor.distCalculada.toFixed(1)} km
                             </div>
-                            
+                            <div id="servicios-os-${mejor.IDEESS}" style="font-size:15px; letter-spacing:2px; margin-top:2px; min-height:15px;"></div>
                         </div>`;
+
                     });
                     planViajeHtml += `</div></div>`;
                     
@@ -1963,14 +1964,23 @@
                         const item = D.createElement("div"); item.className = "list-item"; 
                         item.onclick = e => { if (e.target.tagName !== 'BUTTON' && e.target.tagName !== 'A' && !e.target.closest('.fav-btn') && !e.target.closest('.d-tipo')) window.centrarMapa(lat, ln); };
                         
-                        item.innerHTML = '<div class="list-info"><span class="top-badge ' + cM + '">' + (o === "favoritas" ? '❤️ FAVORITA' : 'TOP ' + g.rP + ' ' + m) + '</span><br><strong>' + g.Rótulo + bSL + '</strong> <span id="' + iL + '" class="fav-btn fav-btn-id-' + g.IDEESS + '" onclick="toggleFav(\'' + g.IDEESS + '\',event,\'' + iL + '\')">' + hIc + '</span><div><span class="distancia-badge" title="Distancia">' + msgDist + '</span><div style="display:inline-flex;flex-wrap:wrap;gap:2px;margin-top:4px;"><button class="btn-action btn-historial" onclick="mostrarHistorico(\'' + sN + '\',\'' + g.IDEESS + '\',\'' + (g.Horario||'') + '\')">📈 HISTORICO</button><a class="btn-action btn-wa" href="https://api.whatsapp.com/send?text=' + waM + '" target="_blank">💬 WA</a><a class="btn-action btn-directo" href="' + mU + '" target="_blank">COMO LLEGAR ↗</a></div></div><small style="color:var(--text-muted); display:block; margin-top:4px;">📍 ' + g.Dirección + '</small><small style="color:var(--text-muted); display:block; margin-top:2px;">🕒 ' + (g.Horario||'') + '</small></div><div class="savings-box"><div class="price-text" style="color:' + cS + '; align-items:center;">' + pStrVisualList + '<span class="tr-ind" data-type="list" data-id="' + g.IDEESS + '" style="margin-left:4px;">' + tH + '</span></div>' + htmlAhorroList + '</div>';
+                                                item.innerHTML = '<div class="list-info"><span class="top-badge ' + cM + '">' + (o === "favoritas" ? '❤️ FAVORITA' : 'TOP ' + g.rP + ' ' + m) + '</span><br><strong>' + g.Rótulo + bSL + '</strong> <span id="' + iL + '" class="fav-btn fav-btn-id-' + g.IDEESS + '" onclick="toggleFav(\'' + g.IDEESS + '\',event,\'' + iL + '\')">' + hIc + '</span><div><span class="distancia-badge" title="Distancia">' + msgDist + '</span><div style="display:inline-flex;flex-wrap:wrap;gap:2px;margin-top:4px;"><button class="btn-action btn-historial" onclick="mostrarHistorico(\'' + sN + '\',\'' + g.IDEESS + '\',\'' + (g.Horario||'') + '\')">📈 HISTORICO</button><a class="btn-action btn-wa" href="https://api.whatsapp.com/send?text=' + waM + '" target="_blank">💬 WA</a><a class="btn-action btn-directo" href="' + mU + '" target="_blank">COMO LLEGAR ↗</a></div></div><small style="color:var(--text-muted); display:block; margin-top:4px;">📍 ' + g.Dirección + '</small><small style="color:var(--text-muted); display:block; margin-top:2px;">🕒 ' + (g.Horario||'') + '</small><div id="servicios-os-' + g.IDEESS + '" style="font-size:15px; margin-top:4px; letter-spacing:2px; min-height:15px;"></div></div><div class="savings-box"><div class="price-text" style="color:' + cS + '; align-items:center;">' + pStrVisualList + '<span class="tr-ind" data-type="list" data-id="' + g.IDEESS + '" style="margin-left:4px;">' + tH + '</span></div>' + htmlAhorroList + '</div>';
+
                         lD.appendChild(item);
-                    });
+                                        });
+                }
+                
+                // DISPARAR LA BÚSQUEDA SILENCIOSA DE SERVICIOS EN OSM
+                if (o === "inteligente" && window.planesUnicosGlobal.length > 0) {
+                    cargarServiciosOSM(window.planesUnicosGlobal[window.selectedSmartPlanIndex].paradas);
+                } else if (o !== "inteligente") {
+                    cargarServiciosOSM(filtradas);
                 }
 
             } catch(errorFinal) {
                 console.error(errorFinal);
             } finally {
+
                 q("loading-overlay").style.display = "none";
                 isFetching = false;
                 q("list-container").classList.remove("bloqueado"); // DESBLOQUEAR SCROLL AL TERMINAR
@@ -2268,6 +2278,83 @@ document.addEventListener('DOMContentLoaded', () => {
 // Arrancar el selector al cargar la página
 window.addEventListener('DOMContentLoaded', updateCarSelect);
 
+// --- MOTOR DE SERVICIOS OPENSTREETMAP (OVERPASS API) ---
+async function cargarServiciosOSM(estacionesParaPintar) {
+    if (!estacionesParaPintar || estacionesParaPintar.length === 0) return;
+    
+    // Solo buscamos las 40 primeras para no saturar
+    let estaciones = estacionesParaPintar.slice(0, 40); 
+
+    // 1. CHIVATO VISUAL: Poner texto mientras busca para saber que funciona
+    estaciones.forEach(g => {
+        let div = document.getElementById('servicios-os-' + g.IDEESS);
+        if(div) div.innerHTML = '<span style="font-size:11px; color:#3498db; font-weight:bold;">🔄 Buscando servicios...</span>';
+    });
+
+    let minLat = 90, maxLat = -90, minLon = 180, maxLon = -180;
+    estaciones.forEach(g => {
+        let lat = parseFloat(g.Latitud.replace(",", "."));
+        let lon = parseFloat(g["Longitud (WGS84)"].replace(",", "."));
+        if(lat < minLat) minLat = lat;
+        if(lat > maxLat) maxLat = lat;
+        if(lon < minLon) minLon = lon;
+        if(lon > maxLon) maxLon = lon;
+    });
+
+    // Añadimos un pequeño margen de 500 metros
+    minLat -= 0.005; maxLat += 0.005; minLon -= 0.005; maxLon += 0.005;
+
+    const query = `[out:json][timeout:10];nwr["amenity"="fuel"](${minLat},${minLon},${maxLat},${maxLon});out center;`;
+    
+    // PUENTE ANTI-BLOQUEOS MÁS POTENTE (CorsProxy)
+    const overpassUrl = "https://overpass-api.de/api/interpreter?data=" + encodeURIComponent(query);
+    const url = "https://corsproxy.io/?" + encodeURIComponent(overpassUrl);
+
+    try {
+        const res = await fetch(url);
+        if(!res.ok) throw new Error("Fallo en la red");
+        const data = await res.json();
+
+        estaciones.forEach(g => {
+            let lat = parseFloat(g.Latitud.replace(",", "."));
+            let lon = parseFloat(g["Longitud (WGS84)"].replace(",", "."));
+            
+            // Emparejar nuestra gasolinera con la de OSM (a menos de 150 metros)
+            let match = data.elements.find(el => {
+                let elLat = el.lat || (el.center && el.center.lat);
+                let elLon = el.lon || (el.center && el.center.lon);
+                return elLat && getDistance(lat, lon, elLat, elLon) < 0.15;
+            });
+
+            let div = document.getElementById('servicios-os-' + g.IDEESS);
+            if (div) {
+                if (match && match.tags) {
+                    let t = match.tags;
+                    let html = '';
+                    
+                    if(t.shop) html += '<span title="Tienda">🛒</span> ';
+                    if(t.car_wash === 'yes' || t.amenity === 'car_wash') html += '<span title="Lavado">🧼</span> ';
+                    if(t.toilets === 'yes') html += '<span title="Aseos">🚽</span> ';
+                    if(t.amenity === 'cafe' || t.amenity === 'restaurant' || t.food === 'yes') html += '<span title="Cafetería">☕</span> ';
+                    if(t.compressed_air === 'yes' || t.water_point === 'yes') html += '<span title="Aire/Agua">💨</span> ';
+                    if(t.atm === 'yes') html += '<span title="Cajero">🏧</span> ';
+                    
+                    div.innerHTML = html !== '' ? html : '<span style="font-size:11px; color:#95a5a6;">Sin extras mapeados</span>';
+                } else {
+                    div.innerHTML = '<span style="font-size:11px; color:#95a5a6;">Sin extras mapeados</span>';
+                }
+            }
+        });
+    } catch(e) { 
+        estaciones.forEach(g => {
+            let div = document.getElementById('servicios-os-' + g.IDEESS);
+            if(div) div.innerHTML = '<span style="font-size:11px; color:#e74c3c;">❌ OSM Bloqueado</span>';
+        });
+    }
+}
+
+
     </script>
 </body>
 </html>
+
