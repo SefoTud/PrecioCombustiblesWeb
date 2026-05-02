@@ -2282,10 +2282,10 @@ window.addEventListener('DOMContentLoaded', updateCarSelect);
 async function cargarServiciosOSM(estacionesParaPintar) {
     if (!estacionesParaPintar || estacionesParaPintar.length === 0) return;
     
-    // Solo buscamos las 40 primeras para no saturar
+    // Solo buscamos las 40 primeras para que sea instantáneo
     let estaciones = estacionesParaPintar.slice(0, 40); 
 
-    // 1. CHIVATO VISUAL: Poner texto mientras busca para saber que funciona
+    // Chivato visual
     estaciones.forEach(g => {
         let div = document.getElementById('servicios-os-' + g.IDEESS);
         if(div) div.innerHTML = '<span style="font-size:11px; color:#3498db; font-weight:bold;">🔄 Buscando servicios...</span>';
@@ -2301,25 +2301,32 @@ async function cargarServiciosOSM(estacionesParaPintar) {
         if(lon > maxLon) maxLon = lon;
     });
 
-    // Añadimos un pequeño margen de 500 metros
+    // Margen de búsqueda
     minLat -= 0.005; maxLat += 0.005; minLon -= 0.005; maxLon += 0.005;
 
     const query = `[out:json][timeout:10];nwr["amenity"="fuel"](${minLat},${minLon},${maxLat},${maxLon});out center;`;
     
-    // PUENTE ANTI-BLOQUEOS MÁS POTENTE (CorsProxy)
-    const overpassUrl = "https://overpass-api.de/api/interpreter?data=" + encodeURIComponent(query);
-    const url = "https://corsproxy.io/?" + encodeURIComponent(overpassUrl);
+    // URL OFICIAL DIRECTA (Sin proxies intermediarios)
+    const url = "https://overpass-api.de/api/interpreter";
 
     try {
-        const res = await fetch(url);
-        if(!res.ok) throw new Error("Fallo en la red");
+        // Hacemos la petición directa con método POST (Evita bloqueos de CORS en web reales)
+        const res = await fetch(url, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded"
+            },
+            body: "data=" + encodeURIComponent(query)
+        });
+        
+        if(!res.ok) throw new Error("Fallo en el servidor de OSM");
         const data = await res.json();
 
         estaciones.forEach(g => {
             let lat = parseFloat(g.Latitud.replace(",", "."));
             let lon = parseFloat(g["Longitud (WGS84)"].replace(",", "."));
             
-            // Emparejar nuestra gasolinera con la de OSM (a menos de 150 metros)
+            // Emparejar nuestra gasolinera con la de OSM
             let match = data.elements.find(el => {
                 let elLat = el.lat || (el.center && el.center.lat);
                 let elLon = el.lon || (el.center && el.center.lon);
@@ -2346,15 +2353,16 @@ async function cargarServiciosOSM(estacionesParaPintar) {
             }
         });
     } catch(e) { 
+        console.error("Error al conectar con OSM:", e);
         estaciones.forEach(g => {
             let div = document.getElementById('servicios-os-' + g.IDEESS);
-            if(div) div.innerHTML = '<span style="font-size:11px; color:#e74c3c;">❌ OSM Bloqueado</span>';
+            if(div) div.innerHTML = '<span style="font-size:11px; color:#e74c3c;">❌ Error de conexión OSM</span>';
         });
     }
 }
 
 
+
     </script>
 </body>
 </html>
-
