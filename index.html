@@ -1,6 +1,16 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
+
 <head>
+
+<link rel="icon" type="image/webp" href="logo.webp">
+
+<link rel="apple-touch-icon" href="logo.webp">
+
+<meta property="og:image" content="https://www.preciocombustibles.com/logo.webp">
+
+<meta name="twitter:image" content="https://www.preciocombustibles.com/logo.webp">
+
 
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-FSMS4VRM96"></script>
 <script>
@@ -34,20 +44,25 @@
     <link rel="manifest" href="manifest.json">
     
     <title>Precio Combustibles</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+            <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+
     <style>
         /* --- ESTILOS APP NATIVA MODERNA --- */
-        :root {
-            --bg-body: #f0f2f5; --bg-panel: #ffffff; --text-main: #1c1e21; --text-muted: #606770;
+               :root {
+            --bg-body: #f0f2f5; --bg-panel: #ffffff; --text-main: #1c1e21; --text-muted: #4a4f56;
             --border-color: #e4e6eb; --bg-input: #f0f2f5; --bg-ahorro: #eafaf1; --btn-locate: #ffffff;
-            --accent: #0084ff; --accent-green: #27ae60; --accent-orange: #e67e22;
+            --accent: #0056b3; --accent-green: #1e7a44; --accent-orange: #c85a17;
         }
         body.dark-mode {
             --bg-body: #18191a; --bg-panel: #242526; --text-main: #e4e6eb; --text-muted: #b0b3b8;
             --border-color: #3a3b3c; --bg-input: #3a3b3c; --bg-ahorro: #1e3a29; --btn-locate: #2c2c2c;
             --accent: #2d88ff;
         }
+        /* Estilo para los círculos de agrupación en el mapa */
+        .my-cluster-icon { background-color: var(--accent); color: white; border: 2px solid white; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 14px; box-shadow: 0 2px 5px rgba(0,0,0,0.4); }
+
 
         body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden;background:var(--bg-body);color:var(--text-main);transition:background 0.3s, color 0.3s;}
         
@@ -193,7 +208,7 @@
    <div id="controls" class="collapsed">
         <div style="display:flex; justify-content:space-between; align-items:center;">
             <strong style="font-size:18px;">⚙️ Filtros y Ajustes</strong>
-            <button onclick="toggleControls()" style="background:transparent; color:var(--text-muted); padding:0; font-size:24px; width:auto;">✖️</button>
+            <button onclick="toggleControls()" aria-label="Cerrar panel de filtros" style="background:transparent; color:var(--text-muted); padding:0; font-size:24px; width:auto;">✖️</button>
         </div>
 
         <div id="zona-ui">
@@ -283,17 +298,17 @@
         </div>
 
 
-        <div class="social-footer" style="display:flex; justify-content:center; gap:30px; margin-top:15px; border-top:1px solid var(--border-color); padding:15px 0;">
-            <a href="https://instagram.com/preciocombustibles" target="_blank"><img src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png" style="width:35px; height:35px; border-radius:8px;"></a>
-            <a href="https://tiktok.com/@preciocombustibles" target="_blank"><img src="https://img.icons8.com/color/512/tiktok.png" style="width:35px; height:35px;"></a>
-            <a href="https://x.com/PrecioCombusti" target="_blank"><img src="https://upload.wikimedia.org/wikipedia/commons/c/ce/X_logo_2023.svg" style="width:35px; height:35px; border-radius:8px; background-color:white; padding:5px; box-sizing:border-box;"></a>
-
+               <div class="social-footer" style="display:flex; justify-content:center; gap:30px; margin-top:15px; border-top:1px solid var(--border-color); padding:15px 0;">
+            <a href="https://instagram.com/preciocombustibles" target="_blank" aria-label="Instagram"><img src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png" width="35" height="35" alt="Logotipo de Instagram" loading="lazy" style="border-radius:8px;"></a>
+            <a href="https://tiktok.com/@preciocombustibles" target="_blank" aria-label="TikTok"><img src="https://img.icons8.com/color/512/tiktok.png" width="35" height="35" alt="Logotipo de TikTok" loading="lazy"></a>
+            <a href="https://x.com/PrecioCombusti" target="_blank" aria-label="X Twitter"><img src="https://upload.wikimedia.org/wikipedia/commons/c/ce/X_logo_2023.svg" width="35" height="35" alt="Logotipo de X" loading="lazy" style="border-radius:8px; background-color:white; padding:5px; box-sizing:border-box;"></a>
         </div>
-    </div>
+        
+     </div>  
 
     <div style="flex: 1; position: relative; width: 100%; overflow: hidden;">
         <div id="map"></div>
-        <button class="btn-gps" onclick="irAMiUbicacion(false)" title="Mi Ubicación">📍</button>
+        <button class="btn-gps" onclick="irAMiUbicacion(false)" title="Mi Ubicación" aria-label="Centrar mapa en mi ubicación actual">📍</button>
     </div>
 
     <div id="list-container">
@@ -399,15 +414,33 @@
     </nav>
 
 
+        <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css" />
+    
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
+    
     <script>
         const D = document, q = i => D.getElementById(i);
+
         
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyeIN2o-dHcyXw-ZAhUKboaotrOJcv-VM7ABYxzEkUsU4q19pKLrEFj64PanMyYSt_-/exec"; 
         const APP_URL = window.location.href;
 
-        let map = L.map("map", { zoomControl: false }).setView([40.41, -3.70], 6);
-        let userCoords = null, markersLayer = L.layerGroup().addTo(map), cacheGasolineras = null, chartInstance = null, currentModalStationId = null, currentTrends = {};
+                        let map = L.map("map", { zoomControl: false, maxZoom: 19 }).setView([40.41, -3.70], 6);
+
+        let userCoords = null, cacheGasolineras = null, chartInstance = null, currentModalStationId = null, currentTrends = {};
+        
+        // Convertimos la capa de marcadores en un Cluster Automático
+        let markersLayer = L.markerClusterGroup({
+            maxClusterRadius: 60,
+            disableClusteringAtZoom: 14, // Si haces mucho zoom, se separan para que veas los precios
+            iconCreateFunction: function(cluster) {
+                return L.divIcon({ html: '<div><span>' + cluster.getChildCount() + '</span></div>', className: 'my-cluster-icon', iconSize: L.point(40, 40) });
+            }
+        }).addTo(map);
+
         let isFetching = false;
         let trendsLoaded = false; 
         
@@ -1799,17 +1832,17 @@
 
                     let htmlMapa = '<div style="background:' + cS + '; color:#fff; padding:4px 8px; border-radius:12px; font-weight:900; font-size:14px; box-shadow:0 3px 8px rgba(0,0,0,0.3); display:flex; align-items:center; justify-content:center; border: 1px solid rgba(255,255,255,0.5); text-shadow: 0 1px 2px rgba(0,0,0,0.3);">' + pStrVisualMap + '<span class="tr-ind" style="margin-left:4px; filter: brightness(0) invert(1);" data-type="map" data-id="' + g.IDEESS + '">' + tH_m + '</span></div>';
                     
-                                        // Apagamos el "autoPan" nativo para que nuestro centrado personalizado funcione perfecto
-                    L.circleMarker([lat, ln], { radius: 8, fillColor: cS, color: "#fff", weight: 2, fillOpacity: .9, pane: pPunto }).addTo(markersLayer).bindPopup(pop, { maxHeight: 320, autoPan: false });
+                                        
+                    // Solo dibujamos la etiqueta del precio para que el cluster cuente 1 solo marcador por gasolinera
                     L.marker([lat, ln], { icon: L.divIcon({ className: '', html: htmlMapa, iconSize: iconSz, iconAnchor: iconAnc }), pane: pPrecio, zIndexOffset: parseInt(10000 - (g.pN*1000)) }).addTo(markersLayer).bindPopup(pop, { maxHeight: 320, autoPan: false });
 
 
                 });
 
-                if (searchMode === 'provincia' && gasolinerasParaPintar.length > 0) {
-                    const group = new L.featureGroup(Object.values(markersLayer._layers));
-                    map.fitBounds(group.getBounds(), { padding: [20, 20] });
+                                if (searchMode === 'provincia' && gasolinerasParaPintar.length > 0) {
+                    map.fitBounds(markersLayer.getBounds(), { padding: [20, 20] });
                 }
+
 
                 lD.innerHTML = ""; 
 
