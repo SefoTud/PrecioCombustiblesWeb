@@ -2,13 +2,11 @@
 <html>
 <head>
 
-    <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-FSMS4VRM96"></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-FSMS4VRM96"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
-
   gtag('config', 'G-FSMS4VRM96');
 </script>
 
@@ -22,18 +20,6 @@
 <meta property="og:description" content="Planificador de rutas inteligente y precios de gasolineras en tiempo real en toda España.">
 <meta property="og:image" content="https://cdn-icons-png.flaticon.com/512/3206/3206972.png">
 <meta property="og:url" content="https://www.preciocombustibles.com">
-
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "WebApplication",
-  "name": "Precio Combustibles Pro",
-  "url": "https://www.preciocombustibles.com",
-  "description": "Herramienta para encontrar gasolineras baratas y planificar rutas de ahorro de combustible en España.",
-  "applicationCategory": "TravelApplication",
-  "operatingSystem": "All"
-}
-</script>
 
 <meta name="google-site-verification" content="bmzCMTDq-HisZsiPgm1O7zr2sHnyi7fcujvANNYGiUM" />
     
@@ -51,13 +37,16 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        /* --- ESTILOS APP NATIVA MODERNA --- */
         :root {
-            --bg-body: #f4f4f9; --bg-panel: #ffffff; --text-main: #000000; --text-muted: #666666;
-            --border-color: #dddddd; --bg-input: #f9f9f9; --bg-ahorro: #eafaf1; --btn-locate: #ffffff;
+            --bg-body: #f0f2f5; --bg-panel: #ffffff; --text-main: #1c1e21; --text-muted: #606770;
+            --border-color: #e4e6eb; --bg-input: #f0f2f5; --bg-ahorro: #eafaf1; --btn-locate: #ffffff;
+            --accent: #0084ff; --accent-green: #27ae60; --accent-orange: #e67e22;
         }
         body.dark-mode {
-            --bg-body: #121212; --bg-panel: #1e1e1e; --text-main: #e0e0e0; --text-muted: #aaaaaa;
-            --border-color: #333333; --bg-input: #2c2c2c; --bg-ahorro: #1e3a29; --btn-locate: #2c2c2c;
+            --bg-body: #18191a; --bg-panel: #242526; --text-main: #e4e6eb; --text-muted: #b0b3b8;
+            --border-color: #3a3b3c; --bg-input: #3a3b3c; --bg-ahorro: #1e3a29; --btn-locate: #2c2c2c;
+            --accent: #2d88ff;
         }
 
         body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden;background:var(--bg-body);color:var(--text-main);transition:background 0.3s, color 0.3s;}
@@ -65,12 +54,12 @@
         body.dark-mode .leaflet-tile { filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%); }
         body.dark-mode .leaflet-popup-content-wrapper, body.dark-mode .leaflet-popup-tip { background: var(--bg-panel) !important; color: var(--text-main) !important; }
         
-        /* CAMBIO APLICADO: Altura 100% para ajustarse al nuevo contenedor */
         #map{height:100%;width:100%;z-index:1}
         
-        #controls{position:absolute;top:10px;left:10px;right:10px;z-index:2000;background:var(--bg-panel);padding:12px;border-radius:12px;box-shadow:0 4px 15px rgba(0,0,0,.3);display:flex;flex-direction:column;gap:8px;transition:transform .3s ease,opacity .3s ease}
-        #controls.collapsed{transform:translateY(-120%);opacity:0;pointer-events:none}
-        .row{display:flex;gap:6px;align-items:center;justify-content:space-between}
+        /* PANEL DE CONTROLES (Con scroll, bordes redondeados y sombra) */
+        #controls{position:absolute;top:10px;left:10px;right:10px;z-index:2000;background:var(--bg-panel);padding:15px;border-radius:16px;box-shadow:0 8px 24px rgba(0,0,0,.12);display:flex;flex-direction:column;gap:10px;transition:transform .4s ease,opacity .3s ease; border: 1px solid var(--border-color); max-height: 75vh; overflow-y: auto;}
+        #controls.collapsed{transform:translateY(-130%);opacity:0;pointer-events:none}
+        .row{display:flex;gap:8px;align-items:center;justify-content:space-between}
         
         input[type="number"]::-webkit-inner-spin-button, input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
         input[type="number"] { -moz-appearance: textfield; }
@@ -78,106 +67,88 @@
         select { text-align: center; text-align-last: center; }
         #tipoCombustible { text-align: left; text-align-last: left; padding-left: 5px; }
         
-        input[type="text"],input[type="number"],select{flex:1;padding:10px;border-radius:8px;border:1px solid var(--border-color);background:var(--bg-input);font-size:14px;outline:none;color:var(--text-main)}
-        button{background:#27ae60;color:#fff;border:none;padding:10px;border-radius:8px;font-weight:bold;cursor:pointer}
-        .checkbox-container{display:flex;align-items:center;gap:4px;font-size:13px;font-weight:bold;color:var(--text-main);background:var(--bg-input);padding:8px;border-radius:8px;cursor:pointer;white-space:nowrap;border:1px solid var(--border-color)}
+        input[type="text"],input[type="number"],select{flex:1;padding:12px;border-radius:12px;border:none;background:var(--bg-input);font-size:14px;outline:none;color:var(--text-main);font-weight:500;}
+        button{background:var(--accent-green);color:#fff;border:none;padding:12px;border-radius:12px;font-weight:bold;cursor:pointer;transition:transform 0.1s;}
+        button:active{transform:scale(0.96);}
+        
+        .checkbox-container{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--text-main);background:var(--bg-input);padding:10px;border-radius:12px;cursor:pointer;white-space:nowrap;border:none;}
         .checkbox-container input{width:auto;margin:0}
     
-        #list-container{height:38vh;background:var(--bg-panel);border-top:2px solid var(--border-color);overflow-y:auto;padding:15px;z-index:1000;position:relative}
-        #list-container.bloqueado { overflow: hidden !important; } /* <--- AÑADE ESTO */
-        .list-item{display:flex;justify-content:space-between;align-items:center;padding:15px 0;border-bottom:1px solid var(--border-color);cursor:pointer}
-        
-        .top-badge{background:#34495e;color:#fff;font-size:10px;font-weight:800;padding:2px 6px;border-radius:4px;margin-bottom:4px;display:inline-flex;align-items:center;gap:4px}
-        .oro{background:#f1c40f;color:#000} .plata{background:#bdc3c7;color:#000} .bronce{background:#cd7f32;color:#fff}
-        
-        .fav-btn{font-size:1.3em;cursor:pointer;padding:0 5px;user-select:none;transition:transform .1s;display:inline-block}
-        .fav-btn.pulse-heart{animation:pulseHeart .3s ease-in-out}
-        @keyframes pulseHeart{0%,100%{transform:scale(1)}50%{transform:scale(1.4)}}
-        
-        .savings-box{display:flex;flex-direction:column;align-items:flex-end;gap:4px;min-width:110px}
-        .price-text{font-size:1.3em;font-weight:900;display:flex;align-items:center;gap:4px;flex-wrap:wrap;justify-content:flex-end;}
-        .pulse-ahorro{animation:pulseAhorro 2s infinite ease-in-out;display:inline-block}
-        @keyframes pulseAhorro{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
-        .badge-ahorro{color:#fff;padding:4px 8px;border-radius:6px;font-size:11px;font-weight:bold;text-align:center;display:block;width:100%;box-sizing:border-box}
-        .distancia-badge{color:#3498db;font-size:.85em;font-weight:bold;padding:2px 8px;border:1.5px solid #3498db;border-radius:6px;background:var(--bg-input);display:inline-block}
-        
-        .btn-action{color:#fff!important;border:none;padding:7px 10px;border-radius:6px;text-decoration:none;font-size:10px;font-weight:bold;margin:4px 2px;cursor:pointer;display:inline-flex;align-items:center;gap:4px;text-transform:uppercase}
-        .btn-historial{background:#9b59b6} .btn-directo{background:#3498db} .btn-wa{background:#25D366}
-        
-       /* 1. Contenedor principal abajo a la derecha */
-        .floating-buttons-container { position: absolute; bottom: 15px; right: 15px; z-index: 2500; display: flex; flex-direction: row-reverse; align-items: flex-end; gap: 10px; }
-        .btn-float { width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,.3); border: none; font-size: 22px; cursor: pointer; background: var(--btn-locate); color: var(--text-main); transition: background 0.3s, transform 0.1s; flex-shrink: 0;}
-        .btn-float:active { transform: scale(0.95); }
-        .btn-float.green { background: #27ae60; color: #fff; }
-        .btn-float.blue { background: #3498db; color: #fff; }
-        .btn-float.orange { background: #e67e22; color: #fff; }
+                                 /* LISTA RESULTADOS (Animada para estirar el mapa) */
+        #list-container{height:42vh;background:var(--bg-body);border-top:none;overflow-y:auto;padding:15px 15px 85px 15px;z-index:1000;position:relative; border-top-left-radius: 20px; border-top-right-radius: 20px; margin-top: -15px; box-shadow: 0 -4px 15px rgba(0,0,0,0.05); transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), height 0.4s ease, padding 0.4s ease, margin 0.4s ease, opacity 0.3s ease;}
+        #list-container.bloqueado { overflow: hidden !important; } 
+        #list-container.hidden-down { transform: translateY(100%); height: 65px !important; padding-top: 0 !important; padding-bottom: env(safe-area-inset-bottom) !important; margin-top: 0 !important; opacity: 0; pointer-events: none; }
 
-       /* 2. Botones secundarios: Sin límite de ancho (max-width eliminado) para que no salten en PC */
-        .secondary-fabs { display: flex; flex-direction: row-reverse; flex-wrap: wrap-reverse; justify-content: flex-start; gap: 10px; transition: all 0.3s ease; opacity: 0; pointer-events: none; transform: translateX(20px); }
-        .secondary-fabs.show { opacity: 1; pointer-events: auto; transform: translateX(0); }
+        
+               /* TARJETAS NATIVAS ARREGLADAS */
+        .list-item { background:var(--bg-panel); border-radius:16px; padding:15px; margin-bottom:12px; box-shadow:0 3px 10px rgba(0,0,0,0.06); border:1px solid var(--border-color); cursor:pointer; display:flex; flex-direction:column; gap:0; }
 
-        /* 3. Menú de Modos: Sale hacia ARRIBA en VERTICAL, ordenados de arriba a abajo, y por encima de todo */
-        .social-fab-container { position: relative; display: flex; align-items: center; justify-content: center; z-index: 20; }
-        .social-links { position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%) translateY(15px); margin-bottom: 12px; display: flex; flex-direction: column; gap: 10px; opacity: 0; pointer-events: none; transition: all 0.3s ease; z-index: 3000; }
-        .social-links.show { opacity: 1; pointer-events: auto; transform: translateX(-50%) translateY(0); }
-        .social-mini { width: 40px; height: 40px; border-radius: 50%; background: var(--bg-panel); display: flex; justify-content: center; align-items: center; box-shadow: 0 3px 8px rgba(0,0,0,.2); border: 1px solid var(--border-color); transition: transform 0.1s; cursor:pointer; font-size:18px;}
-        .social-mini:active { transform: scale(0.9); }
-        .social-mini img { border-radius: 8px; width: 24px; height: 24px;}
+        .list-info { flex: 1; min-width: 0; }
+        
+        .top-badge { background:#34495e; color:#fff; font-size:10px; font-weight:800; padding:3px 8px; border-radius:6px; display:inline-flex; align-items:center; gap:4px; }
+        .oro { background:#f1c40f; color:#000; } .plata { background:#bdc3c7; color:#000; } .bronce { background:#cd7f32; color:#fff; }
+        
+        .fav-btn { font-size:1.4em; cursor:pointer; padding:0 5px; user-select:none; transition:transform .1s; display:inline-block; }
+        .fav-btn.pulse-heart { animation:pulseHeart .3s ease-in-out; }
+        @keyframes pulseHeart { 0%,100%{transform:scale(1)} 50%{transform:scale(1.4)} }
+        
+        .savings-box { display:flex; flex-direction:column; align-items:flex-end; gap:6px; min-width:115px; flex-shrink: 0; }
+        .price-text { font-size:1.4em; font-weight:900; display:flex; align-items:center; gap:4px; flex-wrap:wrap; justify-content:flex-end; }
+        .pulse-ahorro { animation:pulseAhorro 2s infinite ease-in-out; display:inline-block; }
+        @keyframes pulseAhorro { 0%,100%{transform:scale(1)} 50%{transform:scale(1.06)} }
+        
+        .badge-ahorro { color:#fff; padding:6px 10px; border-radius:8px; font-size:11px; font-weight:bold; text-align:center; display:block; width:100%; box-sizing:border-box; }
+        .distancia-badge { color:var(--accent); font-size:12px; font-weight:bold; padding:4px 8px; border:1px solid var(--accent); border-radius:8px; background:var(--bg-input); display:inline-block; }
+        
+        .btn-action { color:#fff!important; border:none; padding:8px 10px; border-radius:8px; text-decoration:none; font-size:11px; font-weight:bold; margin:4px 2px 0 0; cursor:pointer; display:inline-flex; align-items:center; gap:4px; text-transform:uppercase; justify-content:center; }
+        .btn-historial { background:#9b59b6; } .btn-directo { background:var(--accent); } .btn-wa { background:#25D366; }
 
-        .price-label-wrapper{background:var(--bg-panel);color:var(--text-main);padding:2px 5px;border-radius:6px;font-weight:bold;font-size:13px;box-shadow:0 2px 6px rgba(0,0,0,.3);text-align:center;border:2.5px solid;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+
+        /* --- BARRA DE NAVEGACIÓN INFERIOR --- */
+        .bottom-nav { position:fixed; bottom:0; left:0; width:100%; height:65px; background:var(--bg-panel); border-top:1px solid var(--border-color); display:flex; justify-content:space-around; align-items:center; z-index:5000; padding-bottom:env(safe-area-inset-bottom); box-shadow:0 -2px 10px rgba(0,0,0,0.05); }
+        .nav-item { display:flex; flex-direction:column; align-items:center; justify-content:center; color:var(--text-muted); font-size:11px; font-weight:600; cursor:pointer; width:20%; transition:all 0.2s; }
+        .nav-item .icon { font-size:22px; margin-bottom:2px; transition:transform 0.2s; }
+        .nav-item.active { color:var(--accent); }
+        .nav-item.active .icon { transform:scale(1.15); }
+
+        /* BOTÓN GPS MAPA FLOTANTE */
+        .btn-gps { position:absolute; bottom:20px; right:15px; z-index:1500; width:48px; height:48px; border-radius:50%; background:var(--bg-panel); color:var(--accent); border:none; box-shadow:0 4px 12px rgba(0,0,0,0.15); display:flex; align-items:center; justify-content:center; font-size:22px; cursor:pointer; }
+        .btn-gps:active { transform:scale(0.9); }
+
+        .price-label-wrapper{background:var(--bg-panel);color:var(--text-main);padding:2px 5px;border-radius:8px;font-weight:bold;font-size:13px;box-shadow:0 2px 6px rgba(0,0,0,.3);text-align:center;border:2.5px solid;cursor:pointer;display:flex;align-items:center;justify-content:center;}
         .desc-badge { background: #f1c40f; color: #000; font-size: 10px; padding: 2px 4px; border-radius: 4px; font-weight: bold; margin-left: 4px; }
         
-        .modal-bg { display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:7000;padding:15px;flex-direction:column;align-items:center;justify-content:center; }
-        .modal-content{background:var(--bg-panel);color:var(--text-main);width:95%;max-width:600px;padding:20px;border-radius:15px;position:relative;display:flex;flex-direction:column;max-height:80vh;}
+        .modal-bg { display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:7000;padding:15px;flex-direction:column;align-items:center;justify-content:center; backdrop-filter:blur(4px); }
+        .modal-content{background:var(--bg-panel);color:var(--text-main);width:100%;max-width:450px;padding:25px;border-radius:24px;position:relative;display:flex;flex-direction:column;max-height:85vh; overflow-y:auto; box-shadow:0 10px 30px rgba(0,0,0,0.2);}
         
-        .time-btn { background: var(--bg-input); color: var(--text-main); border: 1px solid var(--border-color); padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: bold; cursor: pointer; transition: all 0.2s;}
-        .time-btn.active { background: #3498db; color: #fff; border-color: #3498db; }
+        .time-btn { background: var(--bg-input); color: var(--text-main); border: none; padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: bold; cursor: pointer; transition: all 0.2s;}
+        .time-btn.active { background: var(--accent); color: #fff; }
 
-        #chartStatus{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:90%;text-align:center;font-weight:bold;font-size:1.1em;color:#2980b9;z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px}
+        #chartStatus{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:90%;text-align:center;font-weight:bold;font-size:1.1em;color:var(--accent);z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px}
         
-        #loading-overlay{position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(255,255,255,.9);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:6000}
-        body.dark-mode #loading-overlay { background: rgba(30,30,30,0.9); }
+        #loading-overlay{position:absolute;inset:0;background:rgba(255,255,255,.8);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:6000; border-radius:20px; backdrop-filter:blur(5px);}
+        body.dark-mode #loading-overlay { background: rgba(36,37,38,0.8); }
         
-        .spinner{width:30px;height:30px;border:4px solid #f3f3f3;border-top:4px solid #3498db;border-radius:50%;animation:spin 1s linear infinite}
-        body.dark-mode .spinner { border-color: #333; border-top-color: #3498db; }
+        .spinner{width:40px;height:40px;border:4px solid var(--border-color);border-top:4px solid var(--accent);border-radius:50%;animation:spin 1s linear infinite; margin-bottom:10px;}
         @keyframes spin{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}
 
-        .alt-route-tooltip {
-            background: rgba(255, 255, 255, 0.95);
-            border: 2px solid #7f8c8d;
-            border-radius: 8px;
-            font-weight: bold;
-            color: #2c3e50;
-            text-align: center;
-            padding: 4px 6px;
-            font-size: 11px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-            line-height: 1.2;
-            cursor: pointer; 
-            pointer-events: auto; 
-        }
+        .alt-route-tooltip { background: rgba(255, 255, 255, 0.95); border: 2px solid #7f8c8d; border-radius: 8px; font-weight: bold; color: #2c3e50; text-align: center; padding: 4px 6px; font-size: 11px; box-shadow: 0 2px 6px rgba(0,0,0,0.3); line-height: 1.2; cursor: pointer; pointer-events: auto; }
         .alt-route-tooltip::before { display: none !important; }
-
-        .active-route-tooltip {
-            background: rgba(66, 133, 244, 0.95); 
-            border: 2px solid #2a56c6;
-            border-radius: 8px;
-            font-weight: bold;
-            color: #ffffff;
-            text-align: center;
-            padding: 4px 6px;
-            font-size: 11px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-            line-height: 1.2;
-        }
-        body.dark-mode .active-route-tooltip {
-            background: rgba(40, 100, 200, 0.95);
-            border-color: #555;
-        }
+        .active-route-tooltip { background: rgba(66, 133, 244, 0.95); border: 2px solid var(--accent); border-radius: 8px; font-weight: bold; color: #ffffff; text-align: center; padding: 4px 6px; font-size: 11px; box-shadow: 0 2px 6px rgba(0,0,0,0.3); line-height: 1.2; }
+        body.dark-mode .active-route-tooltip { background: rgba(40, 100, 200, 0.95); border-color: #555; }
         .active-route-tooltip::before { display: none !important; }
     </style>
 </head>
 <body>
+
+    <div style="display:none;">
+        <button id="btnShow"></button>
+        <div id="secFabs"></div>
+        <button id="btnToggleMode"></button>
+        <div id="modeLinks"></div>
+        <div id="socialLinks"></div>
+    </div>
+
     <div id="chartModal" class="modal-bg">
         <div class="modal-content" style="min-height:450px;">
             <div style="display:flex;flex-direction:column;align-items:center;text-align:center;margin-bottom:5px;">
@@ -195,12 +166,12 @@
             </div>
 
             <div id="chartStatus">
-                <div class="spinner" id="chartSpinner" style="border-top-color:#e74c3c;"></div>
+                <div class="spinner" id="chartSpinner"></div>
                 <span id="chartText">Calculando histórico...</span>
                 <span id="chartSubText" style="font-size:.85em;color:var(--text-muted);font-weight:normal;">Esto puede tardar unos segundos 🚀</span>
             </div>
             <div id="chartContainer" style="flex:1;width:100%;position:relative;"><canvas id="priceChart"></canvas></div>
-            <button onclick="cerrarGrafico()" style="width:100%;margin-top:15px;background:#e74c3c;border-radius:8px;color:#fff;padding:12px;border:none;font-weight:bold;">CERRAR</button>
+            <button onclick="cerrarGrafico()" style="width:100%;margin-top:15px;background:#e74c3c;border-radius:12px;color:#fff;padding:12px;border:none;font-weight:bold;">CERRAR</button>
         </div>
     </div>
 
@@ -211,51 +182,56 @@
             
             <div id="descList" style="overflow-y:auto; padding-bottom:10px; display:flex; flex-direction:column; gap:10px;"></div>
             
-            <button onclick="addDescRow()" style="background:#3498db; margin-top:10px;">➕ Añadir Tarjeta</button>
+            <button onclick="addDescRow()" style="background:var(--accent); margin-top:10px;">➕ Añadir Tarjeta</button>
             <div style="display:flex; gap:10px; margin-top:15px;">
-                <button onclick="q('descModal').style.display='none'" style="flex:1; background:#95a5a6;">Cancelar</button>
-                <button onclick="saveDiscounts()" style="flex:1;">Guardar y Aplicar</button>
+                <button onclick="q('descModal').style.display='none'" style="flex:1; background:var(--bg-input); color:var(--text-main);">Cancelar</button>
+                <button onclick="saveDiscounts()" style="flex:1; background:var(--accent-green);">Guardar y Aplicar</button>
             </div>
         </div>
     </div>
 
-   <div id="controls">
+   <div id="controls" class="collapsed">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <strong style="font-size:18px;">⚙️ Filtros y Ajustes</strong>
+            <button onclick="toggleControls()" style="background:transparent; color:var(--text-muted); padding:0; font-size:24px; width:auto;">✖️</button>
+        </div>
+
         <div id="zona-ui">
             <div class="row">
-                <div style="position:relative; display:flex; flex:1; align-items:center; background:var(--bg-input); border:1px solid var(--border-color); border-radius:8px; padding:0 5px; overflow:visible; min-width:0;">
-                    <span id="cityName" onclick="this.style.display='none'" title="Toca para borrar" style="font-size:11px;color:#fff;background:#3498db;font-weight:bold;white-space:nowrap;padding:4px 8px;border-radius:5px;display:none;margin-right:5px;cursor:pointer;"></span>
-                    <input type="text" id="cpInput" autocomplete="off" placeholder="Ciudad (ej: Tudela)" style="border:none; background:transparent; flex:1; outline:none; padding:10px 5px; font-size:14px; color:var(--text-main); min-width:0; width:100%;">
+                <div style="position:relative; display:flex; flex:1; align-items:center; background:var(--bg-input); border-radius:12px; padding:0 5px; overflow:visible; min-width:0;">
+                    <span id="cityName" onclick="this.style.display='none'" title="Toca para borrar" style="font-size:11px;color:#fff;background:var(--accent);font-weight:bold;white-space:nowrap;padding:4px 8px;border-radius:8px;display:none;margin-right:5px;cursor:pointer;"></span>
+                    <input type="text" id="cpInput" autocomplete="off" placeholder="Ciudad (ej: Tudela)" style="border:none; background:transparent; flex:1; outline:none; padding:12px 5px; font-size:14px; color:var(--text-main); min-width:0; width:100%;">
                     
-                    <div id="autocomplete-list" style="display:none; position:absolute; top:100%; left:0; right:0; background:var(--bg-panel); border:2px solid #3498db; border-radius:8px; z-index:3000; max-height:250px; overflow-y:auto; box-shadow:0 6px 15px rgba(0,0,0,0.3); margin-top:4px;"></div>
+                    <div id="autocomplete-list" style="display:none; position:absolute; top:100%; left:0; right:0; background:var(--bg-panel); border:1px solid var(--border-color); border-radius:12px; z-index:3000; max-height:200px; overflow-y:auto; box-shadow:0 6px 15px rgba(0,0,0,0.1); margin-top:4px;"></div>
                 </div>
-                <button onclick="buscarPorCP()" style="flex:none; padding:10px 8px;">BUSCAR</button>
-                <select id="radioBusqueda" style="width:75px; flex:none; padding:10px 2px;"><option value="1" selected>1 km</option><option value="5">5 km</option><option value="10">10 km</option><option value="25">25 km</option><option value="50">50 km</option></select>
+                <button onclick="buscarPorCP()" style="flex:none; padding:12px 15px; background:var(--accent);">🔍</button>
+                <select id="radioBusqueda" style="width:80px; flex:none; padding:12px 2px;"><option value="1" selected>1 km</option><option value="5">5 km</option><option value="10">10 km</option><option value="25">25 km</option><option value="50">50 km</option></select>
             </div>
         </div>
 
-        <div id="ruta-ui" style="display:none; background:var(--bg-input); padding:10px; border-radius:8px; border:1px solid var(--border-color);">
+        <div id="ruta-ui" style="display:none; background:var(--bg-input); padding:12px; border-radius:12px;">
             <div style="display:flex;flex-direction:column;gap:8px;">
-                <div style="position:relative; display:flex;align-items:center;background:var(--bg-panel);border:1px solid var(--border-color);border-radius:8px;padding:0 5px;overflow:visible;">
+                <div style="position:relative; display:flex;align-items:center;background:var(--bg-panel); border-radius:12px;padding:0 5px;overflow:visible;">
                     <span style="font-size:16px; padding:0 5px;">🔵</span>
-                    <span id="cityNameRuta" onclick="this.style.display='none'; document.getElementById('origenInput').value='';" title="Toca para borrar" style="font-size:11px;color:#fff;background:#27ae60;font-weight:bold;white-space:nowrap;padding:4px 8px;border-radius:5px;display:none;margin-right:5px;cursor:pointer;"></span>
-                    <input type="text" id="origenInput" autocomplete="off" placeholder="Origen (Por defecto: Mi Ubicación)" style="border:none;background:transparent;flex:1;outline:none;padding:10px 5px;font-size:14px;color:var(--text-main);min-width:0;">
-                    <div id="autocomplete-list-origen" style="display:none; position:absolute; top:100%; left:0; right:0; background:var(--bg-panel); border:2px solid #3498db; border-radius:8px; z-index:3000; max-height:250px; overflow-y:auto; box-shadow:0 6px 15px rgba(0,0,0,0.3); margin-top:4px;"></div>
+                    <span id="cityNameRuta" onclick="this.style.display='none'; document.getElementById('origenInput').value='';" title="Toca para borrar" style="font-size:11px;color:#fff;background:var(--accent-green);font-weight:bold;white-space:nowrap;padding:4px 8px;border-radius:8px;display:none;margin-right:5px;cursor:pointer;"></span>
+                    <input type="text" id="origenInput" autocomplete="off" placeholder="Origen (Por defecto: Mi Ubicación)" style="border:none;background:transparent;flex:1;outline:none;padding:12px 5px;font-size:14px;color:var(--text-main);min-width:0;">
+                    <div id="autocomplete-list-origen" style="display:none; position:absolute; top:100%; left:0; right:0; background:var(--bg-panel); border:1px solid var(--border-color); border-radius:12px; z-index:3000; max-height:200px; overflow-y:auto; box-shadow:0 6px 15px rgba(0,0,0,0.1); margin-top:4px;"></div>
                 </div>                
-                <div style="position:relative; display:flex;align-items:center;background:var(--bg-panel);border:1px solid var(--border-color);border-radius:8px;padding:0 5px;overflow:visible;">
+                <div style="position:relative; display:flex;align-items:center;background:var(--bg-panel); border-radius:12px;padding:0 5px;overflow:visible;">
                     <span style="font-size:16px; padding:0 5px;">🏁</span>
-                    <span id="cityNameDest" onclick="this.style.display='none'; document.getElementById('destinoInput').value='';" title="Toca para borrar" style="font-size:11px;color:#fff;background:#e74c3c;font-weight:bold;white-space:nowrap;padding:4px 8px;border-radius:5px;display:none;margin-right:5px;cursor:pointer;"></span>
-                    <input type="text" id="destinoInput" autocomplete="off" placeholder="Destino (ej: Madrid)" style="border:none;background:transparent;flex:1;outline:none;padding:10px 5px;font-size:14px;color:var(--text-main);min-width:0;">
-                    <button onclick="calcularRuta()" style="background:#e67e22; margin:3px; padding:6px 12px; border-radius:6px; z-index:10;">IR 🛣️</button>
-                    <div id="autocomplete-list-destino" style="display:none; position:absolute; top:100%; left:0; right:0; background:var(--bg-panel); border:2px solid #3498db; border-radius:8px; z-index:3000; max-height:250px; overflow-y:auto; box-shadow:0 6px 15px rgba(0,0,0,0.3); margin-top:4px;"></div>
+                    <span id="cityNameDest" onclick="this.style.display='none'; document.getElementById('destinoInput').value='';" title="Toca para borrar" style="font-size:11px;color:#fff;background:#e74c3c;font-weight:bold;white-space:nowrap;padding:4px 8px;border-radius:8px;display:none;margin-right:5px;cursor:pointer;"></span>
+                    <input type="text" id="destinoInput" autocomplete="off" placeholder="Destino (ej: Madrid)" style="border:none;background:transparent;flex:1;outline:none;padding:12px 5px;font-size:14px;color:var(--text-main);min-width:0;">
+                    <button onclick="calcularRuta()" style="background:var(--accent-orange); margin:3px; padding:8px 15px; border-radius:8px; z-index:10;">IR 🛣️</button>
+                    <div id="autocomplete-list-destino" style="display:none; position:absolute; top:100%; left:0; right:0; background:var(--bg-panel); border:1px solid var(--border-color); border-radius:12px; z-index:3000; max-height:200px; overflow-y:auto; box-shadow:0 6px 15px rgba(0,0,0,0.1); margin-top:4px;"></div>
                 </div>
-                <div style="position:relative; display:flex;align-items:center;background:var(--bg-panel);border:1px solid var(--border-color);border-radius:8px;padding:0 5px;overflow:visible;">
+                <div style="position:relative; display:flex;align-items:center;background:var(--bg-panel); border-radius:12px;padding:0 5px;overflow:visible;">
                     <span style="font-size:16px; padding:0 5px;">📍</span>
-                    <span id="cityNameInter" onclick="this.style.display='none'" title="Toca para borrar" style="font-size:11px;color:#fff;background:#f39c12;font-weight:bold;white-space:nowrap;padding:4px 8px;border-radius:5px;display:none;margin-right:5px;cursor:pointer;"></span>
-                    <input type="text" id="pasandoPorInput" autocomplete="off" placeholder="Pasando por... (Opcional, ej: Burgos)" style="border:none;background:transparent;flex:1;outline:none;padding:10px 5px;font-size:14px;color:var(--text-main);min-width:0;">
-                    <div id="autocomplete-list-inter" style="display:none; position:absolute; top:100%; left:0; right:0; background:var(--bg-panel); border:2px solid #3498db; border-radius:8px; z-index:3000; max-height:250px; overflow-y:auto; box-shadow:0 6px 15px rgba(0,0,0,0.3); margin-top:4px;"></div>
+                    <span id="cityNameInter" onclick="this.style.display='none'" title="Toca para borrar" style="font-size:11px;color:#fff;background:#f39c12;font-weight:bold;white-space:nowrap;padding:4px 8px;border-radius:8px;display:none;margin-right:5px;cursor:pointer;"></span>
+                    <input type="text" id="pasandoPorInput" autocomplete="off" placeholder="Pasando por... (Opcional, ej: Burgos)" style="border:none;background:transparent;flex:1;outline:none;padding:12px 5px;font-size:14px;color:var(--text-main);min-width:0;">
+                    <div id="autocomplete-list-inter" style="display:none; position:absolute; top:100%; left:0; right:0; background:var(--bg-panel); border:1px solid var(--border-color); border-radius:12px; z-index:3000; max-height:200px; overflow-y:auto; box-shadow:0 6px 15px rgba(0,0,0,0.1); margin-top:4px;"></div>
                 </div>
                 <div class="row">
-                    <select id="desvioInput" style="flex:1; padding:10px 5px; font-size:12px; background:var(--bg-panel);">
+                    <select id="desvioInput" style="flex:1; padding:12px 5px; font-size:13px; background:var(--bg-panel);">
                         <option value="1">Desvío máx: 1km</option>
                         <option value="2">Desvío máx: 2km</option>
                         <option value="5" selected>Desvío máx: 5km</option>
@@ -267,80 +243,66 @@
 
         <div id="provincia-ui" style="display:none;">
             <div class="row">
-                <select id="provinciaInput" style="flex:1; padding:10px 5px; border:2px solid #3498db; font-weight:bold;">
+                <select id="provinciaInput" style="flex:1; padding:12px 5px; border:2px solid var(--accent); font-weight:bold; color:var(--text-main); background:var(--bg-panel);">
                     <option value="">🗺️ Selecciona una provincia...</option>
                     <option value="ALAVA">Álava</option><option value="ALBACETE">Albacete</option><option value="ALICANTE">Alicante</option><option value="ALMERIA">Almería</option><option value="ASTURIAS">Asturias</option><option value="AVILA">Ávila</option><option value="BADAJOZ">Badajoz</option><option value="BALEARS">Baleares</option><option value="BARCELONA">Barcelona</option><option value="BURGOS">Burgos</option><option value="CACERES">Cáceres</option><option value="CADIZ">Cádiz</option><option value="CANTABRIA">Cantabria</option><option value="CASTELLON">Castellón</option><option value="CEUTA">Ceuta</option><option value="CIUDAD REAL">Ciudad Real</option><option value="CORDOBA">Córdoba</option><option value="CORUÑA">A Coruña</option><option value="CUENCA">Cuenca</option><option value="GIRONA">Girona</option><option value="GRANADA">Granada</option><option value="GUADALAJARA">Guadalajara</option><option value="GIPUZKOA">Guipúzcoa</option><option value="HUELVA">Huelva</option><option value="HUESCA">Huesca</option><option value="JAEN">Jaén</option><option value="LEON">León</option><option value="LLEIDA">Lleida</option><option value="LUGO">Lugo</option><option value="MADRID">Madrid</option><option value="MALAGA">Málaga</option><option value="MELILLA">Melilla</option><option value="MURCIA">Murcia</option><option value="NAVARRA">Navarra</option><option value="OURENSE">Ourense</option><option value="PALENCIA">Palencia</option><option value="PALMAS">Las Palmas</option><option value="PONTEVEDRA">Pontevedra</option><option value="RIOJA">La Rioja</option><option value="SALAMANCA">Salamanca</option><option value="SEGOVIA">Segovia</option><option value="SEVILLA">Sevilla</option><option value="SORIA">Soria</option><option value="TARRAGONA">Tarragona</option><option value="SANTA CRUZ DE TENERIFE">S.C. Tenerife</option><option value="TERUEL">Teruel</option><option value="TOLEDO">Toledo</option><option value="VALENCIA">Valencia</option><option value="VALLADOLID">Valladolid</option><option value="BIZKAIA">Vizcaya</option><option value="ZAMORA">Zamora</option><option value="ZARAGOZA">Zaragoza</option>
                 </select>
             </div>
         </div>
 
-        <select id="activeCarSelect" onchange="applyCarSettings()" style="width:100%; padding:10px; margin-bottom:8px; border-radius:8px; border:2px dashed #3498db; background:var(--bg-input); color:var(--text-main); font-weight:bold; display:none; cursor:pointer;">
+        <select id="activeCarSelect" onchange="applyCarSettings()" style="width:100%; padding:12px; margin-bottom:8px; border-radius:12px; border:2px dashed var(--accent); background:var(--bg-ahorro); color:var(--text-main); font-weight:bold; display:none; cursor:pointer;">
             <option value="">🚘 Selecciona tu vehículo guardado...</option>
         </select>
-        <div class="row">
-            <input type="text" id="marcaInput" placeholder="Marca(Repsol, Plenergy...)" style="flex:1; min-width:50px; padding:10px 4px; font-size:13px;">
+        
+        <div class="row" style="flex-wrap: wrap;">
+            <input type="text" id="marcaInput" placeholder="Marca (Repsol...)" style="flex:1; min-width:80px; padding:12px 6px; font-size:13px;">
             <div id="contenedorLitrosManuales" style="display:flex; align-items:center; gap:4px; flex:none;">
-                <input type="number" id="litrosInput" placeholder="Lts" style="width:35px; padding:10px 2px; text-align:center;">
-                <button id="btnFill" onclick="llenarATope()" style="display:none; background:#2ecc71; color:white; border:none; padding:8px 5px; border-radius:5px; cursor:pointer; font-size:10px; font-weight:bold;" title="Llenar a tope">MAX</button>
+                <input type="number" id="litrosInput" placeholder="Lts" style="width:45px; padding:12px 2px; text-align:center;">
+                <button id="btnFill" onclick="llenarATope()" style="display:none; background:var(--accent-green); color:white; border:none; padding:10px 8px; border-radius:8px; cursor:pointer; font-size:11px; font-weight:bold;" title="Llenar a tope">MAX</button>
             </div>
             
-            <label id="modoLlenadoInteligente" class="checkbox-container" style="display:none; flex:none; padding:10px 8px; font-size:12px; background:#eafaf1; border-color:#27ae60; color:#27ae60; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                <input type="checkbox" id="llenarDepositoInput" checked> ⛽ Llenar depósito
+            <label id="modoLlenadoInteligente" class="checkbox-container" style="display:none; flex:none; padding:10px 8px; font-size:12px; background:var(--bg-ahorro); border-color:var(--accent-green); color:var(--accent-green);">
+                <input type="checkbox" id="llenarDepositoInput" checked> ⛽ Llenar
             </label>
-            <input type="number" id="consumoInput" placeholder="L/100" step="0.1" style="width:45px; flex:none; padding:10px 2px; text-align:center; font-size:13px;">
-            <input type="number" id="autonomiaInput" placeholder="Autonomía" style="width:55px; flex:none; padding:10px 2px; text-align:center; font-size:13px;" title="¿Cuántos km te quedan de depósito?">
+            <input type="number" id="consumoInput" placeholder="L/100" step="0.1" style="width:55px; flex:none; padding:12px 2px; text-align:center; font-size:13px;">
+            <input type="number" id="autonomiaInput" placeholder="Autonomia" style="width:65px; flex:none; padding:12px 2px; text-align:center; font-size:13px;" title="¿Cuántos km te quedan para el primer repostaje?">
         </div>
+        
         <div class="row">
-            <select id="tipoCombustible" style="flex:1; min-width:80px; padding:10px 5px;">
+            <select id="tipoCombustible" style="flex:1; min-width:80px; padding:12px 5px;">
                 <option value="Precio Gasoleo A">Diesel</option><option value="Precio Gasolina 95 E5">Gasolina 95</option><option value="Precio Gasoleo Premium">Diesel Premium</option>
                 <option value="Precio Gasolina 98 E5">Gasolina 98</option><option value="Precio Gasoleo B">Diesel Agrícola</option>
                 <option value="Precio Gas Natural Comprimido">GNC</option><option value="Precio Gas Natural Licuado">GNL</option><option value="AdBlue">AdBlue</option>
             </select>
-            <label class="checkbox-container" style="flex:none; padding:10px 8px; font-size:12px;"><input type="checkbox" id="abiertasInput"> Abiertas</label>
-            <label class="checkbox-container" style="flex:none; padding:10px 8px; font-size:12px;" title="Calcula el viaje ida y vuelta"><input type="checkbox" id="idaVueltaInput" checked> 🔁 Ida/Vuelta</label>
+            <label class="checkbox-container" style="flex:none; padding:12px 8px;"><input type="checkbox" id="abiertasInput"> Abiertas</label>
+            <label class="checkbox-container" style="flex:none; padding:12px 8px;" title="Calcula el viaje ida y vuelta"><input type="checkbox" id="idaVueltaInput" checked> 🔁 I/V</label>
+        </div>
+                <div class="row" style="margin-top:4px;">
+            <button onclick="openDiscounts()" style="flex:1; background:var(--bg-input); color:var(--text-main); padding:12px;">💳 Mis descuentos</button>
+            <button onclick="toggleTheme()" style="flex:1; background:var(--bg-input); color:var(--text-main); padding:12px;" id="btnDarkMode">🌙 Oscuro</button>
+        </div>
+
+
+        <div class="social-footer" style="display:flex; justify-content:center; gap:30px; margin-top:15px; border-top:1px solid var(--border-color); padding:15px 0;">
+            <a href="https://instagram.com/preciocombustibles" target="_blank"><img src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png" style="width:35px; height:35px; border-radius:8px;"></a>
+            <a href="https://tiktok.com/@preciocombustibles" target="_blank"><img src="https://img.icons8.com/color/512/tiktok.png" style="width:35px; height:35px;"></a>
+            <a href="https://x.com/PrecioCombusti" target="_blank"><img src="https://upload.wikimedia.org/wikipedia/commons/c/ce/X_logo_2023.svg" style="width:35px; height:35px; border-radius:8px; background-color:white; padding:5px; box-sizing:border-box;"></a>
+
         </div>
     </div>
 
     <div style="flex: 1; position: relative; width: 100%; overflow: hidden;">
         <div id="map"></div>
-        
-        <div class="floating-buttons-container">
-            <button id="btnShow" class="btn-float green" onclick="toggleControls()">⚙️</button>
-            
-            <div class="secondary-fabs show" id="secFabs">
-                <button class="btn-float" onclick="irAMiUbicacion(false)" style="background:#4285F4; color:#fff;" title="Mi Ubicación">
-                    <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3c-.46-4.17-3.77-7.48-7.94-7.94V1h-2v2.06C6.83 3.52 3.52 6.83 3.06 11H1v2h2.06c.46 4.17 3.77 7.48 7.94 7.94V23h2v-2.06c4.17-.46 7.48-3.77 7.94-7.94H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg>
-                </button>
-                <button class="btn-float" onclick="openDiscounts()" style="background:#e84393; color:#fff; font-size:24px; display:flex; align-items:center; justify-content:center; padding: 0 0 4px 0; line-height:1; text-shadow: 0px 2px 4px rgba(0,0,0,0.4);">💳</button>
-                <button class="btn-float" onclick="openGarage()" style="background:#34495e; color:#fff; font-size:24px; display:flex; align-items:center; justify-content:center; padding: 0 0 4px 0; line-height:1; text-shadow: 0px 2px 4px rgba(0,0,0,0.4);" title="Mi Garaje">🚗</button>
-                <div class="social-fab-container">
-                    <button id="btnToggleMode" class="btn-float orange" onclick="toggleModeMenu()" title="Modo de Búsqueda">📍</button>
-                    <div class="social-links" id="modeLinks">
-                         <div class="social-mini" onclick="setMode('provincia')" style="width: auto; padding: 0 16px; border-radius: 20px; font-size: 13px; font-weight: bold; gap: 6px; white-space: nowrap; display: flex; flex-direction: row; align-items: center; justify-content: center; box-shadow: 0 4px 6px rgba(0,0,0,0.2);">🗺️ Provincia</div>
-                        <div class="social-mini" onclick="setMode('ruta')" style="width: auto; padding: 0 16px; border-radius: 20px; font-size: 13px; font-weight: bold; gap: 6px; white-space: nowrap; display: flex; flex-direction: row; align-items: center; justify-content: center; box-shadow: 0 4px 6px rgba(0,0,0,0.2);">🛣️ Ruta</div>
-                        <div class="social-mini" onclick="setMode('zona')" style="width: auto; padding: 0 16px; border-radius: 20px; font-size: 13px; font-weight: bold; gap: 6px; white-space: nowrap; display: flex; flex-direction: row; align-items: center; justify-content: center; box-shadow: 0 4px 6px rgba(0,0,0,0.2);">📍 Zona</div>                      
-                    </div>
-                </div>
-
-                <button id="btnDarkMode" class="btn-float" onclick="toggleTheme()">🌙</button>
-                <div class="social-fab-container">
-                    <button class="btn-float" onclick="toggleSocial()" style="color:#e84393;">📱</button>
-                    <div class="social-links" id="socialLinks">
-                        <a href="https://instagram.com/preciocombustibles" target="_blank" class="social-mini"><img src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png" alt="IG" style="width:24px; height:24px;"></a>
-                        <a href="https://tiktok.com/@preciocombustibles" target="_blank" class="social-mini"><img src="https://img.icons8.com/color/512/tiktok.png" alt="TikTok" style="width:24px; height:24px;"></a>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <button class="btn-gps" onclick="irAMiUbicacion(false)" title="Mi Ubicación">📍</button>
     </div>
 
     <div id="list-container">
         <div id="loading-overlay"><div class="spinner" style="margin-bottom:10px;"></div><div id="loading-text" style="color:var(--text-main);font-weight:bold;text-align:center;width:100%;padding:0 20px;box-sizing:border-box;">🏛️ Conectando con la API...</div></div>
         
-        <button id="btnInstalar" style="display: none; background: #e67e22; color: #fff; padding: 10px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-bottom: 10px; width: 100%; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">📲 INSTALAR APLICACIÓN</button>
+        <button id="btnInstalar" style="display: none; background: var(--accent-orange); color: #fff; padding: 12px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; margin-bottom: 12px; width: 100%; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">📲 INSTALAR APLICACIÓN</button>
         
         <div class="row" style="margin-bottom:10px;">
-            <select id="ordenarPor" style="border:1.5px solid #27ae60;font-weight:bold;color:var(--text-main);">
+            <select id="ordenarPor" style="width:100%; border:2px solid var(--accent-green);font-weight:bold;color:var(--text-main); background:var(--bg-panel); padding:12px; border-radius:12px;">
                 <option value="precio">💸 Más baratas primero</option>
                 <option value="caras">📈 Más caras primero</option>
                 <option value="distancia">🚗 Más cercanas primero</option>
@@ -350,12 +312,14 @@
             </select>
         </div>
         
-        <div id="header-ahorro" style="background:var(--bg-ahorro);border-radius:10px;padding:12px;margin-bottom:15px;border:1px dashed #27ae60;text-align:center;">
-            <span id="resumenAhorro" style="font-weight:bold;color:#27ae60;font-size:1.1em;">Calculando ahorro...</span>
+        <div id="header-ahorro" style="background:var(--bg-ahorro);border-radius:12px;padding:12px;margin-bottom:15px;border:1px dashed var(--accent-green);text-align:center;">
+            <span id="resumenAhorro" style="font-weight:bold;color:var(--accent-green);font-size:1.1em;">Calculando ahorro...</span>
         </div>
         
         <div id="gas-list"></div>
-<div style="padding: 20px; background: var(--bg-input); border-top: 1px solid var(--border-color); color: var(--text-muted); font-size: 13px; line-height: 1.6;">     <h2 style="font-size: 16px; color: var(--text-main); margin-bottom: 10px;">Encuentra Gasolineras Baratas en España</h2>
+
+        <div style="padding: 20px; background: var(--bg-input); border-top: 1px solid var(--border-color); color: var(--text-muted); font-size: 13px; line-height: 1.6;">
+    <h2 style="font-size: 16px; color: var(--text-main); margin-bottom: 10px;">Encuentra Gasolineras Baratas en España</h2>
     <p>
         Bienvenido a <strong>Precio Combustibles</strong>, tu herramienta gratuita para ahorrar en cada repostaje. 
         Nuestro sistema se conecta en tiempo real con los datos oficiales del Ministerio de Industria para ofrecerte el 
@@ -378,23 +342,21 @@
     </p>
     
     <div style="margin-top: 20px; font-size: 11px; text-align: center; opacity: 0.7;">
-        &copy; 2026 PrecioCombustibles.com - Datos actualizados cada hora.
+        © 2026 PrecioCombustibles.com - Datos actualizados al momento.
     </div>
 </div>
 
     </div>
-   
-    
-    <!-- MODAL GARAJE -->
-<div id="garageModal" class="modal-bg">
-    <div class="modal-content" style="max-width:400px; padding:20px;">
-        <h3 style="margin-top:0; color:#3498db; border-bottom:1px solid var(--border-color); padding-bottom:10px; flex-shrink:0;">🚗 Mi Garaje</h3>
+
+    <div id="garageModal" class="modal-bg">
+    <div class="modal-content" style="max-width:400px;">
+        <h3 style="margin-top:0; color:var(--accent); border-bottom:1px solid var(--border-color); padding-bottom:10px; flex-shrink:0;">🚗 Mi Garaje</h3>
         
         <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:15px; flex-shrink:0;">
             <input type="hidden" id="editCarId">
-            <input type="text" id="carName" placeholder="Nombre (Ej: Mi Golf)" style="padding:10px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-input); color:var(--text-main);">
+            <input type="text" id="carName" placeholder="Nombre (Ej: Mi Golf)">
             
-            <select id="carFuel" style="padding:10px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-input); color:var(--text-main);">
+            <select id="carFuel">
                 <option value="Precio Gasoleo A">Diésel (Gasóleo A)</option>
                 <option value="Precio Gasoleo Premium">Diésel Premium</option>
                 <option value="Precio Gasolina 95 E5">Gasolina 95 E5</option>
@@ -404,26 +366,43 @@
             </select>
 
             <div style="display:flex; gap:10px; width:100%;">
-                <input type="number" id="carConsumo" placeholder="Consumo (L/100)" step="0.1" style="flex:1; min-width:0; box-sizing:border-box; padding:10px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-input); color:var(--text-main);">
-                <input type="number" id="carDeposito" placeholder="Depósito Max (Litros)" style="flex:1; min-width:0; box-sizing:border-box; padding:10px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-input); color:var(--text-main);">
+                <input type="number" id="carConsumo" placeholder="Consumo (L/100)" step="0.1" style="flex:1; min-width:0; box-sizing:border-box;">
+                <input type="number" id="carDeposito" placeholder="Depósito Max (Litros)" style="flex:1; min-width:0; box-sizing:border-box;">
             </div>
             
-            <button onclick="saveCar()" style="background:#2ecc71; color:white; padding:12px; border:none; border-radius:8px; font-weight:bold; cursor:pointer; font-size:16px;">💾 Guardar Vehículo</button>
+            <button onclick="saveCar()" style="background:var(--accent-green); color:white; padding:12px; border-radius:12px; font-weight:bold; cursor:pointer; font-size:16px;">💾 Guardar Vehículo</button>
         </div>
 
-        <div id="carList" style="overflow-y:auto; border-top:1px solid var(--border-color); padding-top:10px; display:flex; flex-direction:column; gap:8px; flex:1; min-height:50px;">
-            <!-- Aquí aparecerán los coches -->
+        <div id="carList" style="border-top:1px solid var(--border-color); padding-top:10px; display:flex; flex-direction:column; gap:8px; flex:1;">
         </div>
 
-        <button onclick="closeGarage()" style="margin-top:15px; background:transparent; color:var(--text-main); border:1px solid var(--border-color); padding:10px; border-radius:8px; font-weight:bold; cursor:pointer; width:100%; flex-shrink:0;">Cerrar</button>
+        <button onclick="closeGarage()" style="margin-top:15px; background:var(--bg-input); color:var(--text-main); border:none; padding:12px; border-radius:12px; font-weight:bold; cursor:pointer; width:100%; flex-shrink:0;">Cerrar</button>
     </div>
 </div>
+
+        <nav class="bottom-nav">
+        <div class="nav-item active" id="nav-zona" onclick="document.querySelectorAll('.nav-item').forEach(e=>e.classList.remove('active')); this.classList.add('active'); if(document.getElementById('controls').classList.contains('collapsed')) toggleControls(); setMode('zona');">
+            <span class="icon">📍</span><span>Zona</span>
+        </div>
+        <div class="nav-item" id="nav-ruta" onclick="document.querySelectorAll('.nav-item').forEach(e=>e.classList.remove('active')); this.classList.add('active'); if(document.getElementById('controls').classList.contains('collapsed')) toggleControls(); setMode('ruta');">
+            <span class="icon">🛣️</span><span>Rutas</span>
+        </div>
+        <div class="nav-item" id="nav-provincia" onclick="document.querySelectorAll('.nav-item').forEach(e=>e.classList.remove('active')); this.classList.add('active'); if(document.getElementById('controls').classList.contains('collapsed')) toggleControls(); setMode('provincia');">
+            <span class="icon">🗺️</span><span>Provincias</span>
+        </div>
+        <div class="nav-item" onclick="openGarage()">
+            <span class="icon">🚘</span><span>Garaje</span>
+        </div>
+        <div class="nav-item" onclick="toggleControls()">
+            <span class="icon">⚙️</span><span>Filtros</span>
+        </div>
+    </nav>
+
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
         const D = document, q = i => D.getElementById(i);
         
-        // --- CONFIGURACIÓN DE LA API ---
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyeIN2o-dHcyXw-ZAhUKboaotrOJcv-VM7ABYxzEkUsU4q19pKLrEFj64PanMyYSt_-/exec"; 
         const APP_URL = window.location.href;
 
@@ -458,11 +437,10 @@
 
         let favoritos = [];
         try { favoritos = JSON.parse(localStorage.getItem('gasofaFavs')) || []; } catch(e) { favoritos = []; }
-        // Variables para descartar gasolineras inaccesibles en ruta
         window.descartadasRuta = [];
         window.descartarGasolinera = function(id) {
             window.descartadasRuta.push(id);
-            fetchGasolineras(); // Recalculamos todo sin esa gasolinera
+            fetchGasolineras();
         };
         
         let descuentosGuardados = [];
@@ -472,30 +450,27 @@
         map.createPane("puntos_rojo").style.zIndex = 400; map.createPane("puntos_amar").style.zIndex = 401; map.createPane("puntos_verde").style.zIndex = 402;
         map.createPane("precios_rojo").style.zIndex = 600; map.createPane("precios_amar").style.zIndex = 601; map.createPane("precios_verde").style.zIndex = 602;
 
-        // --- ANTIBLOQUEO PARA MÓVILES (Descongelar Pestaña) ---
         document.addEventListener("visibilitychange", () => {
             if (document.visibilityState === 'visible') {
-                isFetching = false; // Liberamos el motor de búsqueda
+                isFetching = false; 
                 if(q("list-container")) q("list-container").classList.remove("bloqueado");
                 if(q("loading-overlay")) q("loading-overlay").style.display = "none";
             }
         });
-        // ------------------------------------------------------
 
         window.onload = () => {
             const sysDark = window.matchMedia('(prefers-color-scheme: dark)');
             const savedDark = localStorage.getItem('gasofaDark');
             const isDark = savedDark !== null ? savedDark === 'true' : sysDark.matches;
-            if(isDark) { document.body.classList.add('dark-mode'); q('btnDarkMode').innerText = '☀️'; }
+            if(isDark) { document.body.classList.add('dark-mode'); q('btnDarkMode').innerText = '☀️ Os'; }
             
             sysDark.addEventListener('change', e => {
                 if(localStorage.getItem('gasofaDark') === null) {
-                    if(e.matches) { document.body.classList.add('dark-mode'); q('btnDarkMode').innerText = '☀️'; }
-                    else { document.body.classList.remove('dark-mode'); q('btnDarkMode').innerText = '🌙'; }
+                    if(e.matches) { document.body.classList.add('dark-mode'); q('btnDarkMode').innerText = '☀️ Oscuro'; }
+                    else { document.body.classList.remove('dark-mode'); q('btnDarkMode').innerText = '🌙 Oscuro'; }
                 }
             });
 
-            // CAMBIO APLICADO: Registrar el Service Worker para la PWA
             if ('serviceWorker' in navigator) {
                 navigator.serviceWorker.register('./sw.js').catch(console.error);
             }
@@ -522,7 +497,6 @@
 
             irAMiUbicacion(!tieneCacheValida);
 
-            // CAMBIO APLICADO: Fetch con anti-caché y redirecciones forzadas
             fetch(WEB_APP_URL + "?accion=obtenerDatosDesdeDrive&t=" + Date.now(), { redirect: "follow" })
               .then(res => res.text())
               .then(dataStr => {
@@ -550,31 +524,20 @@
                 if (typeof gtag === 'function') gtag('event', 'filtro_combustible', { 'tipo': q("tipoCombustible").options[q("tipoCombustible").selectedIndex].text });
                 fetchTrends(q("tipoCombustible").value); guardarPreferencias(); fetchGasolineras(); 
             });
-            // --- CHIVATAZO: CAMBIO DE RADIO DE BÚSQUEDA ---
             q("radioBusqueda").addEventListener("change", () => { 
-                if (typeof gtag === 'function') {
-                    gtag('event', 'cambio_radio', { 'km_elegidos': q("radioBusqueda").value });
-                }
+                if (typeof gtag === 'function') { gtag('event', 'cambio_radio', { 'km_elegidos': q("radioBusqueda").value }); }
             });
-            // ----------------------------------------------
-            q("provinciaInput").addEventListener("change", () => { 
-    // --- CHIVATO ANALYTICS: BUSCAR PROVINCIA ---
-    if (typeof gtag === 'function') {
-        gtag('event', 'busqueda_provincia', {
-            'provincia_elegida': q("provinciaInput").options[q("provinciaInput").selectedIndex].text
-        });
-    }
-    guardarPreferencias(); 
-    fetchGasolineras(); 
-});
+                        q("provinciaInput").addEventListener("change", () => { 
+                if (typeof gtag === 'function') { gtag('event', 'busqueda_provincia', { 'provincia_elegida': q("provinciaInput").options[q("provinciaInput").selectedIndex].text }); }
+                // Cerramos los filtros automáticamente al elegir provincia
+                if (!q("controls").classList.contains("collapsed")) toggleControls();
+                guardarPreferencias(); fetchGasolineras(); 
+            });
+
             q("cpInput").addEventListener("keypress", e => { 
-                if(e.key === "Enter") { 
-                    e.preventDefault(); 
-                    e.target.blur(); 
-                    buscarPorCP(); 
-                } 
+                if(e.key === "Enter") { e.preventDefault(); e.target.blur(); buscarPorCP(); } 
             });
-           // --- NUEVO: AUTOCOMPLETADO UNIVERSAL (ZONA Y RUTAS) ---
+            
             function activarAutocompletado(inputId, listId, isZona) {
                 let input = q(inputId);
                 if (!input) return;
@@ -585,7 +548,6 @@
                     let list = q(listId);
                     list.innerHTML = "";
                     
-                    // Si el usuario empieza a escribir, ocultamos la píldora para que no moleste
                     if (inputId === "origenInput" && q("cityNameRuta")) q("cityNameRuta").style.display = "none";
                     if (inputId === "destinoInput" && q("cityNameDest")) q("cityNameDest").style.display = "none";
                     if (inputId === "pasandoPorInput" && q("cityNameInter")) q("cityNameInter").style.display = "none";
@@ -614,7 +576,7 @@
                                     
                                     div.onclick = function() {
                                         list.style.display = "none";
-                                        input.value = ""; // Vaciamos SIEMPRE la caja para ver el texto fantasma
+                                        input.value = ""; 
                                         
                                         if (isZona) {
                                             if(q("cityName")) { q("cityName").style.display = "inline-block"; q("cityName").innerText = "📍 " + nombrePrincipal; }
@@ -623,7 +585,6 @@
                                             ponerMarcadorUsuario(parseFloat(item.lat), parseFloat(item.lon));
                                             fetchGasolineras();
                                         } else {
-                                            // En Modo Ruta, encendemos la píldora azul que toque
                                             if (inputId === "origenInput" && q("cityNameRuta")) { q("cityNameRuta").style.display = "inline-block"; q("cityNameRuta").innerText = "📍 " + nombrePrincipal; }
                                             if (inputId === "destinoInput" && q("cityNameDest")) { q("cityNameDest").style.display = "inline-block"; q("cityNameDest").innerText = "📍 " + nombrePrincipal; }
                                             if (inputId === "pasandoPorInput" && q("cityNameInter")) { q("cityNameInter").style.display = "inline-block"; q("cityNameInter").innerText = "📍 " + nombrePrincipal; }
@@ -631,23 +592,17 @@
                                     };
                                     list.appendChild(div);
                                 });
-                            } else {
-                                list.style.display = "none";
-                            }
-                        } catch(err) {
-                            list.style.display = "none";
-                        }
+                            } else { list.style.display = "none"; }
+                        } catch(err) { list.style.display = "none"; }
                     }, 500); 
                 });
             }
 
-            // Aplicamos la magia a las 4 cajas de tu app
             activarAutocompletado("cpInput", "autocomplete-list", true);
             activarAutocompletado("origenInput", "autocomplete-list-origen", false);
             activarAutocompletado("destinoInput", "autocomplete-list-destino", false);
             activarAutocompletado("pasandoPorInput", "autocomplete-list-inter", false);
 
-            // Si pinchas fuera, cerramos todos los menús para que no molesten
             document.addEventListener("click", function (e) {
                 ["autocomplete-list", "autocomplete-list-origen", "autocomplete-list-destino", "autocomplete-list-inter"].forEach(id => {
                     let list = q(id);
@@ -656,34 +611,28 @@
                     }
                 });
             });
-            // --------------------------------------------------------------
+            
             q("destinoInput").addEventListener("keypress", e => { if(e.key === "Enter") calcularRuta(); });
-            // --- MAGIA PARA BORRAR PÍLDORAS INTUITIVAMENTE (Con el teclado) ---
+            
             ["cpInput", "origenInput", "destinoInput", "pasandoPorInput"].forEach(id => {
                 const inpt = q(id);
                 if (inpt) {
                     inpt.addEventListener("keydown", (e) => {
-                        // Relacionamos cada caja con su píldora
                         const pillMap = { "cpInput": "cityName", "origenInput": "cityNameRuta", "destinoInput": "cityNameDest", "pasandoPorInput": "cityNameInter" };
                         const pill = q(pillMap[id]);
-                        
-                        // Si la píldora se está mostrando y tocas cualquier tecla...
                         if (pill && pill.style.display !== "none") {
-                            pill.style.display = "none"; // La fulminamos visualmente
-                            
-                            // Si justo tocaste la tecla Borrar/Retroceso, vaciamos la caja para que no quede basura
-                            if (e.key === "Backspace" || e.key === "Delete") {
-                                inpt.value = "";
-                            }
+                            pill.style.display = "none"; 
+                            if (e.key === "Backspace" || e.key === "Delete") { inpt.value = ""; }
                         }
                     });
                 }
             });
+            
             map.on('click', () => { 
                 if(!q("controls").classList.contains("collapsed")) toggleControls(); 
             });
 
-            // Truco para inyectar los servicios OSM en el PopUp al abrirlo
+                        // Truco para inyectar los servicios OSM en el PopUp al abrirlo y CENTRAR el mapa
             map.on('popupopen', function(e) {
                 let node = e.popup._contentNode;
                 let placeholder = node.querySelector('.osm-pop-placeholder');
@@ -693,19 +642,37 @@
                         placeholder.innerHTML = window.osmCache[id];
                     }
                 }
-                q("socialLinks").classList.remove("show");
-                q("modeLinks").classList.remove("show");
+                
+                // Mover la cámara al centro exacto con un pequeño desplazamiento
+                // Restamos 130px en el eje Y para que el pin quede un poco por debajo del centro 
+                // y así el globo tenga muchísimo espacio por arriba para verse entero.
+                let targetPoint = map.project(e.popup.getLatLng(), map.getZoom()).subtract([0, 130]);
+                let targetLatLng = map.unproject(targetPoint, map.getZoom());
+                
+                map.panTo(targetLatLng, { animate: true, duration: 0.4 });
             });
+
         };
 
-        function toggleModeMenu() { 
-            q('modeLinks').classList.toggle('show'); 
-            q('socialLinks').classList.remove('show');
+                        function toggleControls() { 
+            const c = q("controls"); 
+            const list = q("list-container");
+            
+            c.classList.toggle("collapsed"); 
+            
+            if (c.classList.contains("collapsed")) {
+                if (list) list.classList.remove("hidden-down");
+            } else {
+                if (list) list.classList.add("hidden-down");
+            }
+            
+            // 🗺️ MAGIA: Le decimos al mapa que recalcule su tamaño súper rápido 
+            // durante medio segundo para que rellene el hueco fluidamente sin parpadear
+            let stretchInterval = setInterval(() => { if(map) map.invalidateSize(); }, 50);
+            setTimeout(() => clearInterval(stretchInterval), 450);
         }
-        function toggleSocial() { 
-            q('socialLinks').classList.toggle('show'); 
-            q('modeLinks').classList.remove('show');
-        }
+
+
         
         function actualizarInterfazLitros() {
             let esProv = (searchMode === 'provincia');
@@ -713,15 +680,12 @@
             let cocheSeleccionado = q("activeCarSelect") && q("activeCarSelect").value !== "";
 
             if (esProv) {
-                // En provincia no enseñamos nada
                 if(q("contenedorLitrosManuales")) q("contenedorLitrosManuales").style.display = "none";
                 if(q("modoLlenadoInteligente")) q("modoLlenadoInteligente").style.display = "none";
             } else if (esRuta && cocheSeleccionado) {
-                // SOLO en Modo Ruta + Coche seleccionado mostramos el Llenado Inteligente
                 if(q("contenedorLitrosManuales")) q("contenedorLitrosManuales").style.display = "none";
                 if(q("modoLlenadoInteligente")) q("modoLlenadoInteligente").style.display = "flex";
             } else {
-                // En Modo Zona, o si no hay coche, mostramos la caja de litros normal
                 if(q("contenedorLitrosManuales")) q("contenedorLitrosManuales").style.display = "flex";
                 if(q("modoLlenadoInteligente")) q("modoLlenadoInteligente").style.display = "none";
             }
@@ -729,14 +693,12 @@
         
         function setMode(mode, isInit = false) {
             searchMode = mode;
-            q('modeLinks').classList.remove('show');
             
             const optInteligente = q("ordenarPor").querySelector('option[value="inteligente"]');
             const optDistancia = q("ordenarPor").querySelector('option[value="distancia"]');
             const optAhorro = q("ordenarPor").querySelector('option[value="ahorro"]');
 
             if(mode === 'zona') {
-                q('btnToggleMode').innerText = '📍'; q('btnToggleMode').title = 'Modo Zona';
                 q('zona-ui').style.display = 'block'; q('ruta-ui').style.display = 'none'; q('provincia-ui').style.display = 'none';
                 
                 if (optInteligente) { optInteligente.disabled = true; optInteligente.innerText = "🧠 Solo Plan Inteligente (En Ruta)"; }
@@ -752,7 +714,6 @@
                 if(!isInit && userCoords) { map.setView(userCoords, 14); fetchGasolineras(); }
             
             } else if (mode === 'ruta') {
-                q('btnToggleMode').innerText = '🛣️'; q('btnToggleMode').title = 'Modo Ruta';
                 q('zona-ui').style.display = 'none'; q('ruta-ui').style.display = 'block'; q('provincia-ui').style.display = 'none';
 
                 if (optInteligente) { optInteligente.disabled = false; optInteligente.innerText = "🧠 Solo Plan Inteligente"; }
@@ -770,15 +731,11 @@
                 }
             
             } else if (mode === 'provincia') {
-                q('btnToggleMode').innerText = '🗺️'; q('btnToggleMode').title = 'Modo Provincia';
                 q('zona-ui').style.display = 'none'; q('ruta-ui').style.display = 'none'; q('provincia-ui').style.display = 'block';
 
-                // En provincia no tiene sentido calcular distancia a ti ni plan inteligente, las bloqueamos
                 if (optInteligente) { optInteligente.disabled = true; optInteligente.innerText = "🧠 Solo Plan Inteligente (En Ruta)"; }
                 if (optDistancia) optDistancia.disabled = true;
                 if (optAhorro) optAhorro.disabled = true;
-                
-                // Forzamos ordenar por precio
                 if (["inteligente", "distancia", "ahorro"].includes(q("ordenarPor").value)) {
                     q("ordenarPor").value = "precio"; 
                 }
@@ -797,37 +754,28 @@
                 }
             }
             
-            // --- MAGIA DE INTERFAZ: Esconder lo que sobra en Provincia ---
             let esProv = (mode === 'provincia');
-            actualizarInterfazLitros(); // <--- Llama al nuevo árbitro
+            actualizarInterfazLitros(); 
             if(q("consumoInput")) q("consumoInput").style.display = esProv ? "none" : "";
             if(q("autonomiaInput")) q("autonomiaInput").style.display = esProv ? "none" : "";
             if(q("idaVueltaInput") && q("idaVueltaInput").parentElement) q("idaVueltaInput").parentElement.style.display = esProv ? "none" : "";
             
-            isFetching = false; // Desbloqueo de seguridad extra al cambiar de modo
-            // -------------------------------------------------------------
+            isFetching = false; 
 
-            // Mostrar u ocultar el Garaje según el modo
-                const selectorCoches = document.getElementById('activeCarSelect');
+            const selectorCoches = document.getElementById('activeCarSelect');
             if (selectorCoches) {
-            // NOTA: Cambia "mode" por la palabra que use tu función entre paréntesis (puede ser "modo", "tipo", etc.)
-            if (mode === 'provincia') {
-            selectorCoches.style.display = 'none';
-            } else {
-            // Si volvemos a Ruta, lo mostramos (¡pero solo si hay coches guardados en el garaje!)
-            selectorCoches.style.display = (typeof myCars !== 'undefined' && myCars.length > 0) ? 'block' : 'none';
-        }
-    }
+                if (mode === 'provincia') {
+                    selectorCoches.style.display = 'none';
+                } else {
+                    selectorCoches.style.display = (typeof myCars !== 'undefined' && myCars.length > 0) ? 'block' : 'none';
+                }
+            }
 
             guardarPreferencias();
         }
 
         async function calcularRuta() {
-            // --- CHIVATO ANALYTICS: BUSCAR RUTA ---
-            if (typeof gtag === 'function') {
-                 gtag('event', 'buscar_ruta');
-            }
-            // Leemos la caja, y si está vacía, leemos el nombre de la píldora
+            if (typeof gtag === 'function') { gtag('event', 'buscar_ruta'); }
             let orig = q("origenInput").value.trim();
             if (orig === "" && q("cityNameRuta") && q("cityNameRuta").style.display !== "none") orig = q("cityNameRuta").innerText.replace("📍 ", "").trim();
 
@@ -857,9 +805,7 @@
                     }
                     else throw "No se encuentra el origen ingresado.";
                 } else {
-                    if(q("cityNameRuta") && q("cityNameRuta").innerText !== "") {
-                        q("cityNameRuta").style.display = "inline-block";
-                    }
+                    if(q("cityNameRuta") && q("cityNameRuta").innerText !== "") { q("cityNameRuta").style.display = "inline-block"; }
                 }
 
                 if(!coordOrig) throw "No tenemos tu ubicación actual. Escribe una ciudad de origen.";
@@ -875,7 +821,6 @@
                     if(q("cityNameDest")) { q("cityNameDest").innerText = "📍 " + c; q("cityNameDest").style.display = "inline-block"; }
                 } else throw "No se encuentra el destino ingresado.";
 
-                // Leemos la caja intermedia, y si está vacía, leemos la píldora
                 let inter = q("pasandoPorInput").value.trim();
                 if (inter === "" && q("cityNameInter") && q("cityNameInter").style.display !== "none") inter = q("cityNameInter").innerText.replace("📍 ", "").trim();
                 let coordInter = null;
@@ -911,7 +856,7 @@
                 if(d3.code !== 'Ok' || !d3.routes || d3.routes.length === 0) throw "Error al calcular la ruta por carretera.";
 
                 allRoutes = d3.routes; 
-                window.descartadasRuta = []; // Limpiamos las ignoradas al empezar ruta nueva
+                window.descartadasRuta = []; 
                 
                 if(originMarker) map.removeLayer(originMarker);
                 if(destMarker) map.removeLayer(destMarker);
@@ -1015,6 +960,7 @@
                     "IDEESS": g["IDEESS"], "Rótulo": g["Rótulo"], "Latitud": g["Latitud"], "Longitud (WGS84)": g["Longitud (WGS84)"],
                     "Horario": g["Horario"], "Dirección": g["Dirección"], "Tipo Venta": g["Tipo Venta"],
                     "Provincia": g["Provincia"],
+                    "Municipio": g["Municipio"] || g["Localidad"], 
                     "Precio Gasoleo A": g["Precio Gasoleo A"], "Precio Gasolina 95 E5": g["Precio Gasolina 95 E5"],
                     "Precio Gasoleo Premium": g["Precio Gasoleo Premium"], "Precio Gasolina 98 E5": g["Precio Gasolina 98 E5"],
                     "Precio Gasoleo B": g["Precio Gasoleo B"], "Precio Gases Licuados del Petróleo": g["Precio Gases Licuados del Petróleo"],
@@ -1103,7 +1049,6 @@
     });
     localStorage.setItem('gasofaDesc', JSON.stringify(descuentosGuardados));
     
-    // --- CHIVATO ANALYTICS: GUARDAR TARJETAS ---
     if (typeof gtag === 'function') {
         gtag('event', 'guardar_tarjeta', {
             'cantidad_tarjetas': descuentosGuardados.length
@@ -1116,26 +1061,12 @@
 
         function toggleTheme() {
             const body = document.body; body.classList.toggle('dark-mode'); const isDark = body.classList.contains('dark-mode');
-            localStorage.setItem('gasofaDark', isDark); q('btnDarkMode').innerText = isDark ? '☀️' : '🌙';
+            localStorage.setItem('gasofaDark', isDark); q('btnDarkMode').innerText = isDark ? '☀️ Claro' : '🌙 Oscuro';
             if (chartInstance) {
                 const tColor = isDark ? '#e0e0e0' : '#333'; const gColor = isDark ? '#333' : '#ddd';
                 chartInstance.options.scales.x.ticks.color = tColor; chartInstance.options.scales.x.grid.color = gColor;
                 chartInstance.options.scales.y.ticks.color = tColor; chartInstance.options.scales.y.grid.color = gColor;
                 chartInstance.options.plugins.legend.labels.color = tColor; chartInstance.update();
-            }
-        }
-
-        function toggleControls() { 
-            const c = q("controls"); 
-            const sf = q("secFabs");
-            c.classList.toggle("collapsed"); 
-            
-            if (c.classList.contains("collapsed")) {
-                sf.classList.remove("show");
-                q("socialLinks").classList.remove("show");
-                q("modeLinks").classList.remove("show");
-            } else {
-                sf.classList.add("show");
             }
         }
 
@@ -1164,7 +1095,6 @@
             }
         }
 
-        // CAMBIO APLICADO: Fetch con anti-caché y redirecciones forzadas
         function fetchTrends(v) {
             const c = { "Precio Gasoleo A": 4, "Precio Gasolina 95 E5": 5, "Precio Gasoleo Premium": 6, "Precio Gasolina 98 E5": 7, "Precio Gasoleo B": 8, "Precio Gas Natural Comprimido": 9, "AdBlue": 10, "Precio Gas Natural Licuado": 11 };
             if(!c[v]) return;
@@ -1307,11 +1237,10 @@
                         const a = d.address, c = a.city || a.town || a.village || a.municipality || "Ubicación"; 
                         if(cn) { cn.innerText = "📍 " + c; cn.style.display = "inline-block"; }
                         if(cnRuta) { cnRuta.innerText = "📍 " + c; cnRuta.style.display = "inline-block"; }
-                        // Vaciamos la cajita de búsqueda para que se vea el texto fantasma
                         q("cpInput").value = "";
                         
                         if(q("origenInput").value === "" || q("origenInput").value === "Mi Ubicación") {
-                            q("origenInput").value = c; // Ponemos el nombre de la ciudad en la ruta, no el CP
+                            q("origenInput").value = c; 
                         }
                     } else {
                         if(cn) cn.style.display = "none";
@@ -1328,21 +1257,24 @@
             }, { enableHighAccuracy: true });
         }
 
-        async function buscarPorCP() {
+                async function buscarPorCP() {
             if (typeof gtag === 'function') gtag('event', 'buscar_zona');
+            
+            // Cerramos SIEMPRE el panel de filtros de forma instantánea al darle a la lupa
+            if (!q("controls").classList.contains("collapsed")) toggleControls();
+
             const v = q("cpInput").value.trim();
             const cn = q("cityName");
             const cnRuta = q("cityNameRuta"); 
             
+            // Si no hay texto nuevo pero ya teníamos una ciudad guardada (píldora), detenemos el código aquí.
             if (v.length < 2) return;
 
-            if (!q("controls").classList.contains("collapsed")) toggleControls();
             
             if(cn) { cn.style.display = "inline-block"; cn.innerText = "⏳..."; }
             if(cnRuta) { cnRuta.style.display = "inline-block"; cnRuta.innerText = "⏳..."; }
             
             try {
-                // Buscamos directamente el texto (pueblo o ciudad) en España sin parches de CP
                 const r = await fetch('https://nominatim.openstreetmap.org/search?q=' + encodeURIComponent(v) + '&countrycodes=es&format=json&addressdetails=1');
                 const d = await r.json();
                 
@@ -1358,7 +1290,7 @@
                     if(cn) cn.innerText = "📍 " + c; 
                     if(cnRuta) cnRuta.innerText = "📍 " + c; 
                     
-                    q("cpInput").value = ""; // Vaciamos la cajita
+                    q("cpInput").value = ""; 
                     fetchGasolineras();
                 } else { 
                     if(cn) cn.innerText = "❌ Error"; 
@@ -1398,7 +1330,6 @@
             chartInstance.update();
         };
 
-        // CAMBIO APLICADO: Fetch con anti-caché y redirecciones forzadas
         function mostrarHistorico(n, id, h) {
             if (typeof gtag === 'function') gtag('event', 'ver_historico', { 'gasolinera': n });
             if(chartInstance) chartInstance.destroy();
@@ -1493,23 +1424,28 @@
         }
         
         async function fetchGasolineras() {
-            if(!userCoords || !cacheGasolineras || isFetching) return;
+            if(!cacheGasolineras || isFetching) return;
+            if(searchMode === 'zona' && !userCoords) return; 
             if(searchMode === 'ruta' && !routePolylineCoords) return;
             if(searchMode === 'provincia' && !q("provinciaInput").value) return;
 
             isFetching = true;
-            q("list-container").classList.add("bloqueado"); // BLOQUEAR SCROLL
-            q("list-container").scrollTop = 0; // <--- TE LLEVA ARRIBA DEL TODO
+            q("list-container").classList.add("bloqueado"); 
+            q("list-container").scrollTop = 0; 
 
             try {
                 const fT = q("tipoCombustible").value, fTN = q("tipoCombustible").options[q("tipoCombustible").selectedIndex].text, mD = parseFloat(q("radioBusqueda").value), fM = q("marcaInput").value.toUpperCase(), o = q("ordenarPor").value, lts = parseFloat(q("litrosInput").value) || 0, consumo = parseFloat(q("consumoInput").value) || 0, idV = q("idaVueltaInput").checked, sA = q("abiertasInput").checked, lD = q("gas-list");
                 
                 const valProv = q("provinciaInput") ? q("provinciaInput").value : "";
+                
+                // LÓGICA DE AUTONOMÍA INTACTA (Manual o Depósito lleno)
                 const valAuto = q("autonomiaInput").value;
-                const autonomia = valAuto ? parseFloat(valAuto) : Infinity;
+                let autonomiaManual = valAuto ? parseFloat(valAuto) : null;
+                let autonomiaMaximaCoche = (window.currentCarCapacity > 0 && consumo > 0) ? (window.currentCarCapacity / consumo) * 100 : Infinity;
+                let autonomia = autonomiaManual !== null ? autonomiaManual : autonomiaMaximaCoche;
                 const tieneAutonomia = !isNaN(autonomia) && autonomia > 0 && autonomia !== Infinity;
 
-                let currentCoordsStr = userCoords[0] + "," + userCoords[1];
+                let currentCoordsStr = userCoords ? (userCoords[0] + "," + userCoords[1]) : "sin-gps";
                 if (lastCoordsStr === "") { lastCoordsStr = currentCoordsStr; } 
                 else if (lastCoordsStr !== currentCoordsStr && searchMode === 'zona') { 
                     osrmCache = {}; 
@@ -1525,7 +1461,6 @@
                 if(searchMode === 'ruta') bounds = routeLineLayer.getBounds();
 
                 let enRadio = cacheGasolineras.filter(g => {
-                    // Si el usuario la ha descartado visualmente, la saltamos
                     if (window.descartadasRuta && window.descartadasRuta.includes(g.IDEESS)) return false;
                     
                     if(sA && !isGasolineraOpen(g.Horario)) return false;
@@ -1534,15 +1469,11 @@
                     const lat = parseFloat(g.Latitud.replace(",", "."));
                     const lon = parseFloat(g["Longitud (WGS84)"].replace(",", "."));
 
-                    // --- FILTRO ANTI "NULL ISLAND" ---
-                    // Si la coordenada está rota, vacía, o es 0,0 (África), ignoramos la gasolinera para que no rompa el mapa.
-                    // (Sabiendo que España y Canarias están por encima de la latitud 25)
                     if (isNaN(lat) || isNaN(lon) || lat < 25) return false;
 
                     if (searchMode === 'provincia') {
                         if (valProv) {
                             if (!g.Provincia) return false;
-                            // Limpiamos tanto la base de datos como tu búsqueda (adiós tildes y eñes) para que coincidan 100%
                             let provLimpia = g.Provincia.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
                             let busquedaLimpia = valProv.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
                             if (!provLimpia.includes(busquedaLimpia)) return false;
@@ -1570,8 +1501,6 @@
                         
                         g.distHaversine = minDist; 
                         g.distDesdeOrigen = routeCumDist[closestIdx] + minDist; 
-                        // Hemos quitado el bloqueo de autonomía aquí para que el 
-                        // Plan Inteligente pueda ver las gasolineras del segundo y tercer repostaje.
                     }
                     
                     g.precioOficial = parseFloat(p.replace(",", "."));
@@ -1608,7 +1537,6 @@
                     markersLayer.clearLayers(); return; 
                 }
                 
-                // NO calculamos rutas OSRM complejas en modo provincia
                 if (searchMode === 'zona') {
                     let needsRouting = filtradas.filter(g => osrmCache[g.IDEESS] === undefined);
                     if(needsRouting.length > 0) {
@@ -1678,11 +1606,10 @@
                         let ahorroTotalPlan = 0;
                         let kmUltimoRepostaje = 0; 
 
-                        // 1. Calculamos la autonomía MÁXIMA del coche si está en el garaje
-                        let autonomiaMaximaCoche = (window.currentCarCapacity > 0 && consumo > 0) ? (window.currentCarCapacity / consumo) * 100 : autonomia;
+                        // LÓGICA DE AUTONOMÍA (INICIA CON MANUAL, LUEGO MÁXIMA)
+                        let autonomiaDisponible = autonomiaManual !== null ? autonomiaManual : autonomiaMaximaCoche;
 
                         let estacionesRuta = encuentros.slice().sort((a, b) => a.kmTravesia - b.kmTravesia);
-                        let autonomiaDisponible = autonomia; 
                         
                         while (distRestante > autonomiaDisponible && paradaNum < 15) {
                             paradaNum++;
@@ -1699,7 +1626,6 @@
 
                             if (candidatas.length === 0) return null;
 
-                            // Comprobamos si estamos en "Modo Garaje Inteligente"
                             let modoLlenadoActivo = (window.currentCarCapacity > 0 && q("llenarDepositoInput") && q("llenarDepositoInput").checked);
 
                             candidatas.forEach(c => {
@@ -1707,30 +1633,21 @@
                                 let litrosAComprar = 0;
 
                                 if (modoLlenadoActivo) {
-                                    // --- LÓGICA DE VIAJE REAL (Llenar depósito) ---
                                     if (paradaNum === 1) {
-                                        // 1. ¿Cuántos litros teníamos al salir de casa según la autonomía?
                                         let litrosAlSalir = (autonomia / 100) * consumo;
-                                        // 2. ¿Cuántos hemos quemado hasta llegar a esta gasolinera?
                                         let litrosGastados = (kmConducidos / 100) * consumo;
-                                        // 3. Lo que nos queda en el tanque al llegar al surtidor
                                         let litrosRestantesAlLlegar = litrosAlSalir - litrosGastados;
-                                        
-                                        // 4. Si llenamos a tope, echamos exactamente lo que falta para llegar a los litros máximos
                                         litrosAComprar = window.currentCarCapacity - Math.max(0, litrosRestantesAlLlegar);
                                     } else {
-                                        // En paradas posteriores, salimos con el depósito LLENO de la parada anterior
                                         let litrosGastados = (kmConducidos / 100) * consumo;
-                                        litrosAComprar = litrosGastados; // Rellenamos a tope lo gastado
+                                        litrosAComprar = litrosGastados; 
                                     }
                                 } else {
-                                    // --- LÓGICA ANTIGUA (Manual) ---
                                     if (paradaNum === 1) {
                                         litrosAComprar = litrosEfectivos + ((kmConducidos / 100) * consumo);
                                     } else {
                                         litrosAComprar = (kmConducidos / 100) * consumo;
                                     }
-                                    // Topes de seguridad
                                     if (window.currentCarCapacity > 0 && litrosAComprar > window.currentCarCapacity) {
                                         litrosAComprar = window.currentCarCapacity;
                                     } else if (window.currentCarCapacity === 0 && litrosAComprar > litrosEfectivos && paradaNum === 1) {
@@ -1738,9 +1655,7 @@
                                     }
                                 }
 
-                                // Guardamos los litros calculados para poder enseñárselos al usuario luego
                                 c.litrosRepostados = litrosAComprar;
-
                                 let ahorroBrutoReal = (globalMaxP - c.pN) * litrosAComprar;
                                 let costoDesvioReal = (c.distCalculada * 2) * (consumo / 100) * c.pN;
                                 c.ahorroRealTemporal = ahorroBrutoReal - costoDesvioReal;
@@ -1795,6 +1710,7 @@
                     gasolinerasParaPintar = []; 
                 }
 
+                // DIBUJADO DE LAS TARJETAS (ESTILO NATIVO NUEVO)
                 gasolinerasParaPintar.forEach((g) => {
                     const lat = parseFloat(g.Latitud.replace(",", ".")), ln = parseFloat(g["Longitud (WGS84)"].replace(",", "."));
                     const pN = g.pN; 
@@ -1812,23 +1728,16 @@
                     }
 
                     let tData = currentTrends[g.IDEESS], tH_m = trendsLoaded ? getTrendHTML(tData, 'map') : '⏳', tH = trendsLoaded ? getTrendHTML(tData, 'list') : '⏳';
-                    let cS = pN <= (globalMinP + 0.03) ? "#27ae60" : pN < (globalMinP + globalMaxP) / 2 ? "#f39c12" : "#e74c3c";
+                    let cS = pN <= (globalMinP + 0.03) ? "var(--accent-green)" : pN < (globalMinP + globalMaxP) / 2 ? "var(--accent-orange)" : "#e74c3c";
                     
-                    let pPunto = cS === "#27ae60" ? "puntos_verde" : cS === "#f39c12" ? "puntos_amar" : "puntos_rojo";
-                    let pPrecio = cS === "#27ae60" ? "precios_verde" : cS === "#f39c12" ? "precios_amar" : "precios_rojo";
+                    let pPunto = cS === "var(--accent-green)" ? "puntos_verde" : cS === "var(--accent-orange)" ? "puntos_amar" : "puntos_rojo";
+                    let pPrecio = cS === "var(--accent-green)" ? "precios_verde" : cS === "var(--accent-orange)" ? "precios_amar" : "precios_rojo";
                     
                     const m = (g.pN === globalMinP) ? "🥇" : "";
                     const bSM = isR ? '<div style="background:#c0392b;color:#fff;font-size:10px;padding:2px 5px;border-radius:4px;display:inline-block;margin-bottom:5px;">🔒 SOLO SOCIOS</div><br>' : '';
                     const mU = "https://www.google.com/maps/dir/?api=1&destination=" + lat + "," + ln, sN = g.Rótulo.replace(/'/g, ""), iM = 'heart_map_' + g.IDEESS;
                     
-                    let htmlAhorroMap = "";
-                    if (consumo > 0 && searchMode !== 'provincia') {
-                        if (g.aNeto > 0) htmlAhorroMap = '<div class="pulse-ahorro" style="background:'+cS+';color:#fff;padding:5px;border-radius:5px;margin:5px 0;font-weight:bold;text-align:center;">AHORRO NETO: '+g.aNeto.toFixed(2)+'€<br><span style="font-size:13px;font-weight:bold;color:#1e3a29;">('+(searchMode==='zona'?'Viaje':'Desvío')+' descontado: -'+g.cViaje.toFixed(2)+'€)</span></div>';
-                        else htmlAhorroMap = '<div style="background:#e74c3c;color:#fff;padding:5px;border-radius:5px;margin:5px 0;font-weight:bold;text-align:center;">PIERDES '+Math.abs(g.aNeto).toFixed(2)+'€<br><span style="font-size:13px;font-weight:bold;color:#4a0000;">('+(searchMode==='zona'?'Viaje':'Desvío')+': -'+g.cViaje.toFixed(2)+'€)</span></div>';
-                    } else if (g.aBruto > 0) {
-                        htmlAhorroMap = '<div class="pulse-ahorro" style="background:'+cS+';color:#fff;padding:5px;border-radius:5px;margin:5px 0;font-weight:bold;text-align:center;">Ahorras '+g.aBruto.toFixed(2)+'€</div>';
-                    }
-
+                  
                     let msgDist = '';
                     if (searchMode === 'zona') msgDist = '🚗 ' + g.distCalculada.toFixed(2) + ' km' + (g.tiempoCalculado ? ' | ⏱️ ' + g.tiempoCalculado + ' min' : '');
                     else if (searchMode === 'ruta') msgDist = '⤴️ Desvío: ' + g.distCalculada.toFixed(2) + ' km';
@@ -1838,15 +1747,65 @@
                     const waM = encodeURIComponent('⛽ ¡Ojo! ' + fTN + ' a ' + pN.toFixed(3) + '€/L en ' + g.Rótulo + ' (' + g.Dirección + '). ' + msgAhorroWa + ' 🚗💨\n\n📍 Míralo en Gasofa Pro:\n' + APP_URL);
                     const waB = '<a class="btn-action btn-wa" href="https://api.whatsapp.com/send?text=' + waM + '" target="_blank">💬 WA</a>';
                     
-                                        let osmCacheHtml = window.osmCache && window.osmCache[g.IDEESS] ? window.osmCache[g.IDEESS] : '<span style="font-size:11px;color:#3498db;font-weight:bold;">🔄 Buscando servicios...</span>';
-                    const pop = '<div style="text-align:center;min-width:170px;"><div style="font-size:1.1em;margin-bottom:5px;"><strong>' + m + ' ' + g.Rótulo + '</strong> <span id="' + iM + '" class="fav-btn fav-btn-id-' + g.IDEESS + '" onclick="toggleFav(\'' + g.IDEESS + '\',event,\'' + iM + '\')">' + hIc + '</span></div>' + bSM + '<div style="color:' + cS + ';font-size:1.2em;font-weight:bold;display:flex;align-items:center;justify-content:center;gap:6px;">' + pStrVisualPop + ' <span class="tr-ind" data-type="list" data-id="' + g.IDEESS + '">' + tH + '</span></div><div style="margin: 4px 0;"><span class="distancia-badge" style="font-size:0.8em; padding: 2px 6px;">' + msgDist + '</span></div><div style="font-size:0.85em; color:var(--text-muted); margin-bottom:5px;">🕒 ' + (g.Horario||'') + '</div><div class="osm-pop-placeholder" data-id="' + g.IDEESS + '" style="display:flex; flex-wrap:wrap; justify-content:center; gap:4px; margin:8px 0;">' + osmCacheHtml + '</div>' + htmlAhorroMap + '<div style="display:flex;justify-content:center;gap:2px;margin-top:5px;flex-wrap:wrap;"><button class="btn-action btn-historial" onclick="mostrarHistorico(\'' + sN + '\',\'' + g.IDEESS + '\',\'' + (g.Horario||'') + '\')">📈 HISTORICO</button>' + waB + '<a class="btn-action btn-directo" href="' + mU + '" target="_blank">COMO LLEGAR ↗</a></div></div>';
+                                        // --- NUEVO DISEÑO POP-UP NATIVO CENTRADO ---
+                                        // --- 1. Ahorro Ultra Compacto (Solo para el Pop-Up) ---
+                    let htmlAhorroPop = "";
+                    if (consumo > 0 && searchMode !== 'provincia') {
+                        if (g.aNeto > 0) htmlAhorroPop = `<div style="background:${cS};color:#fff;padding:4px 6px;border-radius:6px;font-weight:bold;font-size:10px;">+${g.aNeto.toFixed(2)}€</div>`;
+                        else htmlAhorroPop = `<div style="background:#e74c3c;color:#fff;padding:4px 6px;border-radius:6px;font-weight:bold;font-size:10px;">-${Math.abs(g.aNeto).toFixed(2)}€</div>`;
+                    } else if (g.aBruto > 0) {
+                        htmlAhorroPop = `<div style="background:${cS};color:#fff;padding:4px 6px;border-radius:6px;font-weight:bold;font-size:10px;">AHORRA ${g.aBruto.toFixed(2)}€</div>`;
+                    }
 
+                    // --- 2. Insignia Socios Compacta ---
+                    const bSMPop = isR ? '<span style="background:#c0392b;color:#fff;font-size:8px;padding:2px 4px;border-radius:4px;margin-left:4px;vertical-align:middle;">🔒 SOCIOS</span>' : '';
+
+                    // --- 3. Diseño del Pop-Up ---
+                    let osmCacheHtml = window.osmCache && window.osmCache[g.IDEESS] ? window.osmCache[g.IDEESS] : '<span style="font-size:10px;color:var(--text-muted);">🔄 Buscando extras...</span>';
                     
-                    L.circleMarker([lat, ln], { radius: 8, fillColor: cS, color: "#fff", weight: 2, fillOpacity: .9, pane: pPunto }).addTo(markersLayer).bindPopup(pop);
-                    L.marker([lat, ln], { icon: L.divIcon({ className: '', html: '<div class="price-label-wrapper" style="border-color:' + cS + ';color:' + cS + ';">' + pStrVisualMap + '<span class="tr-ind" style="margin-left:4px;" data-type="map" data-id="' + g.IDEESS + '">' + tH_m + '</span></div>', iconSize: iconSz, iconAnchor: iconAnc }), pane: pPrecio, zIndexOffset: parseInt(10000 - (g.pN*1000)) }).addTo(markersLayer).bindPopup(pop);
+                    const pop = `
+                    <div style="min-width: 200px; text-align: left; padding: 2px 0; font-family: -apple-system, sans-serif;">
+                        
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                            <div style="font-size:14px; font-weight:900; color:var(--text-main); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:170px;">
+                                ${m} ${g.Rótulo} ${bSMPop}
+                            </div>
+                            <span id="${iM}" class="fav-btn fav-btn-id-${g.IDEESS}" onclick="toggleFav('${g.IDEESS}',event,'${iM}')" style="font-size:16px;">${hIc}</span>
+                        </div>
+                        
+                        <div style="background:var(--bg-input); border-radius:8px; padding:6px 10px; margin-bottom:8px; border:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;">
+                            <div style="color:${cS}; font-size:16px; font-weight:900; display:flex; align-items:center; gap:4px;">
+                                ${pStrVisualPop} <span class="tr-ind" data-type="list" data-id="${g.IDEESS}">${tH}</span>
+                            </div>
+                            <div>${htmlAhorroPop}</div>
+                        </div>
+
+                                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; font-size:10px; color:var(--text-muted); font-weight:bold;">
+                            <span class="distancia-badge" style="font-size:10px; padding:3px 6px;">${msgDist}</span>
+                            <span>🕒 ${g.Horario ? g.Horario.split(';')[0].substring(0,16) + (g.Horario.length>16?'...':'') : 'N/D'}</span>
+                        </div>
+
+                        <div class="osm-pop-placeholder" data-id="${g.IDEESS}" style="display:flex; flex-wrap:wrap; justify-content:center; gap:3px; margin-bottom:10px;">
+                            ${osmCacheHtml}
+                        </div>
+
+                                                <div style="display:flex; gap:5px; margin-top:4px;">
+                            <button class="btn-action btn-historial" onclick="mostrarHistorico('${sN}','${g.IDEESS}','${g.Horario||''}')" style="margin:0; padding:8px 6px;">📈 HISTÓRICO</button>
+                            <a class="btn-action btn-wa" href="https://api.whatsapp.com/send?text=${waM}" target="_blank" style="margin:0; padding:8px 6px;">💬 WA</a>
+                            <a class="btn-action btn-directo" href="${mU}" target="_blank" style="flex:1; margin:0; padding:8px 6px;">IR ↗</a>
+                        </div>
+                    </div>`;
+
+
+                    let htmlMapa = '<div style="background:' + cS + '; color:#fff; padding:4px 8px; border-radius:12px; font-weight:900; font-size:14px; box-shadow:0 3px 8px rgba(0,0,0,0.3); display:flex; align-items:center; justify-content:center; border: 1px solid rgba(255,255,255,0.5); text-shadow: 0 1px 2px rgba(0,0,0,0.3);">' + pStrVisualMap + '<span class="tr-ind" style="margin-left:4px; filter: brightness(0) invert(1);" data-type="map" data-id="' + g.IDEESS + '">' + tH_m + '</span></div>';
+                    
+                                        // Apagamos el "autoPan" nativo para que nuestro centrado personalizado funcione perfecto
+                    L.circleMarker([lat, ln], { radius: 8, fillColor: cS, color: "#fff", weight: 2, fillOpacity: .9, pane: pPunto }).addTo(markersLayer).bindPopup(pop, { maxHeight: 320, autoPan: false });
+                    L.marker([lat, ln], { icon: L.divIcon({ className: '', html: htmlMapa, iconSize: iconSz, iconAnchor: iconAnc }), pane: pPrecio, zIndexOffset: parseInt(10000 - (g.pN*1000)) }).addTo(markersLayer).bindPopup(pop, { maxHeight: 320, autoPan: false });
+
+
                 });
 
-                // CENTRAR MAPA AUTOMÁTICAMENTE AL BUSCAR PROVINCIA
                 if (searchMode === 'provincia' && gasolinerasParaPintar.length > 0) {
                     const group = new L.featureGroup(Object.values(markersLayer._layers));
                     map.fitBounds(group.getBounds(), { padding: [20, 20] });
@@ -1860,7 +1819,7 @@
                     } else {
                         q("header-ahorro").style.display = "block";
                         if (maxAhorroNeto > 0) {
-                            q("resumenAhorro").innerHTML = '<div style="cursor:pointer;" onclick="window.centrarMapa('+bestLat+','+bestLon+')">🏆 MEJOR OPCIÓN ('+searchMode.toUpperCase()+'): <strong>' + bestStation + '</strong> <span style="color:#27ae60;">(+' + maxAhorroNeto.toFixed(2) + '€)</span> <small style="font-size:10px;text-decoration:underline;">📍 VER</small></div>';
+                            q("resumenAhorro").innerHTML = '<div style="cursor:pointer;" onclick="window.centrarMapa('+bestLat+','+bestLon+')">🏆 MEJOR OPCIÓN ('+searchMode.toUpperCase()+'): <strong>' + bestStation + '</strong> <span style="color:var(--accent-green);">(+' + maxAhorroNeto.toFixed(2) + '€)</span> <small style="font-size:10px;text-decoration:underline;">📍 VER</small></div>';
                         } else {
                             q("resumenAhorro").innerHTML = "⚠️ NINGUNA SALE RENTABLE CON ESTOS DESVÍOS";
                         }
@@ -1874,10 +1833,10 @@
                     let ahorroMaximo = window.planesUnicosGlobal[0].ahorroTotal.toFixed(2);
                     let paradasMaximo = window.planesUnicosGlobal[0].paradas.length === 1 ? "1 parada" : window.planesUnicosGlobal[0].paradas.length + " paradas";
                     
-                    planViajeHtml = `<div style="background:#eafaf1; border:2px solid #27ae60; border-radius:10px; padding:12px; margin-bottom:15px; box-shadow:0 4px 6px rgba(0,0,0,0.1);">`;
-                    planViajeHtml += `<div style="color:#27ae60; font-weight:900; margin-bottom:10px; display:flex; flex-direction:column; gap:4px;">
+                    planViajeHtml = `<div style="background:var(--bg-ahorro); border:2px solid var(--accent-green); border-radius:10px; padding:12px; margin-bottom:15px; box-shadow:0 4px 6px rgba(0,0,0,0.1);">`;
+                    planViajeHtml += `<div style="color:var(--accent-green); font-weight:900; margin-bottom:10px; display:flex; flex-direction:column; gap:4px;">
                                         <div style="font-size:14px;">🗺️ PLAN INTELIGENTE</div>
-                                        <div style="background:#27ae60; color:#fff; padding:6px 10px; border-radius:6px; font-size:16px; text-align:center; box-shadow:0 2px 4px rgba(0,0,0,0.2);">
+                                        <div style="background:var(--accent-green); color:#fff; padding:6px 10px; border-radius:6px; font-size:16px; text-align:center; box-shadow:0 2px 4px rgba(0,0,0,0.2);">
                                             💰 AHORRAS +${ahorroMaximo}€ (en ${paradasMaximo})
                                         </div>
                                       </div>`;
@@ -1885,7 +1844,7 @@
                     if (window.planesUnicosGlobal.length > 1) {
                         planViajeHtml += `<div style="margin-bottom:12px;">
                             <label style="font-size:12px; font-weight:bold; color:var(--text-muted); margin-bottom:4px; display:block;">Opciones de ruta (evitar atascos):</label>
-                            <select id="selectorPlanInteligente" style="width:100%; padding:10px; border-radius:8px; border:2px solid #3498db; font-weight:bold; color:#2c3e50; background:var(--bg-input); cursor:pointer; font-size:13px;" onchange="window.selectedSmartPlanIndex=parseInt(this.value); fetchGasolineras();">`;
+                            <select id="selectorPlanInteligente" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border-color); font-weight:bold; color:var(--text-main); background:var(--bg-input); cursor:pointer; font-size:13px;" onchange="window.selectedSmartPlanIndex=parseInt(this.value); fetchGasolineras();">`;
                         
                         window.planesUnicosGlobal.forEach((p, i) => {
                             let textoParadas = p.paradas.length === 1 ? "1 parada" : p.paradas.length + " paradas";
@@ -1898,35 +1857,34 @@
                     let planSeleccionado = window.planesUnicosGlobal[window.selectedSmartPlanIndex];
                     planViajeHtml += `<div id="plan-variante-activo">`;
                     planSeleccionado.paradas.forEach(mejor => {
-                        let colorPrecio = mejor.pN <= (globalMinP + 0.03) ? "#27ae60" : mejor.pN < (globalMinP + globalMaxP) / 2 ? "#f39c12" : "#e74c3c";
+                        let colorPrecio = mejor.pN <= (globalMinP + 0.03) ? "var(--accent-green)" : mejor.pN < (globalMinP + globalMaxP) / 2 ? "var(--accent-orange)" : "#e74c3c";
                         planViajeHtml += `
-                        <div style="background:var(--bg-panel); border:1px solid #c3e6cb; padding:12px; border-radius:8px; margin-bottom:10px; cursor:pointer; display:flex; flex-direction:column; gap:8px;" onclick="window.centrarMapa(${parseFloat(mejor.Latitud.replace(',','.'))}, ${parseFloat(mejor['Longitud (WGS84)'].replace(',','.'))})">
+                        <div class="list-item" style="border-color:var(--accent-green);" onclick="window.centrarMapa(${parseFloat(mejor.Latitud.replace(',','.'))}, ${parseFloat(mejor['Longitud (WGS84)'].replace(',','.'))})">
                             
-                            <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:8px;">
+                            <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:8px; width:100%;">
                                 <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
-                                    <span style="background:#f1c40f; color:#000; padding:4px 8px; border-radius:10px; font-weight:bold; font-size:10px; white-space:nowrap;">PARADA ${mejor.paradaNum}</span>
+                                    <span class="top-badge oro">PARADA ${mejor.paradaNum}</span>
                                     <span style="font-weight:bold; color:var(--text-main); font-size:12px; white-space:nowrap;">${mejor.sentido}</span>
                                 </div>
                                 <button onclick="event.preventDefault(); event.stopPropagation(); window.descartarGasolinera('${mejor.IDEESS}'); return false;" style="background:#e74c3c; color:#fff; border:none; padding:5px 10px; border-radius:6px; font-size:10px; font-weight:bold; cursor:pointer; box-shadow:0 2px 4px rgba(0,0,0,0.2); white-space:nowrap;">❌ IGNORAR</button>
                             </div>
                             
-                            <div style="font-size:14px; line-height:1.3;">🏆 <b>${mejor.Rótulo}</b></div>
+                            <div style="font-size:15px; font-weight:800; color:var(--text-main); line-height:1.2;">🏆 ${mejor.Rótulo}</div>
                             
-                            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; width:100%;">
                                 <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
                                     <span style="color:${colorPrecio}; font-weight:900; font-size:17px; white-space:nowrap;">${mejor.pN.toFixed(3)} €/L</span>
-                                    <span style="background:#27ae60; color:#fff; font-weight:bold; font-size:11px; padding:3px 6px; border-radius:6px; white-space:nowrap;">+${mejor.aNeto.toFixed(2)}€</span>
+                                    <span style="background:var(--accent-green); color:#fff; font-weight:bold; font-size:11px; padding:3px 6px; border-radius:6px; white-space:nowrap;">+${mejor.aNeto.toFixed(2)}€</span>
                                     <span style="background:#34495e; color:#fff; font-weight:bold; font-size:11px; padding:3px 6px; border-radius:6px; white-space:nowrap; margin-left:4px;">⛽ Echar ${mejor.litrosRepostados.toFixed(1)} L</span>
                                 </div>
-                                <span style="background:var(--bg-input); border:1px solid var(--border-color); color:var(--text-main); font-weight:bold; font-size:11px; padding:4px 8px; border-radius:6px; white-space:nowrap;">🚗 km ${mejor.kmTravesia.toFixed(0)}</span>
+                                <span class="distancia-badge" style="background:var(--bg-input); border-color:var(--border-color); color:var(--text-main);">🚗 km ${mejor.kmTravesia.toFixed(0)}</span>
                             </div>
                             
-                                                        <div style="font-size:11px; color:#3498db; font-weight:bold; border-top:1px solid var(--border-color); padding-top:8px; margin-top:2px;">
+                            <div style="font-size:11px; color:var(--accent); font-weight:bold; border-top:1px solid var(--border-color); padding-top:8px; margin-top:2px;">
                                 ⤴️ Desvío: ${mejor.distCalculada.toFixed(1)} km
                             </div>
-                            <div id="servicios-os-${mejor.IDEESS}" style="font-size:15px; letter-spacing:2px; margin-top:2px; min-height:15px;"></div>
+                            <div id="servicios-os-${mejor.IDEESS}" style="display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; min-height:24px;"></div>
                         </div>`;
-
                     });
                     planViajeHtml += `</div></div>`;
                     
@@ -1936,7 +1894,7 @@
                 if (o !== "inteligente") {
                     if(o === "distancia" && searchMode !== 'provincia') filtradas.sort((a, b) => a.distCalculada - b.distCalculada);
                     else if(o === "ahorro" && searchMode !== 'provincia') filtradas.sort((a, b) => b.aNeto - a.aNeto);
-                    else if(o === "caras") filtradas.sort((a, b) => b.pN - a.pN); // <-- Ordenar más caras primero
+                    else if(o === "caras") filtradas.sort((a, b) => b.pN - a.pN); 
                     else filtradas.sort((a, b) => a.pN - b.pN); 
                     
                     filtradas.forEach((g, i) => g.rP = i + 1);
@@ -1946,14 +1904,15 @@
                         const pN = g.pN; 
                         const isF = favoritos.includes(g.IDEESS), hIc = isF ? '❤️' : '🤍', isR = g["Tipo Venta"] === "R";
                         
+                                                // PREPARAMOS EL PRECIO Y EL DESCUENTO POR SEPARADO
                         let pStrVisualList = pN.toFixed(3) + " €/L";
+                        let htmlDescuento = "";
                         if(g.descAplicado !== "") {
-                            let tachado = '<div style="text-decoration:line-through; font-size:0.75em; color:var(--text-muted); line-height:1;">' + g.precioOficial.toFixed(3) + '</div>';
-                            pStrVisualList = '<div style="display:flex; flex-direction:column; align-items:flex-end;">' + tachado + '<div style="line-height:1;">' + pN.toFixed(3) + ' €/L <span class="desc-badge">' + g.descAplicado + '</span></div></div>';
+                            htmlDescuento = '<div style="display:flex; justify-content:flex-end; align-items:center; gap:4px; margin-bottom:2px;"><span style="text-decoration:line-through; font-size:12px; color:var(--text-muted);">' + g.precioOficial.toFixed(3) + ' €</span><span class="desc-badge">' + g.descAplicado + '</span></div>';
                         }
 
                         let tData = currentTrends[g.IDEESS], tH = trendsLoaded ? getTrendHTML(tData, 'list') : '⏳';
-                        let cS = pN <= (globalMinP + 0.03) ? "#27ae60" : pN < (globalMinP + globalMaxP) / 2 ? "#f39c12" : "#e74c3c";
+                        let cS = pN <= (globalMinP + 0.03) ? "var(--accent-green)" : pN < (globalMinP + globalMaxP) / 2 ? "var(--accent-orange)" : "#e74c3c";
                         let m = g.rP === 1 && o !== "favoritas" ? "🥇" : g.rP === 2 && o !== "favoritas" ? "🥈" : g.rP === 3 && o !== "favoritas" ? "🥉" : "", cM = m === "🥇" ? "oro" : m === "🥈" ? "plata" : m === "🥉" ? "bronce" : "";
                         
                         const bSL = isR ? '<span style="background:#c0392b;color:#fff;font-size:9px;padding:2px 4px;border-radius:3px;vertical-align:middle;margin-left:5px;">🔒 SOCIOS</span>' : '';
@@ -1961,27 +1920,53 @@
                         
                         let htmlAhorroList = "";
                         if (consumo > 0 && searchMode !== 'provincia') {
-                            if (g.aNeto > 0) htmlAhorroList = '<span class="badge-ahorro pulse-ahorro" style="background:' + cS + '">AHORRO NETO ' + g.aNeto.toFixed(2) + '€</span><div style="font-size:13px;color:var(--text-muted);font-weight:bold;text-align:right;margin-top:2px;">' + (searchMode==='zona'?'Viaje':'Desvío') + ': -' + g.cViaje.toFixed(2) + '€</div>';
-                            else htmlAhorroList = '<span class="badge-ahorro" style="background:#e74c3c">PIERDES ' + Math.abs(g.aNeto).toFixed(2) + '€</span><div style="font-size:13px;color:var(--text-muted);font-weight:bold;text-align:right;margin-top:2px;">' + (searchMode==='zona'?'Viaje':'Desvío') + ': -' + g.cViaje.toFixed(2) + '€</div>';
+                            if (g.aNeto > 0) htmlAhorroList = '<span class="badge-ahorro pulse-ahorro" style="background:' + cS + '">AHORRO NETO: +' + g.aNeto.toFixed(2) + '€</span><div style="font-size:12px;color:var(--text-muted);font-weight:bold;text-align:right;margin-top:2px;">' + (searchMode==='zona'?'Viaje':'Desvío') + ': -' + g.cViaje.toFixed(2) + '€</div>';
+                            else htmlAhorroList = '<span class="badge-ahorro" style="background:#e74c3c">PIERDES ' + Math.abs(g.aNeto).toFixed(2) + '€</span><div style="font-size:12px;color:var(--text-muted);font-weight:bold;text-align:right;margin-top:2px;">' + (searchMode==='zona'?'Viaje':'Desvío') + ': -' + g.cViaje.toFixed(2) + '€</div>';
                         } else if (g.aBruto > 0) {
                             htmlAhorroList = '<span class="badge-ahorro pulse-ahorro" style="background:' + cS + '">AHORRA ' + g.aBruto.toFixed(2) + '€</span>';
                         }
 
                         let msgDist = '';
-                        if (searchMode === 'zona') msgDist = '🚗 ' + g.distCalculada.toFixed(2) + ' km' + (g.tiempoCalculado ? ' | ⏱️ ' + g.tiempoCalculado + ' min' : '');
-                        else if (searchMode === 'ruta') msgDist = '⤴️ Desvío: ' + g.distCalculada.toFixed(2) + ' km';
-                        else msgDist = '📍 En tu provincia';
+                        if (searchMode === 'zona') msgDist = '🚗 ' + g.distCalculada.toFixed(1) + ' km' + (g.tiempoCalculado ? ' | ⏱️ ' + g.tiempoCalculado + ' min' : '');
+                        else if (searchMode === 'ruta') msgDist = '⤴️ Desvío: ' + g.distCalculada.toFixed(1) + ' km';
+                        else msgDist = '📍 Provincia';
 
-                        let msgAhorroWa = (consumo > 0 && searchMode !== 'provincia') ? (g.aNeto > 0 ? "Ahorro Real Neto: " + g.aNeto.toFixed(2) + "€" : "¡Te cuesta más el " + (searchMode==='zona'?'viaje':'desvío') + " (" + g.cViaje.toFixed(2) + "€)!") : "Ahorras " + g.aBruto.toFixed(2) + "€ llenando hoy.";
+                        let msgAhorroWa = (consumo > 0 && searchMode !== 'provincia') ? (g.aNeto > 0 ? "Ahorro Real Neto: " + g.aNeto.toFixed(2) + "€" : "¡Te cuesta más el " + (searchMode==='zona'?'viaje':'desvío') + "!") : "Ahorras " + g.aBruto.toFixed(2) + "€ llenando hoy.";
                         const waM = encodeURIComponent('⛽ ¡Ojo! ' + fTN + ' a ' + pN.toFixed(3) + '€/L en ' + g.Rótulo + ' (' + g.Dirección + '). ' + msgAhorroWa + ' 🚗💨\n\n📍 Míralo en Gasofa Pro:\n' + APP_URL);
                         
                         const item = D.createElement("div"); item.className = "list-item"; 
                         item.onclick = e => { if (e.target.tagName !== 'BUTTON' && e.target.tagName !== 'A' && !e.target.closest('.fav-btn') && !e.target.closest('.d-tipo')) window.centrarMapa(lat, ln); };
                         
-                                                item.innerHTML = '<div class="list-info"><span class="top-badge ' + cM + '">' + (o === "favoritas" ? '❤️ FAVORITA' : 'TOP ' + g.rP + ' ' + m) + '</span><br><strong>' + g.Rótulo + bSL + '</strong> <span id="' + iL + '" class="fav-btn fav-btn-id-' + g.IDEESS + '" onclick="toggleFav(\'' + g.IDEESS + '\',event,\'' + iL + '\')">' + hIc + '</span><div><span class="distancia-badge" title="Distancia">' + msgDist + '</span><div style="display:inline-flex;flex-wrap:wrap;gap:2px;margin-top:4px;"><button class="btn-action btn-historial" onclick="mostrarHistorico(\'' + sN + '\',\'' + g.IDEESS + '\',\'' + (g.Horario||'') + '\')">📈 HISTORICO</button><a class="btn-action btn-wa" href="https://api.whatsapp.com/send?text=' + waM + '" target="_blank">💬 WA</a><a class="btn-action btn-directo" href="' + mU + '" target="_blank">COMO LLEGAR ↗</a></div></div><small style="color:var(--text-muted); display:block; margin-top:4px;">📍 ' + g.Dirección + '</small><small style="color:var(--text-muted); display:block; margin-top:2px;">🕒 ' + (g.Horario||'') + '</small><div id="servicios-os-' + g.IDEESS + '" style="font-size:15px; margin-top:4px; letter-spacing:2px; min-height:15px;"></div></div><div class="savings-box"><div class="price-text" style="color:' + cS + '; align-items:center;">' + pStrVisualList + '<span class="tr-ind" data-type="list" data-id="' + g.IDEESS + '" style="margin-left:4px;">' + tH + '</span></div>' + htmlAhorroList + '</div>';
+                        item.innerHTML = `
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; width:100%;">
+                            <div style="flex:1;">
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                                    <div><span class="top-badge ${cM}">${o === "favoritas" ? '❤️ FAVORITA' : 'TOP ' + g.rP + ' ' + m}</span>${bSL}</div>
+                                    <span id="${iL}" class="fav-btn fav-btn-id-${g.IDEESS}" onclick="toggleFav('${g.IDEESS}',event,'${iL}')">${hIc}</span>
+                                </div>
+                                <div style="font-size:15px; font-weight:800; color:var(--text-main); line-height:1.2;">
+                                    ${g.Rótulo}
+                                    <span class="poblacion-tag">${g.Municipio || ''}</span>
+                                </div>
+                                <div style="font-size:12px; color:var(--text-muted); margin-top:6px;">📍 ${g.Dirección}</div>
+                                <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">🕒 ${g.Horario||''}</div>
+                                <div style="margin-top:8px;"><span class="distancia-badge">${msgDist}</span></div>
+                                <div id="servicios-os-${g.IDEESS}" style="display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; min-height:24px;"></div>
+                            </div>
+                            <div style="text-align:right; min-width:105px;">
+                                ${htmlDescuento}
+                                <div class="price-text" style="color:${cS};">${pStrVisualList}<span class="tr-ind" data-type="list" data-id="${g.IDEESS}" style="margin-left:4px;">${tH}</span></div>
+                                <div style="margin-top:8px;">${htmlAhorroList}</div>
+                            </div>
+                        </div>
+                        <div style="display:flex; gap:6px; margin-top:8px; border-top:1px solid var(--border-color); padding-top:10px;">
+                            <button class="btn-action btn-historial" onclick="mostrarHistorico('${sN}','${g.IDEESS}','${g.Horario||''}')">📈 HISTÓRICO</button>
+                            <a class="btn-action btn-wa" href="https://api.whatsapp.com/send?text=${waM}" target="_blank">💬 WA</a>
+                            <a class="btn-action btn-directo" href="${mU}" target="_blank" style="flex:1;">IR ↗</a>
+                        </div>`;
 
                         lD.appendChild(item);
-                                        });
+                    });
                 }
                 
                 // DISPARAR LA BÚSQUEDA SILENCIOSA DE SERVICIOS EN OSM
@@ -1994,10 +1979,9 @@
             } catch(errorFinal) {
                 console.error(errorFinal);
             } finally {
-
                 q("loading-overlay").style.display = "none";
                 isFetching = false;
-                q("list-container").classList.remove("bloqueado"); // DESBLOQUEAR SCROLL AL TERMINAR
+                q("list-container").classList.remove("bloqueado"); 
             }
         }
         
@@ -2020,7 +2004,7 @@
                     if(q("autonomiaInput")) q("autonomiaInput").value = p.auto || "";
                     q("idaVueltaInput").checked = p.idV !== undefined ? p.idV : true; 
                     q("tipoCombustible").value = p.c || "Precio Gasoleo A"; 
-                    q("radioBusqueda").value = p.r || "1"; // <--- Ahora el por defecto es 1 si falla
+                    q("radioBusqueda").value = p.r || "1"; 
                     q("ordenarPor").value = p.o || "precio"; 
                     q("abiertasInput").checked = p.a || false; 
                     searchMode = p.sMode || 'zona'; 
@@ -2029,268 +2013,100 @@
                     q("litrosInput").value = 50; q("radioBusqueda").value = "1"; searchMode = 'zona';
                 }
             } else { 
-                q("litrosInput").value = 50; q("radioBusqueda").value = "1"; searchMode = 'zona'; // <--- Para los usuarios 100% nuevos
+                q("litrosInput").value = 50; q("radioBusqueda").value = "1"; searchMode = 'zona'; 
             } 
         }
-        // --- AQUÍ PEGAS LA LÓGICA DE INSTALACIÓN MEJORADA ---
+
+        // --- INSTALACIÓN ---
         let eventoInstalacion;
         const btnInstalar = document.getElementById('btnInstalar');
-
-        // 1. Detectar si está en el "Cárcel" de las Redes Sociales o en un iPhone
         const ua = navigator.userAgent || navigator.vendor || window.opera;
-        const esInApp = (ua.indexOf('Instagram') > -1) || (ua.indexOf('TikTok') > -1) || (ua.indexOf('BytedanceWebview') > -1) || (ua.indexOf('FBAN') > -1) || (ua.indexOf('FBAV') > -1);
+                const esInApp = (ua.indexOf('Instagram') > -1) || (ua.indexOf('TikTok') > -1) || (ua.indexOf('BytedanceWebview') > -1) || (ua.indexOf('FBAN') > -1) || (ua.indexOf('FBAV') > -1) || (ua.indexOf('Twitter') > -1);
+
         const esIOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
 
-        // 2. Si está en Redes Sociales o iPhone, FORZAMOS a que se vea el botón
-        if (esInApp || esIOS) {
-            btnInstalar.style.display = 'block';
-        }
+        if (esInApp || esIOS) { btnInstalar.style.display = 'block'; }
 
-        // 3. El escuchador normal (Solo saltará en Android + Chrome normal)
         window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            eventoInstalacion = e;
-            btnInstalar.style.display = 'block';
+            e.preventDefault(); eventoInstalacion = e; btnInstalar.style.display = 'block';
         });
 
-        // 4. Qué pasa cuando hacen clic en el botón
         btnInstalar.addEventListener('click', async () => {
             if (typeof gtag === 'function') gtag('event', 'clic_instalar_app');
-            
-            // Si está en Instagram/TikTok, le decimos cómo salir
-            if (esInApp) {
-                alert("🔒 Estás en el navegador de una red social.\n\nPara instalar la app, toca los 3 puntitos (arriba a la derecha) y selecciona 'Abrir en el navegador' o 'Abrir en Chrome/Safari'.");
-                return;
-            }
-
-            // Si está en un iPhone, le explicamos cómo hacerlo a mano (Apple no deja hacerlo automático)
-            if (esIOS) {
-                alert("🍎 Para instalar en iPhone/iPad:\n\n1. Toca el botón de 'Compartir' (el cuadrado con la flecha hacia arriba) en la barra de Safari.\n2. Baja en el menú y selecciona 'Añadir a la pantalla de inicio'.");
-                return;
-            }
-            
-            // Si es un Android normal y corriente, instalamos directo
-            if (eventoInstalacion) {
-                eventoInstalacion.prompt();
-                const { outcome } = await eventoInstalacion.userChoice;
-                if (outcome === 'accepted') {
-                    btnInstalar.style.display = 'none';
-                }
-                eventoInstalacion = null;
-            }
+            if (esInApp) { alert("🔒 Estás en el navegador de una red social.\n\nPara instalar la app, toca los 3 puntitos (arriba a la derecha) y selecciona 'Abrir en Chrome/Safari'."); return; }
+            if (esIOS) { alert("🍎 Para instalar en iPhone:\n\n1. Toca el botón 'Compartir'.\n2. Selecciona 'Añadir a la pantalla de inicio'."); return; }
+            if (eventoInstalacion) { eventoInstalacion.prompt(); const { outcome } = await eventoInstalacion.userChoice; if (outcome === 'accepted') { btnInstalar.style.display = 'none'; } eventoInstalacion = null; }
         });
         
-// --- LÓGICA DEL GARAJE MEJORADA ---
+// --- GARAJE ---
 let myCars = JSON.parse(localStorage.getItem('gasofa_cars')) || [];
 window.currentCarCapacity = 0; 
 
-function openGarage() {
-    document.getElementById('garageModal').style.display = 'flex';
-    renderCars();
-}
-
-function closeGarage() {
-    document.getElementById('garageModal').style.display = 'none';
-    // Limpiar el formulario al cerrar por si a medias de editar te arrepientes
-    document.getElementById('editCarId').value = '';
-    document.getElementById('carName').value = '';
-    document.getElementById('carConsumo').value = '';
-    document.getElementById('carDeposito').value = '';
-}
+function openGarage() { document.getElementById('garageModal').style.display = 'flex'; renderCars(); }
+function closeGarage() { document.getElementById('garageModal').style.display = 'none'; document.getElementById('editCarId').value = ''; document.getElementById('carName').value = ''; document.getElementById('carConsumo').value = ''; document.getElementById('carDeposito').value = ''; }
 
 function saveCar() {
-    const idToEdit = document.getElementById('editCarId').value;
-    const name = document.getElementById('carName').value;
-    const fuel = document.getElementById('carFuel').value;
-    const consumo = parseFloat(document.getElementById('carConsumo').value);
-    const deposito = parseFloat(document.getElementById('carDeposito').value);
+    const idToEdit = document.getElementById('editCarId').value; const name = document.getElementById('carName').value; const fuel = document.getElementById('carFuel').value; const consumo = parseFloat(document.getElementById('carConsumo').value); const deposito = parseFloat(document.getElementById('carDeposito').value);
+    if(!name || !consumo || !deposito) { alert("⚠️ Por favor, rellena todos los datos del coche."); return; }
 
-    if(!name || !consumo || !deposito) {
-        alert("⚠️ Por favor, rellena todos los datos del coche.");
-        return;
-    }
-
-    if (idToEdit) {
-        // Estamos editando un coche existente
-        const index = myCars.findIndex(c => c.id == idToEdit);
-        if (index > -1) {
-            myCars[index] = { id: parseInt(idToEdit), name, fuel, consumo, deposito };
-        }
-    } else {
-        // Es un coche nuevo
-        myCars.push({ id: Date.now(), name, fuel, consumo, deposito });
-    }
+    if (idToEdit) { const index = myCars.findIndex(c => c.id == idToEdit); if (index > -1) { myCars[index] = { id: parseInt(idToEdit), name, fuel, consumo, deposito }; } } 
+    else { myCars.push({ id: Date.now(), name, fuel, consumo, deposito }); }
 
     localStorage.setItem('gasofa_cars', JSON.stringify(myCars));
-    // --- CHIVATO ANALYTICS: GUARDAR COCHE ---
-    if (typeof gtag === 'function') {
-        gtag('event', 'guardar_vehiculo', {
-            'combustible': fuel
-        });
-    }
+    if (typeof gtag === 'function') { gtag('event', 'guardar_vehiculo', { 'combustible': fuel }); }
     
-    // Limpiar cajas
-    document.getElementById('editCarId').value = '';
-    document.getElementById('carName').value = '';
-    document.getElementById('carConsumo').value = '';
-    document.getElementById('carDeposito').value = '';
-    
-    renderCars();
-    updateCarSelect();
+    document.getElementById('editCarId').value = ''; document.getElementById('carName').value = ''; document.getElementById('carConsumo').value = ''; document.getElementById('carDeposito').value = '';
+    renderCars(); updateCarSelect();
 }
 
-function editCar(id) {
-    const car = myCars.find(c => c.id === id);
-    if(car) {
-        document.getElementById('editCarId').value = car.id;
-        document.getElementById('carName').value = car.name;
-        document.getElementById('carFuel').value = car.fuel;
-        document.getElementById('carConsumo').value = car.consumo;
-        document.getElementById('carDeposito').value = car.deposito;
-    }
-}
-
-function deleteCar(id) {
-    if(confirm("¿Seguro que quieres borrar este vehículo?")) {
-        myCars = myCars.filter(car => car.id !== id);
-        localStorage.setItem('gasofa_cars', JSON.stringify(myCars));
-        renderCars();
-        updateCarSelect();
-    }
-}
+function editCar(id) { const car = myCars.find(c => c.id === id); if(car) { document.getElementById('editCarId').value = car.id; document.getElementById('carName').value = car.name; document.getElementById('carFuel').value = car.fuel; document.getElementById('carConsumo').value = car.consumo; document.getElementById('carDeposito').value = car.deposito; } }
+function deleteCar(id) { if(confirm("¿Borrar vehículo?")) { myCars = myCars.filter(car => car.id !== id); localStorage.setItem('gasofa_cars', JSON.stringify(myCars)); renderCars(); updateCarSelect(); } }
 
 function renderCars() {
-    const list = document.getElementById('carList');
-    list.innerHTML = '';
+    const list = document.getElementById('carList'); list.innerHTML = '';
     myCars.forEach(car => {
-        list.innerHTML += `
-            <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-input); padding:10px; border-radius:8px; border:1px solid var(--border-color);">
-                <div>
-                    <strong style="color:#3498db;">${car.name}</strong><br>
-                    <small style="font-size:11px;">⛽ ${car.consumo} L/100km | 🛢️ Max: ${car.deposito} L</small>
-                </div>
-                <div style="display:flex; gap:5px;">
-                    <button onclick="editCar(${car.id})" style="background:#2c3e50; color:white; border:none; border-radius:6px; padding:6px 10px; cursor:pointer;" title="Editar">✏️</button>
-                    <button onclick="deleteCar(${car.id})" style="background:#e74c3c; color:white; border:none; border-radius:6px; padding:6px 10px; cursor:pointer;" title="Borrar">🗑️</button>
-                </div>
-            </div>
-        `;
+        list.innerHTML += `<div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-input); padding:10px; border-radius:12px; border:1px solid var(--border-color);">
+            <div><strong style="color:var(--accent);">${car.name}</strong><br><small style="font-size:11px;">⛽ ${car.consumo} L/100km | 🛢️ Max: ${car.deposito} L</small></div>
+            <div style="display:flex; gap:5px;"><button onclick="editCar(${car.id})" style="background:#2c3e50; color:white; border:none; border-radius:8px; padding:8px 12px; cursor:pointer;" title="Editar">✏️</button><button onclick="deleteCar(${car.id})" style="background:#e74c3c; color:white; border:none; border-radius:8px; padding:8px 12px; cursor:pointer;" title="Borrar">🗑️</button></div></div>`;
     });
 }
 
 function updateCarSelect() {
-    const select = document.getElementById('activeCarSelect');
-    if(!select) return;
+    const select = document.getElementById('activeCarSelect'); if(!select) return;
+    if(myCars.length === 0 || searchMode === 'provincia') { select.style.display = 'none'; return; }
     
-    // 1. Si no hay coches, ocultar siempre.
-    if(myCars.length === 0) {
-        select.style.display = 'none';
-        return;
-    }
-
-    // 2. Averiguar en qué modo estamos (viendo si el panel "provincia-ui" está visible)
-    const provinciaUI = document.getElementById('provincia-ui');
-    const isProvinciaMode = provinciaUI && provinciaUI.style.display !== 'none';
-
-    // 3. Si estamos en modo Provincia, lo ocultamos y NO seguimos dibujando opciones.
-    if (isProvinciaMode) {
-        select.style.display = 'none';
-        return; 
-    }
-
-    // 4. Si llegamos aquí: Hay coches y NO estamos en Provincia. Lo mostramos.
     select.style.display = 'block';
-    
-    let html = '<option value="">🚘 Selecciona tu vehículo guardado...</option>';
-    myCars.forEach(car => {
-        html += `<option value="${car.id}">${car.name} (${car.consumo}L/100)</option>`;
-    });
+    let html = '<option value="">🚘 Selecciona tu vehículo...</option>';
+    myCars.forEach(car => { html += `<option value="${car.id}">${car.name} (${car.consumo}L/100)</option>`; });
     select.innerHTML = html;
 }
 
 function applyCarSettings() {
-    const select = document.getElementById('activeCarSelect');
-    const carId = select.value;
-    
-    // Capturamos las cajas
-    const btnFill = document.getElementById('btnFill');
-    const litrosInput = document.getElementById('litrosInput');
-    const autonomiaInput = document.getElementById('autonomiaInput');
-    const consumoInput = document.getElementById('consumoInput');
-    
-    let selectorCombustible = document.getElementById('TipoCombustible') || document.getElementById('tipoCombustible');
+    const select = document.getElementById('activeCarSelect'); const carId = select.value;
+    const btnFill = document.getElementById('btnFill'); const litrosInput = document.getElementById('litrosInput'); const consumoInput = document.getElementById('consumoInput'); let selectorCombustible = document.getElementById('tipoCombustible');
 
     if(!carId) {
-        // Si no hay coche, limpiamos todo
-        window.currentCarCapacity = 0;
-        if(btnFill) btnFill.style.display = 'none';
-        if(consumoInput) consumoInput.value = '';
-        if(litrosInput) litrosInput.value = '';
-        if(autonomiaInput) autonomiaInput.value = '';
-        if(selectorCombustible) selectorCombustible.value = 'Precio Gasoleo A'; 
-        
-        actualizarInterfazLitros(); // <--- Llama al nuevo árbitro
-        
-        select.style.borderColor = '#3498db';
-        return;
+        window.currentCarCapacity = 0; if(btnFill) btnFill.style.display = 'none'; if(consumoInput) consumoInput.value = ''; if(litrosInput) { litrosInput.value = ''; litrosInput.dispatchEvent(new Event('input')); } if(selectorCombustible) selectorCombustible.value = 'Precio Gasoleo A'; 
+        actualizarInterfazLitros(); select.style.borderColor = 'var(--accent)'; return;
     }
 
-    // Buscamos el coche seleccionado
     const car = myCars.find(c => c.id == carId);
-    
     if(car) {
-        // 1. Actualizamos el Consumo
-        if(consumoInput) consumoInput.value = car.consumo;
-        
-        // 2. Actualizamos el Combustible
-        if(selectorCombustible) selectorCombustible.value = car.fuel;
-        
-        // 3. Guardamos la nueva capacidad y mostramos el botón MAX
-        window.currentCarCapacity = car.deposito; 
-        if(btnFill) btnFill.style.display = 'block';
-
-        // 5. Vaciamos la caja de litros al seleccionar/cambiar de coche
-        if (litrosInput) {
-            litrosInput.value = ''; 
-            litrosInput.dispatchEvent(new Event('input'));
-        }
-
-        actualizarInterfazLitros(); // <--- Llama al nuevo árbitro
-
-        // Destello visual verde para confirmar
-        select.style.borderColor = '#2ecc71';
-        setTimeout(() => select.style.borderColor = '#3498db', 1000);
+        if(consumoInput) consumoInput.value = car.consumo; if(selectorCombustible) selectorCombustible.value = car.fuel;
+        window.currentCarCapacity = car.deposito; if(btnFill) btnFill.style.display = 'block';
+        if (litrosInput) { litrosInput.value = ''; litrosInput.dispatchEvent(new Event('input')); }
+        actualizarInterfazLitros();
+        select.style.borderColor = 'var(--accent-green)'; setTimeout(() => select.style.borderColor = 'var(--accent)', 1000);
     }
 }
 
-function llenarATope() {
-    if(window.currentCarCapacity > 0) {
-        const litrosInput = document.getElementById('litrosInput');
-        if(litrosInput) {
-            litrosInput.value = window.currentCarCapacity;
-            
-            // Forzamos a que la app se entere de que hemos cambiado el valor
-            // por si tienes otros cálculos automáticos que dependan de esta caja
-            litrosInput.dispatchEvent(new Event('input'));
-        }
-    }
-}
+function llenarATope() { if(window.currentCarCapacity > 0) { const litrosInput = document.getElementById('litrosInput'); if(litrosInput) { litrosInput.value = window.currentCarCapacity; litrosInput.dispatchEvent(new Event('input')); } } }
 
-// Escuchador para impedir que el usuario meta más litros de los que caben a mano
 document.addEventListener('DOMContentLoaded', () => {
     updateCarSelect();
     const litrosInput = document.getElementById('litrosInput');
-    if(litrosInput) {
-        litrosInput.addEventListener('input', function() {
-            if (window.currentCarCapacity > 0 && parseFloat(this.value) > window.currentCarCapacity) {
-                this.value = window.currentCarCapacity; // Le bajamos el valor automáticamente
-            }
-        });
-    }
+    if(litrosInput) { litrosInput.addEventListener('input', function() { if (window.currentCarCapacity > 0 && parseFloat(this.value) > window.currentCarCapacity) { this.value = window.currentCarCapacity; } }); }
 });
-
-// Arrancar el selector al cargar la página
-window.addEventListener('DOMContentLoaded', updateCarSelect);
 
 // --- MOTOR DE SERVICIOS OPENSTREETMAP (OVERPASS API) ---
 window.osmCache = window.osmCache || {}; // Memoria global para guardar los servicios
@@ -2298,8 +2114,8 @@ window.osmCache = window.osmCache || {}; // Memoria global para guardar los serv
 async function cargarServiciosOSM(estacionesParaPintar) {
     if (!estacionesParaPintar || estacionesParaPintar.length === 0) return;
     
-    // Solo buscamos las 40 primeras
-    let estaciones = estacionesParaPintar.slice(0, 40); 
+    // AMPLIADO: Buscamos las 100 primeras gasolineras para que cargue toda la lista
+    let estaciones = estacionesParaPintar.slice(0, 100); 
 
     estaciones.forEach(g => {
         if(!window.osmCache[g.IDEESS]) {
@@ -2331,7 +2147,7 @@ async function cargarServiciosOSM(estacionesParaPintar) {
         if(!res.ok) throw new Error("Fallo en el servidor de OSM");
         const data = await res.json();
 
-        // AQUÍ ESTÁ LA MAGIA DEL DISEÑO: Las "Píldoras"
+        // AQUÍ ESTÁ LA MAGIA DEL DISEÑO: Las "Píldoras" grises
         const badgeStyle = "background:var(--bg-body); border:1px solid var(--border-color); padding:3px 8px; border-radius:8px; font-size:11px; font-weight:700; color:var(--text-main); display:inline-flex; align-items:center; gap:4px;";
 
         estaciones.forEach(g => {
@@ -2369,7 +2185,7 @@ async function cargarServiciosOSM(estacionesParaPintar) {
                 divList.innerHTML = html;
             }
 
-            // 3. Pintamos en el PopUp (por si casualmente está abierto en este instante)
+            // 3. Pintamos en el PopUp del mapa (si está abierto en ese momento)
             let openPop = document.querySelector(`.osm-pop-placeholder[data-id="${g.IDEESS}"]`);
             if (openPop) openPop.innerHTML = html;
         });
@@ -2378,10 +2194,6 @@ async function cargarServiciosOSM(estacionesParaPintar) {
     }
 }
 
-
-
-
     </script>
 </body>
 </html>
-
