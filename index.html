@@ -2,50 +2,46 @@
 <html lang="es">
 
 <head>
-
-<link rel="icon" type="image/webp" href="logo.webp">
-
-<link rel="apple-touch-icon" href="logo.webp">
-
-<meta property="og:image" content="https://www.preciocombustibles.com/logo.webp">
-
-<meta name="twitter:image" content="https://www.preciocombustibles.com/logo.webp">
-
-
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-FSMS4VRM96"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-FSMS4VRM96');
-</script>
-
-<title>Precio Combustibles hoy en España | Gasolineras Baratas y Rutas</title>
-<meta name="description" content="Ahorra en gasolina y diésel con nuestro planificador de rutas inteligente. Precios en tiempo real, histórico de 30 días y buscador de gasolineras baratas.">
-<meta name="keywords" content="precio gasolina hoy, gasolineras baratas, diesel barato, gnc españa, gnl precios, ahorrar combustible, ruta inteligente gasolineras">
-<link rel="canonical" href="https://www.preciocombustibles.com" />
-
-<meta property="og:type" content="website">
-<meta property="og:title" content="Precio Combustibles Pro - Ahorra en tu viaje">
-<meta property="og:description" content="Planificador de rutas inteligente y precios de gasolineras en tiempo real en toda España.">
-<meta property="og:image" content="https://cdn-icons-png.flaticon.com/512/3206/3206972.png">
-<meta property="og:url" content="https://www.preciocombustibles.com">
-
-<meta name="google-site-verification" content="bmzCMTDq-HisZsiPgm1O7zr2sHnyi7fcujvANNYGiUM" />
-    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <title>Precio Combustibles hoy en España | Gasolineras Baratas y Rutas</title>
+    <meta name="description" content="Ahorra en gasolina y diésel con nuestro planificador de rutas inteligente. Precios en tiempo real, histórico de 30 días y buscador de gasolineras baratas.">
+    <meta name="keywords" content="precio gasolina hoy, gasolineras baratas, diesel barato, gnc españa, gnl precios, ahorrar combustible, ruta inteligente gasolineras">
+    <link rel="canonical" href="https://www.preciocombustibles.com" />
+    <meta name="google-site-verification" content="bmzCMTDq-HisZsiPgm1O7zr2sHnyi7fcujvANNYGiUM" />
+
+    <link rel="shortcut icon" href="favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <link rel="manifest" href="manifest.json">
+    
+    <meta name="theme-color" content="#27ae60">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Precio Combustibles">
-    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3206/3206972.png">
-    
-    <link rel="manifest" href="manifest.json">
-    
-    <title>Precio Combustibles</title>
-            <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <meta name="apple-mobile-web-app-title" content="Gasofa Pro">
+
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Precio Combustibles Pro - Ahorra en tu viaje">
+    <meta property="og:description" content="Planificador de rutas inteligente y precios de gasolineras en tiempo real en toda España.">
+    <meta property="og:image" content="https://www.preciocombustibles.com/android-chrome-512x512.png">
+    <meta property="og:url" content="https://www.preciocombustibles.com">
+    <meta name="twitter:image" content="https://www.preciocombustibles.com/android-chrome-512x512.png">
+
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-FSMS4VRM96"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-FSMS4VRM96');
+    </script>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+
 
 
     <style>
@@ -256,7 +252,8 @@
 
    <div id="controls" class="collapsed">
         <div style="display:flex; justify-content:space-between; align-items:center;">
-            <strong style="font-size:18px;">⚙️ Filtros y Ajustes</strong>
+            <strong style="font-size:18px;">⚙️ Filtros y Ajustes <span id="alertaGarajeTop" style="display:none; font-size:12px; font-weight:900; background:#34495e; color:#fff; padding:2px 6px; border-radius:8px; vertical-align:middle; margin-left:5px;"></span></strong>
+
             <button onclick="toggleControls()" aria-label="Cerrar panel de filtros" style="background:transparent; color:var(--text-muted); padding:0; font-size:24px; width:auto;">✖️</button>
         </div>
 
@@ -413,41 +410,54 @@
 
     </div>
 
-    <div id="garageModal" class="modal-bg">
-    <div class="modal-content" style="max-width:400px;">
-        <h3 style="margin-top:0; color:var(--accent); border-bottom:1px solid var(--border-color); padding-bottom:10px; flex-shrink:0; text-align:center;">🚗 Mi Garaje</h3>
-
-        
-        <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:15px; flex-shrink:0;">
-            <input type="hidden" id="editCarId">
-            <input type="text" id="carName" placeholder="Nombre (Ej: Mi Golf)">
+        <div id="garageModal" class="modal-bg">
+        <div class="modal-content" style="max-width:400px;">
+            <h3 style="margin-top:0; color:var(--accent); border-bottom:1px solid var(--border-color); padding-bottom:10px; flex-shrink:0; text-align:center;">🚗 Mi Garaje</h3>
             
-            <select id="carFuel">
-                <option value="Precio Gasoleo A">Diésel (Gasóleo A)</option>
-                <option value="Precio Gasoleo Premium">Diésel Premium</option>
-                <option value="Precio Gasolina 95 E5">Gasolina 95 E5</option>
-                <option value="Precio Gasolina 98 E5">Gasolina 98 E5</option>
-                <option value="Precio Gas Natural Comprimido">GNC (Gas Natural Comprimido)</option>
-                <option value="Precio Gas Natural Licuado">GNL (Gas Natural Licuado)</option>
-            </select>
+            <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:15px; flex-shrink:0;">
+                <input type="hidden" id="editCarId">
+                <input type="text" id="carName" placeholder="Nombre (Ej: Mi Golf)" style="padding:12px; border-radius:12px; border:none; background:var(--bg-input); color:var(--text-main); font-weight:bold;">
+                
+                <select id="carFuel" style="padding:12px; border-radius:12px; border:none; background:var(--bg-input); color:var(--text-main); font-weight:bold;">
+                    <option value="Precio Gasoleo A">Diésel (Gasóleo A)</option>
+                    <option value="Precio Gasoleo Premium">Diésel Premium</option>
+                    <option value="Precio Gasolina 95 E5">Gasolina 95 E5</option>
+                    <option value="Precio Gasolina 98 E5">Gasolina 98 E5</option>
+                    <option value="Precio Gas Natural Comprimido">GNC (Gas Natural Comprimido)</option>
+                    <option value="Precio Gas Natural Licuado">GNL (Gas Natural Licuado)</option>
+                </select>
 
-            <div style="display:flex; gap:10px; width:100%;">
-                <input type="number" id="carConsumo" placeholder="Consumo (L/100)" step="0.1" style="flex:1; min-width:0; box-sizing:border-box;">
-                <input type="number" id="carDeposito" placeholder="Depósito Max (Litros)" style="flex:1; min-width:0; box-sizing:border-box;">
+                <div style="display:flex; gap:10px; width:100%;">
+                    <input type="number" id="carConsumo" placeholder="L/100" step="0.1" style="flex:1; min-width:0; box-sizing:border-box; padding:12px; border-radius:12px; border:none; background:var(--bg-input); color:var(--text-main); font-weight:bold;">
+                    <input type="number" id="carDeposito" placeholder="Depósito (L)" style="flex:1; min-width:0; box-sizing:border-box; padding:12px; border-radius:12px; border:none; background:var(--bg-input); color:var(--text-main); font-weight:bold;">
+                </div>
+
+                <div style="display:flex; gap:10px; width:100%;">
+                    <div style="flex:1; display:flex; flex-direction:column; gap:4px;">
+                        <label style="font-size:11px; font-weight:bold; color:var(--text-muted); padding-left:4px;">📅Vencimiento de la ITV</label>
+                        <input type="date" id="carITV" style="box-sizing:border-box; padding:12px; border-radius:12px; border:none; background:var(--bg-input); color:var(--text-main); font-weight:bold; width:100%;">
+                    </div>
+                    <div style="flex:1; display:flex; flex-direction:column; gap:4px;">
+                        <label style="font-size:11px; font-weight:bold; color:var(--text-muted); padding-left:4px;">🛡️Vencimiento del Seguro</label>
+                        <input type="date" id="carSeguro" style="box-sizing:border-box; padding:12px; border-radius:12px; border:none; background:var(--bg-input); color:var(--text-main); font-weight:bold; width:100%;">
+                    </div>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:4px; width:100%;">
+                    <label style="font-size:11px; font-weight:bold; color:var(--text-muted); padding-left:4px;">🛢️ Próximo Aceite/Revisión (Km)</label>
+                    <input type="number" id="carAceite" placeholder="Ej: 120000" style="box-sizing:border-box; padding:12px; border-radius:12px; border:none; background:var(--bg-input); color:var(--text-main); font-weight:bold; width:100%;">
+                </div>
+
+                <button onclick="saveCar()" style="background:var(--accent-green); color:white; padding:12px; border-radius:12px; font-weight:bold; cursor:pointer; font-size:16px; margin-top:5px;">💾 Guardar Vehículo</button>
+            </div>
+
+            <div id="carList" style="border-top:1px solid var(--border-color); padding-top:10px; display:flex; flex-direction:column; gap:8px; flex:1; max-height:30vh; overflow-y:auto;">
             </div>
             
-            <button onclick="saveCar()" style="background:var(--accent-green); color:white; padding:12px; border-radius:12px; font-weight:bold; cursor:pointer; font-size:16px;">💾 Guardar Vehículo</button>
+            <button onclick="abrirHistorial()" style="margin-top:10px; background:var(--accent); color:white; border:none; padding:12px; border-radius:12px; font-weight:bold; cursor:pointer; width:100%; flex-shrink:0;">📊 Ver mis gastos / Repostajes</button>
+            <button onclick="closeGarage()" style="margin-top:10px; background:var(--bg-input); color:var(--text-main); border:none; padding:12px; border-radius:12px; font-weight:bold; cursor:pointer; width:100%; flex-shrink:0;">Cerrar</button>
         </div>
-
-        <div id="carList" style="border-top:1px solid var(--border-color); padding-top:10px; display:flex; flex-direction:column; gap:8px; flex:1;">
-        </div>
-        
-        <button onclick="abrirHistorial()" style="margin-top:10px; background:var(--accent); color:white; border:none; padding:12px; border-radius:12px; font-weight:bold; cursor:pointer; width:100%; flex-shrink:0;">📊 Ver mis gastos / Repostajes</button>
-
-
-        <button onclick="closeGarage()" style="margin-top:15px; background:var(--bg-input); color:var(--text-main); border:none; padding:12px; border-radius:12px; font-weight:bold; cursor:pointer; width:100%; flex-shrink:0;">Cerrar</button>
     </div>
-</div>
+
 
         <nav class="bottom-nav">
         <div class="nav-item active" id="nav-zona" onclick="document.querySelectorAll('.nav-item').forEach(e=>e.classList.remove('active')); this.classList.add('active'); if(document.getElementById('controls').classList.contains('collapsed')) toggleControls(); setMode('zona');">
@@ -719,9 +729,12 @@
                 if(!q("controls").classList.contains("collapsed")) toggleControls(); 
             });
 
-                        // Truco para inyectar los servicios OSM en el PopUp al abrirlo y CENTRAR el mapa
+                                    // Truco para inyectar los servicios OSM y TENDENCIAS en el PopUp al abrirlo y CENTRAR el mapa
             map.on('popupopen', function(e) {
                 let node = e.popup._contentNode;
+                if (!node) return;
+
+                // 1. Inyectar servicios OSM si ya han cargado
                 let placeholder = node.querySelector('.osm-pop-placeholder');
                 if (placeholder) {
                     let id = placeholder.getAttribute('data-id');
@@ -729,15 +742,22 @@
                         placeholder.innerHTML = window.osmCache[id];
                     }
                 }
+
+                // 2. Inyectar Tendencias si ya han cargado (ESTO QUITA EL RELOJ)
+                let trendPlaceholder = node.querySelector('.tr-ind');
+                if (trendPlaceholder && typeof trendsLoaded !== 'undefined' && trendsLoaded) {
+                    let id = trendPlaceholder.getAttribute('data-id');
+                    let type = trendPlaceholder.getAttribute('data-type');
+                    trendPlaceholder.innerHTML = getTrendHTML(currentTrends[id], type);
+                }
                 
                 // Mover la cámara al centro exacto con un pequeño desplazamiento
-                // Restamos 130px en el eje Y para que el pin quede un poco por debajo del centro 
-                // y así el globo tenga muchísimo espacio por arriba para verse entero.
                 let targetPoint = map.project(e.popup.getLatLng(), map.getZoom()).subtract([0, 130]);
                 let targetLatLng = map.unproject(targetPoint, map.getZoom());
                 
                 map.panTo(targetLatLng, { animate: true, duration: 0.4 });
             });
+
 
         };
 
@@ -2211,35 +2231,145 @@ let myCars = JSON.parse(localStorage.getItem('gasofa_cars')) || [];
 window.currentCarCapacity = 0; 
 
 function openGarage() { document.getElementById('garageModal').style.display = 'flex'; renderCars(); }
-function closeGarage() { document.getElementById('garageModal').style.display = 'none'; document.getElementById('editCarId').value = ''; document.getElementById('carName').value = ''; document.getElementById('carConsumo').value = ''; document.getElementById('carDeposito').value = ''; }
-
-function saveCar() {
-    const idToEdit = document.getElementById('editCarId').value; const name = document.getElementById('carName').value; const fuel = document.getElementById('carFuel').value; const consumo = parseFloat(document.getElementById('carConsumo').value); const deposito = parseFloat(document.getElementById('carDeposito').value);
-    if(!name || !consumo || !deposito) { alert("⚠️ Por favor, rellena todos los datos del coche."); return; }
-
-    if (idToEdit) { const index = myCars.findIndex(c => c.id == idToEdit); if (index > -1) { myCars[index] = { id: parseInt(idToEdit), name, fuel, consumo, deposito }; } } 
-    else { myCars.push({ id: Date.now(), name, fuel, consumo, deposito }); }
-
-    localStorage.setItem('gasofa_cars', JSON.stringify(myCars));
-    if (typeof gtag === 'function') { gtag('event', 'guardar_vehiculo', { 'combustible': fuel }); }
-    
-    document.getElementById('editCarId').value = ''; document.getElementById('carName').value = ''; document.getElementById('carConsumo').value = ''; document.getElementById('carDeposito').value = '';
-    renderCars(); updateCarSelect();
+function closeGarage() { 
+    document.getElementById('garageModal').style.display = 'none'; 
+    document.getElementById('editCarId').value = ''; 
+    document.getElementById('carName').value = ''; 
+    document.getElementById('carConsumo').value = ''; 
+    document.getElementById('carDeposito').value = ''; 
+    document.getElementById('carITV').value = '';
+    document.getElementById('carSeguro').value = '';
+    document.getElementById('carAceite').value = '';
 }
 
-function editCar(id) { const car = myCars.find(c => c.id === id); if(car) { document.getElementById('editCarId').value = car.id; document.getElementById('carName').value = car.name; document.getElementById('carFuel').value = car.fuel; document.getElementById('carConsumo').value = car.consumo; document.getElementById('carDeposito').value = car.deposito; } }
-function deleteCar(id) { if(confirm("¿Borrar vehículo?")) { myCars = myCars.filter(car => car.id !== id); localStorage.setItem('gasofa_cars', JSON.stringify(myCars)); renderCars(); updateCarSelect(); } }
+function saveCar() {
+    const idToEdit = document.getElementById('editCarId').value; 
+    const name = document.getElementById('carName').value; 
+    const fuel = document.getElementById('carFuel').value; 
+    const consumo = parseFloat(document.getElementById('carConsumo').value); 
+    const deposito = parseFloat(document.getElementById('carDeposito').value);
+    const itv = document.getElementById('carITV').value;
+    const seguro = document.getElementById('carSeguro').value;
+    const aceite = document.getElementById('carAceite').value;
+
+    if(!name || !consumo || !deposito) { alert("⚠️ Por favor, rellena al menos el Nombre, Consumo y Depósito."); return; }
+
+    if (idToEdit) { 
+        const index = myCars.findIndex(c => c.id == idToEdit); 
+        if (index > -1) { myCars[index] = { id: parseInt(idToEdit), name, fuel, consumo, deposito, itv, seguro, aceite }; } 
+    } else { 
+        myCars.push({ id: Date.now(), name, fuel, consumo, deposito, itv, seguro, aceite }); 
+    }
+
+    localStorage.setItem('gasofa_cars', JSON.stringify(myCars));
+    
+    // Limpiamos los campos
+    closeGarage();
+    openGarage(); // Reabrimos para que se vea guardado
+    updateCarSelect();
+}
+
+function editCar(id) { 
+    const car = myCars.find(c => c.id === id); 
+    if(car) { 
+        document.getElementById('editCarId').value = car.id; 
+        document.getElementById('carName').value = car.name; 
+        document.getElementById('carFuel').value = car.fuel; 
+        document.getElementById('carConsumo').value = car.consumo; 
+        document.getElementById('carDeposito').value = car.deposito; 
+        document.getElementById('carITV').value = car.itv || '';
+        document.getElementById('carSeguro').value = car.seguro || '';
+        document.getElementById('carAceite').value = car.aceite || '';
+        document.getElementById('garageModal').querySelector('.modal-content').scrollTop = 0;
+    } 
+}
 
 function renderCars() {
-    const list = document.getElementById('carList'); list.innerHTML = '';
+    const list = document.getElementById('carList'); 
+    list.innerHTML = '';
+    
     myCars.forEach(car => {
-        list.innerHTML += `<div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-input); padding:10px; border-radius:12px; border:1px solid var(--border-color);">
-            <div><strong style="color:var(--accent);">${car.name}</strong><br><small style="font-size:11px;">⛽ ${car.consumo} L/100km | 🛢️ Max: ${car.deposito} L</small></div>
-            <div style="display:flex; gap:5px;"><button onclick="editCar(${car.id})" style="background:#2c3e50; color:white; border:none; border-radius:8px; padding:8px 12px; cursor:pointer;" title="Editar">✏️</button><button onclick="deleteCar(${car.id})" style="background:#e74c3c; color:white; border:none; border-radius:8px; padding:8px 12px; cursor:pointer;" title="Borrar">🗑️</button></div></div>`;
+        let alertasHTML = '';
+        const hoy = new Date();
+        
+        // Comprobar ITV
+        if (car.itv) {
+            let fItv = new Date(car.itv);
+            let dias = (fItv - hoy) / (1000 * 60 * 60 * 24);
+            let color = dias < 0 ? '#e74c3c' : (dias <= 30 ? '#f39c12' : 'var(--text-muted)');
+            let icono = dias < 0 ? '❌' : (dias <= 30 ? '⚠️' : '✅');
+            let mes = fItv.toLocaleDateString('es-ES', { month:'short', year:'2-digit'});
+            alertasHTML += `<span style="color:${color}; font-size:10px; font-weight:900; background:var(--bg-body); padding:3px 6px; border-radius:6px;">${icono} ITV: ${mes}</span> `;
+        }
+        
+        // Comprobar Seguro
+        if (car.seguro) {
+            let fSeg = new Date(car.seguro);
+            let dias = (fSeg - hoy) / (1000 * 60 * 60 * 24);
+            let color = dias < 0 ? '#e74c3c' : (dias <= 30 ? '#f39c12' : 'var(--text-muted)');
+            let icono = dias < 0 ? '❌' : (dias <= 30 ? '⚠️' : '🛡️');
+            let mes = fSeg.toLocaleDateString('es-ES', { month:'short', year:'2-digit'});
+            alertasHTML += `<span style="color:${color}; font-size:10px; font-weight:900; background:var(--bg-body); padding:3px 6px; border-radius:6px;">${icono} Seguro: ${mes}</span> `;
+        }
+        
+        // Comprobar Aceite (Solo muestra el texto)
+        if (car.aceite) {
+            alertasHTML += `<span style="color:var(--text-muted); font-size:10px; font-weight:900; background:var(--bg-body); padding:3px 6px; border-radius:6px;">🛢️ Aceite: ${car.aceite} km</span>`;
+        }
+
+        let alertasBloque = alertasHTML ? `<div style="margin-top:8px; display:flex; flex-wrap:wrap; gap:5px;">${alertasHTML}</div>` : '';
+
+        list.innerHTML += `<div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-input); padding:12px; border-radius:12px; border:1px solid var(--border-color);">
+            <div style="flex:1;">
+                <strong style="color:var(--accent); font-size:15px;">${car.name}</strong><br>
+                <small style="font-size:11px; font-weight:bold; color:var(--text-muted);">⛽ ${car.consumo} L/100km | 🛢️ Max: ${car.deposito} L</small>
+                ${alertasBloque}
+            </div>
+            <div style="display:flex; gap:5px; margin-left:10px;">
+                <button onclick="editCar(${car.id})" style="background:#2c3e50; color:white; border:none; border-radius:8px; padding:8px 12px; cursor:pointer;" title="Editar">✏️</button>
+                <button onclick="deleteCar(${car.id})" style="background:#e74c3c; color:white; border:none; border-radius:8px; padding:8px 12px; cursor:pointer;" title="Borrar">🗑️</button>
+            </div>
+        </div>`;
     });
 }
 
+
+function deleteCar(id) { if(confirm("¿Borrar vehículo?")) { myCars = myCars.filter(car => car.id !== id); localStorage.setItem('gasofa_cars', JSON.stringify(myCars)); renderCars(); updateCarSelect(); } }
+
+function verificarAlertasGaraje() {
+    let iconosAlerta = "";
+    const hoy = new Date();
+
+    // Recorremos todos los coches y vamos sumando los iconos
+    myCars.forEach(car => {
+        if (car.itv) {
+            let dias = (new Date(car.itv) - hoy) / (1000 * 60 * 60 * 24);
+            if (dias < 0) iconosAlerta += "❌";
+            else if (dias <= 30) iconosAlerta += "⚠️";
+        }
+        if (car.seguro) {
+            let dias = (new Date(car.seguro) - hoy) / (1000 * 60 * 60 * 24);
+            if (dias < 0) iconosAlerta += "❌";
+            else if (dias <= 30) iconosAlerta += "⚠️";
+        }
+    });
+
+    const badge = document.getElementById('alertaGarajeTop');
+    if (badge) {
+        if (iconosAlerta !== "") {
+            // Si hay símbolos, los mostramos todos seguidos
+            badge.innerHTML = iconosAlerta + ' GARAJE';
+            badge.style.display = 'inline-block';
+        } else {
+            // Si no hay ninguno, ocultamos el cartel
+            badge.style.display = 'none';
+        }
+    }
+}
+
 function updateCarSelect() {
+    verificarAlertasGaraje(); // Comprobamos las alertas siempre que se actualice la lista
+    
     const select = document.getElementById('activeCarSelect'); if(!select) return;
     if(myCars.length === 0 || searchMode === 'provincia') { select.style.display = 'none'; return; }
     
@@ -2248,6 +2378,7 @@ function updateCarSelect() {
     myCars.forEach(car => { html += `<option value="${car.id}">${car.name} (${car.consumo}L/100)</option>`; });
     select.innerHTML = html;
 }
+
 
 function applyCarSettings() {
     const select = document.getElementById('activeCarSelect'); const carId = select.value;
@@ -2458,7 +2589,7 @@ function abrirHistorial() {
     let totalMes = 0;
 
     if(bitacora.length === 0) {
-        lista.innerHTML = "<p style='text-align:center; color:var(--text-muted);'>Aún no has anotado ningún repostaje. Pulsa '📓 NOTA' en cualquier gasolinera.</p>";
+        lista.innerHTML = "<p style='text-align:center; color:var(--text-muted);'>Aún no has anotado ningún repostaje. Pulsa '📓 ANOTAR' en cualquier gasolinera.</p>";
     } else {
         bitacora.forEach(b => {
             let isEsteMes = new Date(b.id).getMonth() === mesActual;
