@@ -1,19 +1,21 @@
 {
   "name": "Precio Combustibles",
   "short_name": "Combustibles",
+  "description": "Ahorra en gasolina y diésel con nuestro planificador de rutas inteligente.",
   "start_url": ".",
   "display": "standalone",
   "background_color": "#121212",
   "theme_color": "#27ae60",
+  "orientation": "portrait",
   "icons": [
     {
-      "src": "https://img.icons8.com/color/192/gas-station.png",
+      "src": "android-chrome-192x192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "https://img.icons8.com/color/512/gas-station.png",
+      "src": "android-chrome-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
