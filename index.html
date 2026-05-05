@@ -190,20 +190,69 @@
         </div>
     </div>
 
-    <div id="descModal" class="modal-bg">
-        <div class="modal-content">
-            <h3 style="margin-top:0; text-align:center;">💳 Mis Tarjetas</h3>
-            <p style="font-size:13px; color:var(--text-muted); text-align:center; margin-bottom:15px;">Añade tus tarjetas de fidelidad. La app restará el descuento automáticamente si vas a esa marca.</p>
+        <div id="descModal" class="modal-bg">
+        <div class="modal-content" style="max-width:400px;">
+            <h3 style="margin-top:0; color:var(--accent); border-bottom:1px solid var(--border-color); padding-bottom:10px; text-align:center;">💳 Mis Tarjetas</h3>
+            <p style="font-size:12px; color:var(--text-muted); text-align:center; margin-bottom:15px;">La app restará el descuento automáticamente si vas a esa marca.</p>
             
-            <div id="descList" style="overflow-y:auto; padding-bottom:10px; display:flex; flex-direction:column; gap:10px;"></div>
+            <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:15px; flex-shrink:0;">
+                <input type="hidden" id="editDescId">
+                <input type="text" id="descMarca" placeholder="Marca (Ej: Repsol, Cepsa...)">
+                
+                <div style="display:flex; gap:10px; width:100%;">
+                    <input type="number" id="descValor" placeholder="Descuento" step="0.01" style="flex:1; min-width:0; box-sizing:border-box;">
+                    <select id="descTipo" style="flex:1; min-width:0; box-sizing:border-box;">
+                        <option value="euro">€ / Litro</option>
+                        <option value="porcentaje">% Total</option>
+                    </select>
+                </div>
+                
+                <button onclick="saveDescCard()" style="background:var(--accent-green); color:white; padding:12px; border-radius:12px; font-weight:bold; cursor:pointer; font-size:16px;">💾 Añadir Tarjeta</button>
+            </div>
+
+            <div id="descList" style="border-top:1px solid var(--border-color); padding-top:10px; display:flex; flex-direction:column; gap:8px; flex:1; max-height:250px; overflow-y:auto;">
+            </div>
+
+            <button onclick="q('descModal').style.display='none'" style="margin-top:15px; background:var(--bg-input); color:var(--text-main); border:none; padding:12px; border-radius:12px; font-weight:bold; cursor:pointer; width:100%; flex-shrink:0;">Cerrar</button>
+        </div>
+    </div>
+
+            <div id="bitacoraModal" class="modal-bg">
+        <div class="modal-content" style="max-width:320px; width:90%;">
+            <input type="hidden" id="editBitacoraId">
+            <h3 id="bitacoraTitle" style="margin-top:0; text-align:center;">📓 Anotar Repostaje</h3>
+            <p id="bitacoraGasName" style="text-align:center; font-weight:bold; color:var(--accent); margin-bottom:5px;"></p>
+            <p id="bitacoraGasPrice" style="text-align:center; font-size:12px; color:var(--text-muted); margin-top:0;"></p>
             
-            <button onclick="addDescRow()" style="background:var(--accent); margin-top:10px;">➕ Añadir Tarjeta</button>
-            <div style="display:flex; gap:10px; margin-top:15px;">
-                <button onclick="q('descModal').style.display='none'" style="flex:1; background:var(--bg-input); color:var(--text-main);">Cancelar</button>
-                <button onclick="saveDiscounts()" style="flex:1; background:var(--accent-green);">Guardar y Aplicar</button>
+            <div style="display:flex; gap:10px; margin-top:15px; width:100%;">
+                <input type="number" id="bitacoraLitros" placeholder="Litros" step="0.1" style="flex:1; min-width:0; box-sizing:border-box; padding:12px; border-radius:8px; border:1px solid var(--border-color); text-align:center; font-weight:bold;">
+                <input type="number" id="bitacoraEuros" placeholder="Total €" step="0.01" style="flex:1; min-width:0; box-sizing:border-box; padding:12px; border-radius:8px; border:1px solid var(--border-color); text-align:center; font-weight:bold;">
+            </div>
+            
+            <div style="display:flex; gap:10px; margin-top:15px; width:100%;">
+                <button onclick="cancelarEdicionBitacora()" style="flex:1; background:var(--bg-input); color:var(--text-main); border-radius:8px; border:none; padding:12px;">Cancelar</button>
+
+                <button onclick="guardarBitacora()" style="flex:1; background:var(--accent-green); color:white; border-radius:8px; font-weight:bold; border:none; padding:12px;">💾 Guardar</button>
             </div>
         </div>
     </div>
+
+
+
+        <div id="historialModal" class="modal-bg">
+        <div class="modal-content" style="max-width:350px;">
+            <h3 style="margin-top:0; color:var(--accent); text-align:center; border-bottom:1px solid var(--border-color); padding-bottom:10px;">📊 Mis Gastos</h3>
+            <div id="resumenMes" style="background:var(--bg-ahorro); padding:12px; border-radius:8px; margin-bottom:15px; text-align:center; font-weight:900; color:var(--accent-green); border: 1px dashed var(--accent-green);"></div>
+            <div id="listaBitacora" style="max-height:45vh; overflow-y:auto; display:flex; flex-direction:column; gap:8px; margin-bottom:15px;"></div>
+            <button onclick="q('historialModal').style.display='none'" style="background:var(--bg-input); color:var(--text-main); border:none; padding:12px; border-radius:12px; font-weight:bold; cursor:pointer; width:100%; flex-shrink:0;">Cerrar</button>
+        </div>
+    </div>
+   
+            <div id="listaBitacora" style="max-height:50vh; overflow-y:auto; display:flex; flex-direction:column; gap:8px;"></div>
+        </div>
+    </div>
+
+    
 
    <div id="controls" class="collapsed">
         <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -329,6 +378,7 @@
         
         <div id="header-ahorro" style="background:var(--bg-ahorro);border-radius:12px;padding:12px;margin-bottom:15px;border:1px dashed var(--accent-green);text-align:center;">
             <span id="resumenAhorro" style="font-weight:bold;color:var(--accent-green);font-size:1.1em;">Calculando ahorro...</span>
+
         </div>
         
         <div id="gas-list"></div>
@@ -365,7 +415,8 @@
 
     <div id="garageModal" class="modal-bg">
     <div class="modal-content" style="max-width:400px;">
-        <h3 style="margin-top:0; color:var(--accent); border-bottom:1px solid var(--border-color); padding-bottom:10px; flex-shrink:0;">🚗 Mi Garaje</h3>
+        <h3 style="margin-top:0; color:var(--accent); border-bottom:1px solid var(--border-color); padding-bottom:10px; flex-shrink:0; text-align:center;">🚗 Mi Garaje</h3>
+
         
         <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:15px; flex-shrink:0;">
             <input type="hidden" id="editCarId">
@@ -390,6 +441,9 @@
 
         <div id="carList" style="border-top:1px solid var(--border-color); padding-top:10px; display:flex; flex-direction:column; gap:8px; flex:1;">
         </div>
+        
+        <button onclick="abrirHistorial()" style="margin-top:10px; background:var(--accent); color:white; border:none; padding:12px; border-radius:12px; font-weight:bold; cursor:pointer; width:100%; flex-shrink:0;">📊 Ver mis gastos / Repostajes</button>
+
 
         <button onclick="closeGarage()" style="margin-top:15px; background:var(--bg-input); color:var(--text-main); border:none; padding:12px; border-radius:12px; font-weight:bold; cursor:pointer; width:100%; flex-shrink:0;">Cerrar</button>
     </div>
@@ -1048,49 +1102,84 @@
             }, 300);
         };
         
-        window.openDiscounts = function() {
-            q('descList').innerHTML = '';
-            descuentosGuardados.forEach(d => addDescRow(d.marca, d.valor, d.tipo));
+                window.openDiscounts = function() {
+            q('editDescId').value = ''; // Limpiamos el modo edición al abrir
+            renderDiscounts();
             q('descModal').style.display = 'flex';
         };
-        
-        window.addDescRow = function(marca='', val='', tipo='euro') {
-            const div = D.createElement('div');
-            div.className = 'desc-row';
-            div.style.cssText = 'border:1px solid var(--border-color); padding:12px; border-radius:8px; background:var(--bg-input); display:flex; flex-direction:column; gap:8px;';
-            div.innerHTML = '<div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">' +
-                '<input type="text" class="d-marca" placeholder="Marca (Repsol, Cepsa...)" value="' + marca + '" style="flex:1;">' +
-                '<button onclick="this.parentElement.parentElement.remove()" style="background:#e74c3c; flex:none; width:40px; height:40px; border-radius:8px;">🗑️</button>' +
-            '</div>' +
-            '<div style="display:flex; gap:8px;">' +
-                '<input type="number" class="d-val" placeholder="Descuento" value="' + val + '" style="flex:1; text-align:center;" step="0.01">' +
-                '<select class="d-tipo" style="flex:1;">' +
-                    '<option value="euro" ' + (tipo==='euro'?'selected':'') + '>€/Litro</option>' +
-                    '<option value="porcentaje" ' + (tipo==='porcentaje'?'selected':'') + '>% Total</option>' +
-                '</select>' +
-            '</div>';
-            q('descList').appendChild(div);
-        };
-        
-        window.saveDiscounts = function() {
-    descuentosGuardados = [];
-    D.querySelectorAll('.desc-row').forEach(row => {
-        let m = row.querySelector('.d-marca').value.trim().toUpperCase();
-        let v = parseFloat(row.querySelector('.d-val').value);
-        let t = row.querySelector('.d-tipo').value;
-        if(m && !isNaN(v) && v > 0) descuentosGuardados.push({ marca: m, valor: v, tipo: t });
-    });
-    localStorage.setItem('gasofaDesc', JSON.stringify(descuentosGuardados));
-    
-    if (typeof gtag === 'function') {
-        gtag('event', 'guardar_tarjeta', {
-            'cantidad_tarjetas': descuentosGuardados.length
-        });
-    }
 
-    q('descModal').style.display = 'none';
-    fetchGasolineras(); 
-};
+        window.renderDiscounts = function() {
+            const list = q('descList');
+            list.innerHTML = '';
+            if(descuentosGuardados.length === 0) {
+                list.innerHTML = '<div style="text-align:center; color:var(--text-muted); font-size:12px; padding:10px;">No tienes tarjetas guardadas.</div>';
+                return;
+            }
+            descuentosGuardados.forEach((d, index) => {
+                let tipoVisual = d.tipo === 'euro' ? `-${d.valor} €/L` : `-${d.valor}%`;
+                list.innerHTML += `<div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-input); padding:10px; border-radius:12px; border:1px solid var(--border-color);">
+                    <div>
+                        <strong style="color:var(--accent); font-size:14px;">${d.marca}</strong><br>
+                        <small style="font-size:12px; font-weight:bold; color:var(--accent-green);">💳 Descuento: ${tipoVisual}</small>
+                    </div>
+                    <div style="display:flex; gap:5px;">
+                        <button onclick="editDescCard(${index})" style="background:#2c3e50; color:white; border:none; border-radius:8px; padding:8px 12px; cursor:pointer;" title="Editar">✏️</button>
+                        <button onclick="deleteDescCard(${index})" style="background:#e74c3c; color:white; border:none; border-radius:8px; padding:8px 12px; cursor:pointer;" title="Borrar">🗑️</button>
+                    </div>
+                </div>`;
+            });
+        };
+
+        window.saveDescCard = function() {
+            const idToEdit = q('editDescId').value;
+            let m = q('descMarca').value.trim().toUpperCase();
+            let v = parseFloat(q('descValor').value);
+            let t = q('descTipo').value;
+
+            if(!m || isNaN(v) || v <= 0) { alert("⚠️ Escribe la marca y un descuento válido."); return; }
+
+            if (idToEdit !== "") {
+                // Estamos EDITANDO una tarjeta existente
+                descuentosGuardados[parseInt(idToEdit)] = { marca: m, valor: v, tipo: t };
+            } else {
+                // Estamos CREANDO una nueva
+                descuentosGuardados.push({ marca: m, valor: v, tipo: t });
+            }
+
+            localStorage.setItem('gasofaDesc', JSON.stringify(descuentosGuardados));
+            
+            // Limpiamos todo
+            q('editDescId').value = '';
+            q('descMarca').value = '';
+            q('descValor').value = '';
+            
+            renderDiscounts();
+            fetchGasolineras(); // Aplicamos cambios a la lista principal
+        };
+
+        // Nueva función para cargar los datos en los inputs
+        window.editDescCard = function(index) {
+            const card = descuentosGuardados[index];
+            if(card) {
+                q('editDescId').value = index;
+                q('descMarca').value = card.marca;
+                q('descValor').value = card.valor;
+                q('descTipo').value = card.tipo;
+                // Scroll hacia arriba para ver los campos si hay mucha lista
+                q('descModal').querySelector('.modal-content').scrollTop = 0;
+            }
+        };
+
+        window.deleteDescCard = function(index) {
+            if(confirm("¿Borrar esta tarjeta?")) {
+                descuentosGuardados.splice(index, 1);
+                localStorage.setItem('gasofaDesc', JSON.stringify(descuentosGuardados));
+                q('editDescId').value = ''; // Por si estaba editando la que borró
+                renderDiscounts();
+                fetchGasolineras();
+            }
+        };
+
 
         function toggleTheme() {
             const body = document.body; body.classList.toggle('dark-mode'); const isDark = body.classList.contains('dark-mode');
@@ -1128,7 +1217,7 @@
             }
         }
 
-        function fetchTrends(v) {
+                function fetchTrends(v) {
             const c = { "Precio Gasoleo A": 4, "Precio Gasolina 95 E5": 5, "Precio Gasoleo Premium": 6, "Precio Gasolina 98 E5": 7, "Precio Gasoleo B": 8, "Precio Gas Natural Comprimido": 9, "AdBlue": 10, "Precio Gas Natural Licuado": 11 };
             if(!c[v]) return;
             
@@ -1141,13 +1230,21 @@
               .then(r => {
                   trendsLoaded = true;
                   currentTrends = r || {};
-                  if(cacheGasolineras && cacheGasolineras.length > 0) fetchGasolineras();
+                  
+                  // MAGIA: En vez de llamar a fetchGasolineras() y borrar el mapa,
+                  // actualizamos solo los iconitos en silencio.
+                  D.querySelectorAll('.tr-ind').forEach(el => {
+                      let id = el.getAttribute('data-id');
+                      let type = el.getAttribute('data-type');
+                      el.innerHTML = getTrendHTML(currentTrends[id], type);
+                  });
               })
               .catch(e => {
                   trendsLoaded = true; 
                   D.querySelectorAll('.tr-ind').forEach(el => { el.innerHTML = getTrendHTML(null, el.getAttribute('data-type')); });
               });
         }
+
 
         function addPulseHeart(id) { const h = q(id); if(h) { h.classList.remove('pulse-heart'); void h.offsetWidth; h.classList.add('pulse-heart'); } }
         
@@ -1825,12 +1922,14 @@
                             ${osmCacheHtml}
                         </div>
 
-                                                <div style="display:flex; gap:5px; margin-top:4px;">
-                            <button class="btn-action btn-historial" onclick="mostrarHistorico('${sN}','${g.IDEESS}','${g.Horario||''}')" style="margin:0; padding:8px 6px;">📈 HISTÓRICO</button>
-                            <a class="btn-action btn-wa" href="https://api.whatsapp.com/send?text=${waM}" target="_blank" style="margin:0; padding:8px 6px;">💬 WA</a>
-                            <a class="btn-action btn-directo" href="${mU}" target="_blank" style="flex:1; margin:0; padding:8px 6px;">IR ↗</a>
+                                                 <div style="display:flex; gap:5px; margin-top:4px;">
+                            <button class="btn-action btn-historial" onclick="mostrarHistorico('${sN}','${g.IDEESS}','${g.Horario||''}')" style="margin:0; padding:0 6px; height:34px; box-sizing:border-box;">📈 HISTÓRICO</button>
+                            <button class="btn-action" style="background:#f39c12; margin:0; padding:0 6px; height:34px; box-sizing:border-box;" onclick="abrirAnotar('${sN}', ${g.pN})">📓 ANOTAR</button>
+                            <a class="btn-action btn-wa" href="https://api.whatsapp.com/send?text=${waM}" target="_blank" style="margin:0; padding:0 6px; height:34px; box-sizing:border-box;">💬 WA</a>
+                            <a class="btn-action btn-directo" href="${mU}" target="_blank" style="flex:1; margin:0; padding:0 6px; height:34px; box-sizing:border-box;">IR ↗</a>
                         </div>
                     </div>`;
+                      
 
 
                     let htmlMapa = '<div style="background:' + cS + '; color:#fff; padding:4px 8px; border-radius:12px; font-weight:900; font-size:14px; box-shadow:0 3px 8px rgba(0,0,0,0.3); display:flex; align-items:center; justify-content:center; border: 1px solid rgba(255,255,255,0.5); text-shadow: 0 1px 2px rgba(0,0,0,0.3);">' + pStrVisualMap + '<span class="tr-ind" style="margin-left:4px; filter: brightness(0) invert(1);" data-type="map" data-id="' + g.IDEESS + '">' + tH_m + '</span></div>';
@@ -1980,42 +2079,61 @@
                         const item = D.createElement("div"); item.className = "list-item"; 
                         item.onclick = e => { if (e.target.tagName !== 'BUTTON' && e.target.tagName !== 'A' && !e.target.closest('.fav-btn') && !e.target.closest('.d-tipo')) window.centrarMapa(lat, ln); };
                         
-                        item.innerHTML = `
-                        <div style="display:flex; justify-content:space-between; align-items:flex-start; width:100%;">
-                            <div style="flex:1;">
-                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                                    <div><span class="top-badge ${cM}">${o === "favoritas" ? '❤️ FAVORITA' : 'TOP ' + g.rP + ' ' + m}</span>${bSL}</div>
-                                    <span id="${iL}" class="fav-btn fav-btn-id-${g.IDEESS}" onclick="toggleFav('${g.IDEESS}',event,'${iL}')">${hIc}</span>
+                                                item.innerHTML = `
+                        <div style="display:flex; justify-content:space-between; align-items:stretch; width:100%; gap:10px;">
+                            
+                                                        <div style="flex:1; min-width:0; display:flex; flex-direction:column;">
+                                <div style="margin-bottom:6px;">
+                                    <span class="top-badge ${cM}">${o === "favoritas" ? '❤️ FAVORITA' : 'TOP ' + g.rP + ' ' + m}</span>${bSL}
                                 </div>
-                                <div style="font-size:15px; font-weight:800; color:var(--text-main); line-height:1.2;">
-                                    ${g.Rótulo}
-                                    
+                                <div style="font-size:15px; font-weight:900; color:var(--text-main); line-height:1.2; display:flex; align-items:flex-start; gap:6px; padding-right:5px;">
+                                    <span style="word-break:break-word;">${g.Rótulo}</span>
+                                    <span id="${iL}" class="fav-btn fav-btn-id-${g.IDEESS}" onclick="toggleFav('${g.IDEESS}',event,'${iL}')" style="font-size:18px; margin-top:-2px;">${hIc}</span>
                                 </div>
+
                                 <div style="margin-top:8px; display:flex; align-items:center; flex-wrap:wrap; gap:8px;">
-    <span style="background:var(--accent); color:#fff; font-weight:900; font-size:11px; padding:3px 10px; border-radius:8px; text-transform:uppercase; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-        ${g.Municipio || ''}
-    </span>
-    <span style="font-size:13px; color:var(--text-muted); font-weight:500;">📍 ${g.Dirección}</span>
-</div>
-
-
-                                <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">🕒 ${g.Horario||''}</div>
+                                    <span style="background:var(--accent); color:#fff; font-weight:900; font-size:11px; padding:3px 10px; border-radius:8px; text-transform:uppercase; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                                        ${g.Municipio || ''}
+                                    </span>
+                                    <span style="font-size:13px; color:var(--text-muted); font-weight:500;">📍 ${g.Dirección}</span>
+                                </div>
+                                <div style="font-size:11px; color:var(--text-muted); margin-top:4px;">🕒 ${g.Horario||''}</div>
                                 <div style="margin-top:8px;"><span class="distancia-badge">${msgDist}</span></div>
-                                <div id="servicios-os-${g.IDEESS}" style="display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; min-height:24px;"></div>
+                                <div id="servicios-os-${g.IDEESS}" style="display:flex; flex-wrap:wrap; gap:4px; margin-top:8px; min-height:24px;"></div>
                             </div>
-                            <div style="text-align:right; min-width:105px;">
-                                ${htmlDescuento}
-                                <div class="price-text" style="color:${cS};">${pStrVisualList}<span class="tr-ind" data-type="list" data-id="${g.IDEESS}" style="margin-left:4px;">${tH}</span></div>
-                                <div style="margin-top:8px;">${htmlAhorroList}</div>
-                            </div>
-                        </div>
-                        <div style="display:flex; gap:6px; margin-top:8px; border-top:1px solid var(--border-color); padding-top:10px;">
-                            <button class="btn-action btn-historial" onclick="mostrarHistorico('${sN}','${g.IDEESS}','${g.Horario||''}')">📈 HISTÓRICO</button>
-                            <a class="btn-action btn-wa" href="https://api.whatsapp.com/send?text=${waM}" target="_blank">💬 WA</a>
-                            <a class="btn-action btn-directo" href="${mU}" target="_blank" style="flex:1;">IR ↗</a>
+                            
+                            <div style="display:flex; flex-direction:column; align-items:flex-end; width:140px; flex-shrink:0;">
+                                <div style="text-align:right; width:100%;">
+                                    ${htmlDescuento}
+                                    <div class="price-text" style="color:${cS}; justify-content:flex-end;">${pStrVisualList}<span class="tr-ind" data-type="list" data-id="${g.IDEESS}" style="margin-left:4px;">${tH}</span></div>
+                                    <div style="margin-top:6px;">${htmlAhorroList}</div>
+                                </div>
+                                
+                                                                <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; width:100%; margin-top:auto; padding-top:10px;">
+                                    <button class="btn-action btn-historial" onclick="mostrarHistorico('${sN}','${g.IDEESS}','${g.Horario||''}')" style="margin:0; padding:6px 2px; font-size:8.5px; border-radius:6px; width:100%; box-sizing:border-box; flex-direction:column; gap:3px;">
+                                        <span style="font-size:14px; line-height:1;">📈</span>
+                                        <span>HISTÓRICO</span>
+                                    </button>
+                                    
+                                    <button class="btn-action" style="background:#f39c12; margin:0; padding:6px 2px; font-size:8.5px; border-radius:6px; width:100%; box-sizing:border-box; flex-direction:column; gap:3px;" onclick="abrirAnotar('${sN}', ${g.pN})">
+                                        <span style="font-size:14px; line-height:1;">📓</span>
+                                        <span>ANOTAR</span>
+                                    </button>
+                                    
+                                    <a class="btn-action btn-wa" href="https://api.whatsapp.com/send?text=${waM}" target="_blank" style="margin:0; padding:6px 2px; font-size:10px; border-radius:6px; width:100%; box-sizing:border-box; flex-direction:column; gap:3px;">
+                                        <span style="font-size:14px; line-height:1;">💬</span>
+                                        <span>WA</span>
+                                    </a>
+                                    
+                                    <a class="btn-action btn-directo" href="${mU}" target="_blank" style="margin:0; padding:6px 2px; font-size:10px; border-radius:6px; width:100%; box-sizing:border-box; flex-direction:column; gap:3px;">
+                                        <span style="font-size:14px; line-height:1;">↗️</span>
+                                        <span>IR</span>
+                                    </a>
+                                </div>                        
                         </div>`;
 
                         lD.appendChild(item);
+
                     });
                 }
                 
@@ -2241,6 +2359,142 @@ async function cargarServiciosOSM(estacionesParaPintar) {
         });
     } catch(e) { 
         console.error("Error OSM:", e);
+    }
+}
+
+
+// --- 1 Y 3: DIVIDIR GASTOS Y BITÁCORA ---
+let bitacora = JSON.parse(localStorage.getItem('gasofa_bitacora')) || [];
+let currentAnotar = {};
+
+// Funciones de la Bitácora
+function abrirAnotar(nombre, precio) {
+    currentAnotar = { nombre, precio };
+    q('editBitacoraId').value = ""; // Limpiamos modo edición
+    q('bitacoraTitle').innerText = "📓 Anotar Repostaje";
+    q('bitacoraGasName').innerText = nombre;
+    q('bitacoraGasPrice').innerText = "Precio actual: " + precio.toFixed(3) + " €/L";
+    q('bitacoraLitros').value = "";
+    q('bitacoraEuros').value = "";
+    q('bitacoraModal').style.display = 'flex';
+    
+    q('bitacoraLitros').oninput = function() {
+        if(this.value) q('bitacoraEuros').value = (parseFloat(this.value) * currentAnotar.precio).toFixed(2);
+    };
+    q('bitacoraEuros').oninput = function() {
+        if(this.value) q('bitacoraLitros').value = (parseFloat(this.value) / currentAnotar.precio).toFixed(2);
+    };
+}
+
+function editarBitacora(id) {
+    let record = bitacora.find(b => b.id == id);
+    if(record) {
+        // --- NUEVO: Ocultamos el historial para que no estorbe ---
+        q('historialModal').style.display = 'none';
+
+        currentAnotar = { nombre: record.nombre, precio: record.precioL }; 
+        q('editBitacoraId').value = id;
+        q('bitacoraTitle').innerText = "✏️ Editar Repostaje";
+        q('bitacoraGasName').innerText = record.nombre;
+        q('bitacoraGasPrice').innerText = "Precio guardado: " + record.precioL.toFixed(3) + " €/L";
+        q('bitacoraLitros').value = record.litros;
+        q('bitacoraEuros').value = record.euros;
+        
+        q('bitacoraLitros').oninput = function() {
+            if(this.value) q('bitacoraEuros').value = (parseFloat(this.value) * record.precioL).toFixed(2);
+        };
+        q('bitacoraEuros').oninput = function() {
+            if(this.value) q('bitacoraLitros').value = (parseFloat(this.value) / record.precioL).toFixed(2);
+        };
+
+        q('bitacoraModal').style.display = 'flex';
+    }
+}
+
+
+function guardarBitacora() {
+    let lts = parseFloat(q('bitacoraLitros').value);
+    let eur = parseFloat(q('bitacoraEuros').value);
+    let idEdit = q('editBitacoraId').value;
+
+    if(!lts || !eur) { alert("⚠️ Rellena los litros o los euros"); return; }
+    
+    if (idEdit !== "") {
+        // ACTUALIZAR (Mantenemos la fecha original)
+        let index = bitacora.findIndex(b => b.id == idEdit);
+        if(index > -1) {
+            bitacora[index].litros = lts;
+            bitacora[index].euros = eur;
+        }
+    } else {
+        // CREAR NUEVO
+        bitacora.unshift({
+            id: Date.now(),
+            fecha: new Date().toLocaleDateString('es-ES'),
+            nombre: currentAnotar.nombre,
+            litros: lts,
+            euros: eur,
+            precioL: currentAnotar.precio
+        });
+    }
+
+    localStorage.setItem('gasofa_bitacora', JSON.stringify(bitacora));
+    q('bitacoraModal').style.display = 'none';
+    
+    if (q('historialModal').style.display === 'flex') {
+        abrirHistorial(); // Si estaba en Mis Gastos, refresca la lista automáticamente
+    } else {
+        alert("✅ ¡Repostaje guardado!");
+    }
+}
+
+function abrirHistorial() {
+    q('garageModal').style.display = 'none';
+    q('historialModal').style.display = 'flex';
+    let lista = q('listaBitacora');
+    lista.innerHTML = "";
+    
+    let mesActual = new Date().getMonth();
+    let totalMes = 0;
+
+    if(bitacora.length === 0) {
+        lista.innerHTML = "<p style='text-align:center; color:var(--text-muted);'>Aún no has anotado ningún repostaje. Pulsa '📓 NOTA' en cualquier gasolinera.</p>";
+    } else {
+        bitacora.forEach(b => {
+            let isEsteMes = new Date(b.id).getMonth() === mesActual;
+            if(isEsteMes) totalMes += b.euros;
+            
+            lista.innerHTML += `<div style="background:var(--bg-input); padding:10px; border-radius:8px; border:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                    <strong style="font-size:13px; color:var(--text-main);">${b.nombre}</strong><br>
+                    <span style="font-size:11px; color:var(--text-muted);">${b.fecha} • ${b.litros.toFixed(1)} L a ${b.precioL.toFixed(3)}€</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <span style="font-weight:900; color:#e74c3c; font-size:15px;">-${b.euros.toFixed(2)}€</span>
+                    <div style="display:flex; gap:2px;">
+                        <button onclick="editarBitacora(${b.id})" style="background:transparent; border:none; color:#3498db; font-size:16px; cursor:pointer; padding:0 4px;" title="Editar">✏️</button>
+                        <button onclick="borrarBitacora(${b.id})" style="background:transparent; border:none; color:var(--text-muted); font-size:16px; cursor:pointer; padding:0 4px;" title="Borrar">🗑️</button>
+                    </div>
+                </div>
+            </div>`;
+        });
+    }
+    q('resumenMes').innerText = `💶 Gasto este mes: ${totalMes.toFixed(2)}€`;
+}
+
+function borrarBitacora(id) {
+    if(confirm("¿Seguro que quieres borrar este repostaje?")) {
+        bitacora = bitacora.filter(b => b.id !== id);
+        localStorage.setItem('gasofa_bitacora', JSON.stringify(bitacora));
+        abrirHistorial(); // Refresca la lista
+    }
+}
+
+function cancelarEdicionBitacora() {
+    q('bitacoraModal').style.display = 'none';
+    // Si estábamos editando (el campo editBitacoraId tiene algo), volvemos al historial
+    if (q('editBitacoraId').value !== "") {
+        q('historialModal').style.display = 'flex';
     }
 }
 
