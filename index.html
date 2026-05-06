@@ -2689,8 +2689,8 @@ function revisarAlertasAlEntrar() {
     const ultimaNoti = localStorage.getItem('gasofa_last_noti');
     const fechaHoyStr = hoy.toDateString();
     
-    // MODO PRUEBAS: Quita las dos barras "//" de la siguiente línea para que te salte SIEMPRE que recargues la página mientras haces tests.
-     localStorage.removeItem('gasofa_last_noti'); 
+    // MODO PRUEBAS: Quita las dos barras "//" de la siguiente línea para forzar tests.
+    // localStorage.removeItem('gasofa_last_noti'); 
     
     if (ultimaNoti === fechaHoyStr) return; // Ya avisó hoy
     
@@ -2699,15 +2699,24 @@ function revisarAlertasAlEntrar() {
     myCars.forEach(car => {
         if (car.itv) {
             let diasItv = (new Date(car.itv) - hoy) / (1000 * 60 * 60 * 24);
-            if (diasItv >= 0 && diasItv <= 15) { 
-                lanzarNotificacion(`⚠️ ITV de ${car.name}`, `Caduca en ${Math.ceil(diasItv)} días. ¡Pide cita!`);
+            // Si faltan 15 días o menos, y no lleva caducado más de un año (-365)
+            if (diasItv <= 15 && diasItv >= -365) { 
+                let mensaje = diasItv < 0 
+                    ? `¡CADUCADA hace ${Math.abs(Math.round(diasItv))} días! Peligro de multa. 🚔` 
+                    : `Caduca en ${Math.ceil(diasItv)} días. ¡Pide cita!`;
+                
+                lanzarNotificacion(`⚠️ ITV de ${car.name}`, mensaje);
                 hayAvisos = true;
             }
         }
         if (car.seguro) {
             let diasSeg = (new Date(car.seguro) - hoy) / (1000 * 60 * 60 * 24);
-            if (diasSeg >= 0 && diasSeg <= 15) {
-                lanzarNotificacion(`🛡️ Seguro de ${car.name}`, `Vence en ${Math.ceil(diasSeg)} días. Revisa tu póliza.`);
+            if (diasSeg <= 15 && diasSeg >= -365) {
+                let mensaje = diasSeg < 0 
+                    ? `¡VENCIDO hace ${Math.abs(Math.round(diasSeg))} días! Conduces sin seguro. 🚨` 
+                    : `Vence en ${Math.ceil(diasSeg)} días. Revisa tu póliza.`;
+                
+                lanzarNotificacion(`🛡️ Seguro de ${car.name}`, mensaje);
                 hayAvisos = true;
             }
         }
@@ -2717,6 +2726,7 @@ function revisarAlertasAlEntrar() {
         localStorage.setItem('gasofa_last_noti', fechaHoyStr);
     }
 }
+
 
 window.addEventListener('load', () => {
     setTimeout(revisarAlertasAlEntrar, 3000);
