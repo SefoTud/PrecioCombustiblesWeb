@@ -213,13 +213,12 @@
         </div>
     </div>
 
-            <div id="bitacoraModal" class="modal-bg">
+                <div id="bitacoraModal" class="modal-bg">
         <div class="modal-content" style="max-width:320px; width:90%;">
             <input type="hidden" id="editBitacoraId">
             <h3 id="bitacoraTitle" style="margin-top:0; text-align:center;">📓 Anotar Repostaje</h3>
             <p id="bitacoraGasName" style="text-align:center; font-weight:bold; color:var(--accent); margin-bottom:5px;"></p>
             <p id="bitacoraGasPrice" style="text-align:center; font-size:12px; color:var(--text-muted); margin-top:0;"></p>
-                        <p id="bitacoraGasPrice" style="text-align:center; font-size:12px; color:var(--text-muted); margin-top:0;"></p>
             
             <select id="bitacoraCarSelect" style="width:100%; padding:12px; margin-top:10px; border-radius:8px; border:1px solid var(--border-color); font-weight:bold; background:var(--bg-input); color:var(--text-main);">
             </select>
@@ -229,13 +228,17 @@
                 <input type="number" id="bitacoraEuros" placeholder="Total €" step="0.01" style="flex:1; min-width:0; box-sizing:border-box; padding:12px; border-radius:8px; border:1px solid var(--border-color); text-align:center; font-weight:bold;">
             </div>
             
+            <div style="display:flex; width:100%; margin-top:10px;">
+                <input type="number" id="bitacoraKm" placeholder="Kilómetros del coche (Opcional)" style="flex:1; box-sizing:border-box; padding:12px; border-radius:8px; border:1px solid var(--border-color); text-align:center; font-weight:bold; background:var(--bg-input); color:var(--text-main);">
+            </div>
+            
             <div style="display:flex; gap:10px; margin-top:15px; width:100%;">
                 <button onclick="cancelarEdicionBitacora()" style="flex:1; background:var(--bg-input); color:var(--text-main); border-radius:8px; border:none; padding:12px;">Cancelar</button>
-
                 <button onclick="guardarBitacora()" style="flex:1; background:var(--accent-green); color:white; border-radius:8px; font-weight:bold; border:none; padding:12px;">💾 Guardar</button>
             </div>
         </div>
     </div>
+
 
 
 
@@ -2533,13 +2536,12 @@ function abrirAnotar(nombre, precio) {
     q('bitacoraGasPrice').innerText = "Precio actual: " + precio.toFixed(3) + " €/L";
     q('bitacoraLitros').value = "";
     q('bitacoraEuros').value = "";
+    q('bitacoraKm').value = ""; // Limpiamos los km
 
-    // Poblar selector de coches
     let carSelect = q('bitacoraCarSelect');
     carSelect.innerHTML = '<option value="">Sin vehículo específico</option>';
     myCars.forEach(c => { carSelect.innerHTML += `<option value="${c.id}">🚗 ${c.name}</option>`; });
     
-    // Preseleccionar el coche que esté usando en los filtros principales (si hay alguno)
     let activeCar = q('activeCarSelect') ? q('activeCarSelect').value : "";
     if(activeCar) carSelect.value = activeCar;
 
@@ -2564,12 +2566,12 @@ function editarBitacora(id) {
         q('bitacoraGasPrice').innerText = "Precio guardado: " + record.precioL.toFixed(3) + " €/L";
         q('bitacoraLitros').value = record.litros;
         q('bitacoraEuros').value = record.euros;
+        q('bitacoraKm').value = record.km || ""; // Cargamos los km si los hay
 
-        // Poblar selector al editar
         let carSelect = q('bitacoraCarSelect');
         carSelect.innerHTML = '<option value="">Sin vehículo específico</option>';
         myCars.forEach(c => { carSelect.innerHTML += `<option value="${c.id}">🚗 ${c.name}</option>`; });
-        if(record.carId) carSelect.value = record.carId; // Seleccionamos el que guardó en su día
+        if(record.carId) carSelect.value = record.carId; 
 
         q('bitacoraLitros').oninput = function() {
             if(this.value) q('bitacoraEuros').value = (parseFloat(this.value) * record.precioL).toFixed(2);
@@ -2587,9 +2589,9 @@ function guardarBitacora() {
     
     let lts = parseFloat(q('bitacoraLitros').value);
     let eur = parseFloat(q('bitacoraEuros').value);
+    let kmActuales = parseFloat(q('bitacoraKm').value) || 0; // Capturamos los km
     let idEdit = q('editBitacoraId').value;
     
-    // Capturar el coche
     let carId = q('bitacoraCarSelect').value;
     let carName = "";
     if (carId) {
@@ -2604,6 +2606,7 @@ function guardarBitacora() {
         if(index > -1) {
             bitacora[index].litros = lts;
             bitacora[index].euros = eur;
+            bitacora[index].km = kmActuales;
             bitacora[index].carId = carId;
             bitacora[index].carName = carName;
         }
@@ -2615,6 +2618,7 @@ function guardarBitacora() {
             litros: lts,
             euros: eur,
             precioL: currentAnotar.precio,
+            km: kmActuales,
             carId: carId,
             carName: carName
         });
@@ -2624,7 +2628,7 @@ function guardarBitacora() {
     q('bitacoraModal').style.display = 'none';
     
     if (q('historialModal').style.display === 'flex') {
-        actualizarListaHistorial(); // Refresca lista sin cerrar
+        actualizarListaHistorial(); 
     } else {
         alert("✅ ¡Repostaje guardado!");
     }
@@ -2637,13 +2641,9 @@ function abrirHistorial() {
     let filterSelect = q('historialCarFilter');
     let valActual = filterSelect.value; 
     
-    // Cargar los vehículos que tenga el usuario
     filterSelect.innerHTML = '<option value="all">🚗 Todos los vehículos</option>';
-    myCars.forEach(c => {
-        filterSelect.innerHTML += `<option value="${c.id}">🚗 ${c.name}</option>`;
-    });
+    myCars.forEach(c => { filterSelect.innerHTML += `<option value="${c.id}">🚗 ${c.name}</option>`; });
     
-    // Mantener la selección si estaba filtrando
     if (valActual && valActual !== "all" && myCars.some(c => c.id == valActual)) {
         filterSelect.value = valActual;
     } else {
@@ -2653,7 +2653,6 @@ function abrirHistorial() {
     actualizarListaHistorial();
 }
 
-// Nueva función exclusiva para refrescar la lista al cambiar el filtro
 function actualizarListaHistorial() {
     let lista = q('listaBitacora');
     lista.innerHTML = "";
@@ -2662,18 +2661,40 @@ function actualizarListaHistorial() {
     let mesActual = new Date().getMonth();
     let totalMes = 0;
 
-    // Filtramos si eligió un coche concreto
     let filtrados = filterId === "all" ? bitacora : bitacora.filter(b => b.carId == filterId);
 
     if(filtrados.length === 0) {
         lista.innerHTML = "<p style='text-align:center; color:var(--text-muted); padding-top:15px;'>No hay repostajes registrados para esta búsqueda.</p>";
     } else {
-        filtrados.forEach(b => {
+        // Recorremos la lista. Como está ordenada de más reciente a más antigua, 
+        // el repostaje "anterior" es el que está más abajo en el array.
+        filtrados.forEach((b, index) => {
             let isEsteMes = new Date(b.id).getMonth() === mesActual;
             if(isEsteMes) totalMes += b.euros;
             
-                        // Etiqueta visual del coche (AHORA EN UNA LÍNEA NUEVA Y SIN MARGEN IZQUIERDO)
-            let carBadge = b.carName ? `<div style="margin-top:4px;"><span style="font-size:10px; background:var(--accent); color:white; padding:3px 6px; border-radius:6px;">🚗 ${b.carName}</span></div>` : "";
+                        // --- CÁLCULO DE CONSUMO REAL ---
+            let badgeConsumo = "";
+            if (b.km > 0 && b.carId) {
+                // Buscamos el repostaje inmediatamente anterior de ESTE MISMO COCHE que tenga los km apuntados
+                let repostajeAnterior = filtrados.find((prev, i) => i > index && prev.carId == b.carId && prev.km > 0);
+                
+                if (repostajeAnterior && b.km > repostajeAnterior.km) {
+                    let distanciaRecorrida = b.km - repostajeAnterior.km;
+                    let consumoReal = (b.litros / distanciaRecorrida) * 100;
+                    
+                    badgeConsumo = `<span style="font-size:10px; background:#8e44ad; color:white; padding:3px 6px; border-radius:6px;" title="Basado en ${distanciaRecorrida}km">📊 Real: ${consumoReal.toFixed(1)} L/100</span>`;
+                }
+            }
+            // -------------------------------
+            
+            // Usamos flex-direction:column para obligar a que bajen de línea
+            let carBadge = "";
+            if (b.carName) {
+                carBadge = `<div style="margin-top:4px; display:flex; flex-direction:column; align-items:flex-start; gap:4px;">
+                    <span style="font-size:10px; background:var(--accent); color:white; padding:3px 6px; border-radius:6px;">🚗 ${b.carName}</span>
+                    ${badgeConsumo}
+                </div>`;
+            }
 
             lista.innerHTML += `<div style="background:var(--bg-input); padding:12px; border-radius:12px; border:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
                 <div style="flex:1; padding-right:10px;">
@@ -2693,7 +2714,6 @@ function actualizarListaHistorial() {
         });
     }
     
-    // El texto del resumen cambia dependiendo de si estás filtrando o no
     let textoCoche = filterId === "all" ? "Gasto" : "Gasto de este coche";
     q('resumenMes').innerText = `💶 ${textoCoche} este mes: ${totalMes.toFixed(2)}€`;
 }
@@ -2702,11 +2722,10 @@ function borrarBitacora(id) {
     if(confirm("¿Seguro que quieres borrar este repostaje?")) {
         bitacora = bitacora.filter(b => b.id !== id);
         localStorage.setItem('gasofa_bitacora', JSON.stringify(bitacora));
-        actualizarListaHistorial(); // Refresca sin perder el filtro seleccionado
+        actualizarListaHistorial(); 
     }
 }
 
-// Para la función de cancelar
 function cancelarEdicionBitacora() {
     q('bitacoraModal').style.display = 'none';
     if (q('editBitacoraId').value !== "") {
@@ -2714,14 +2733,6 @@ function cancelarEdicionBitacora() {
     }
 }
 
-
-function cancelarEdicionBitacora() {
-    q('bitacoraModal').style.display = 'none';
-    // Si estábamos editando (el campo editBitacoraId tiene algo), volvemos al historial
-    if (q('editBitacoraId').value !== "") {
-        q('historialModal').style.display = 'flex';
-    }
-}
 
 // --- SISTEMA DE NOTIFICACIONES PWA (VERSIÓN PRO COMPATIBLE CON ANDROID) ---
 
