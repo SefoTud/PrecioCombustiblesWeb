@@ -420,7 +420,7 @@
 
     </div>
 
-        <div id="garageModal" class="modal-bg">
+            <div id="garageModal" class="modal-bg">
         <div class="modal-content" style="max-width:400px;">
             <h3 style="margin-top:0; color:var(--accent); border-bottom:1px solid var(--border-color); padding-bottom:10px; flex-shrink:0; text-align:center;">🚗 Mi Garaje</h3>
             
@@ -452,26 +452,49 @@
                         <input type="date" id="carSeguro" style="box-sizing:border-box; padding:12px; border-radius:12px; border:none; background:var(--bg-input); color:var(--text-main); font-weight:bold; width:100%;">
                     </div>
                 </div>
-                <div style="display:flex; flex-direction:column; gap:4px; width:100%;">
+                                <div style="display:flex; flex-direction:column; gap:4px; width:100%;">
                     <label style="font-size:11px; font-weight:bold; color:var(--text-muted); padding-left:4px;">🛢️ Próximo Aceite/Revisión (Km)</label>
                     <input type="number" id="carAceite" placeholder="Ej: 120000" style="box-sizing:border-box; padding:12px; border-radius:12px; border:none; background:var(--bg-input); color:var(--text-main); font-weight:bold; width:100%;">
                 </div>
 
-                <button onclick="saveCar()" style="background:var(--accent-green); color:white; padding:12px; border-radius:12px; font-weight:bold; cursor:pointer; font-size:16px; margin-top:5px;">💾 Guardar Vehículo</button>
+                <button onclick="saveCar()" style="background:var(--accent-green); color:white; padding:12px; border-radius:12px; font-weight:bold; cursor:pointer; font-size:16px; margin-top:5px; width:100%;">💾 Guardar Vehículo</button>
             </div>
 
-            <div id="carList" style="border-top:1px solid var(--border-color); padding-top:10px; display:flex; flex-direction:column; gap:8px; flex:1; max-height:30vh; overflow-y:auto;">
+            <div style="display:flex; flex-direction:column; gap:10px;">
+                <button onclick="abrirMisVehiculos()" style="background:var(--bg-input); color:var(--text-main); border:2px solid var(--accent); padding:12px; border-radius:12px; font-weight:bold; cursor:pointer; width:100%;">🚗 Ver mis vehículos guardados</button>
+                
+                <button onclick="abrirHistorial()" style="background:var(--accent); color:white; border:none; padding:12px; border-radius:12px; font-weight:bold; cursor:pointer; width:100%;">📊 Ver mis gastos / Repostajes</button>
+                
+                <button id="btnNotificaciones" onclick="solicitarPermisoNotificaciones()" style="background:#f39c12; color:white; border:none; padding:12px; border-radius:12px; font-weight:bold; cursor:pointer; width:100%; display:none;">🔔 Activar avisos en el móvil</button>
             </div>
             
-                        <button onclick="abrirHistorial()" style="margin-top:10px; background:var(--accent); color:white; border:none; padding:12px; border-radius:12px; font-weight:bold; cursor:pointer; width:100%; flex-shrink:0;">📊 Ver mis gastos / Repostajes</button>
-            
-            <button id="btnNotificaciones" onclick="solicitarPermisoNotificaciones()" style="margin-top:10px; background:#f39c12; color:white; border:none; padding:12px; border-radius:12px; font-weight:bold; cursor:pointer; width:100%; flex-shrink:0; display:none;">🔔 Activar avisos en el móvil</button>
-            
-            <button onclick="closeGarage()" style="margin-top:10px; background:var(--bg-input); color:var(--text-main); border:none; padding:12px; border-radius:12px; font-weight:bold; cursor:pointer; width:100%; flex-shrink:0;">Cerrar</button>
+            <div style="margin-top: 15px; padding-top: 15px; border-top: 1px dashed var(--border-color);">
+                <p style="font-size: 11px; color: var(--text-muted); text-align: center; margin-bottom: 5px; font-weight:bold;">💾 Copia de seguridad</p>
+                <p style="font-size: 10px; color: var(--text-muted); text-align: center; margin-bottom: 10px; font-style:italic;">Se guardará en tu carpeta Descargas</p>
+                <div style="display: flex; gap: 8px;">
+                    <button onclick="exportarDatosCSV()" style="flex:1; background: var(--bg-input); color: var(--text-main); border: 1px solid var(--border-color); padding: 10px; border-radius: 8px; font-size: 12px; cursor: pointer;">📥 Exportar</button>
+                    <button onclick="document.getElementById('importFile').click()" style="flex:1; background: var(--bg-input); color: var(--text-main); border: 1px solid var(--border-color); padding: 10px; border-radius: 8px; font-size: 12px; cursor: pointer;">📤 Importar</button>
+                </div>
+                
+                <input type="file" id="importFile" style="display:none" accept="*" onchange="importarDatosCSV(this)">
 
+
+            </div>
+            
+            <button onclick="closeGarage()" style="margin-top:15px; background:var(--bg-input); color:var(--text-main); border:none; padding:12px; border-radius:12px; font-weight:bold; cursor:pointer; width:100%;">Cerrar</button>
         </div>
     </div>
 
+
+    <div id="misVehiculosModal" class="modal-bg">
+        <div class="modal-content" style="max-width:350px;">
+            <h3 style="margin-top:0; color:var(--accent); text-align:center; border-bottom:1px solid var(--border-color); padding-bottom:10px;">🚗 Mis Vehículos</h3>
+            
+            <div id="carList" style="max-height:50vh; overflow-y:auto; display:flex; flex-direction:column; gap:10px; margin-bottom:15px;"></div>
+            
+            <button onclick="cerrarMisVehiculos()" style="background:var(--bg-input); color:var(--text-main); border:none; padding:12px; border-radius:12px; font-weight:bold; cursor:pointer; width:100%;">Volver al Garaje</button>
+        </div>
+    </div>
 
         <nav class="bottom-nav">
         <div class="nav-item active" id="nav-zona" onclick="document.querySelectorAll('.nav-item').forEach(e=>e.classList.remove('active')); this.classList.add('active'); if(document.getElementById('controls').classList.contains('collapsed')) toggleControls(); setMode('zona');">
@@ -500,6 +523,7 @@
     <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
     
     <script>
+        
         const D = document, q = i => D.getElementById(i);
 
         
@@ -2298,19 +2322,34 @@ function saveCar() {
 }
 
 function editCar(id) { 
-    const car = myCars.find(c => c.id === id); 
+    // Usamos String() para igualarlos y que no falle nunca
+    const car = myCars.find(c => String(c.id) === String(id)); 
     if(car) { 
         document.getElementById('editCarId').value = car.id; 
-        document.getElementById('carName').value = car.name; 
-        document.getElementById('carFuel').value = car.fuel; 
-        document.getElementById('carConsumo').value = car.consumo; 
-        document.getElementById('carDeposito').value = car.deposito; 
+        document.getElementById('carName').value = car.name || ''; 
+        document.getElementById('carFuel').value = car.fuel || 'Precio Gasoleo A'; 
+        document.getElementById('carConsumo').value = car.consumo || ''; 
+        document.getElementById('carDeposito').value = car.deposito || ''; 
         document.getElementById('carITV').value = car.itv || '';
         document.getElementById('carSeguro').value = car.seguro || '';
         document.getElementById('carAceite').value = car.aceite || '';
+        
+        document.getElementById('misVehiculosModal').style.display = 'none';
+        document.getElementById('garageModal').style.display = 'flex';
         document.getElementById('garageModal').querySelector('.modal-content').scrollTop = 0;
     } 
 }
+
+function deleteCar(id) { 
+    if(confirm("¿Borrar vehículo?")) { 
+        // Usamos String() para asegurar que lo encuentra y lo borra
+        myCars = myCars.filter(car => String(car.id) !== String(id)); 
+        localStorage.setItem('gasofa_cars', JSON.stringify(myCars)); 
+        renderCars(); 
+        updateCarSelect(); 
+    } 
+}
+
 
 function renderCars() {
     const list = document.getElementById('carList'); 
@@ -2360,9 +2399,6 @@ function renderCars() {
         </div>`;
     });
 }
-
-
-function deleteCar(id) { if(confirm("¿Borrar vehículo?")) { myCars = myCars.filter(car => car.id !== id); localStorage.setItem('gasofa_cars', JSON.stringify(myCars)); renderCars(); updateCarSelect(); } }
 
 function verificarAlertasGaraje() {
     let iconosAlerta = "";
@@ -2820,6 +2856,179 @@ function revisarAlertasAlEntrar() {
 window.addEventListener('load', () => {
     setTimeout(revisarAlertasAlEntrar, 3000);
 });
+
+// --- SISTEMA DE COPIA DE SEGURIDAD (CSV) ---
+
+function exportarDatosCSV() {
+    if (bitacora.length === 0 && myCars.length === 0) {
+        alert("⚠️ No tienes datos para exportar.");
+        return;
+    }
+
+    if (typeof gtag === 'function') gtag('event', 'exportar_datos');
+
+    // 1. Nuevas Cabeceras (Añadidas las de configuración del coche)
+    let csvContent = "data:text/csv;charset=utf-8,";
+    csvContent += "TIPO;FECHA;NOMBRE/GASOLINERA;LITROS;EUROS;PRECIO_L;KM;COCHE_ID;COCHE_NOMBRE;FUEL;CONSUMO;DEPOSITO;ITV;SEGURO;ACEITE\r\n";
+
+    // 2. Repostajes (Bitácora)
+    bitacora.forEach(b => {
+        let fila = [
+            "REPOSTAJE",
+            b.fecha,
+            b.nombre ? b.nombre.replace(/;/g, ",") : "",
+            b.litros,
+            b.euros,
+            b.precioL,
+            b.km || 0,
+            b.carId || "",
+            b.carName ? b.carName.replace(/;/g, ",") : "",
+            "", "", "", "", "", "" // Los campos extra del coche van vacíos en la fila del repostaje
+        ];
+        csvContent += fila.join(";") + "\r\n";
+    });
+
+    // 3. Vehículos completos
+    myCars.forEach(c => {
+        let fila = [
+            "VEHICULO",
+            "",
+            c.name ? c.name.replace(/;/g, ",") : "",
+            "", "", "", "",
+            c.id,
+            c.name ? c.name.replace(/;/g, ",") : "",
+            c.fuel || "",
+            c.consumo || "",
+            c.deposito || "",
+            c.itv || "",
+            c.seguro || "",
+            c.aceite || ""
+        ];
+        csvContent += fila.join(";") + "\r\n";
+    });
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `Copia_Seguridad_Gasofa_${new Date().toLocaleDateString()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+function importarDatosCSV(input) {
+    const file = input.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const text = e.target.result;
+        const lineas = text.split("\n");
+        
+        if (lineas.length < 2) return;
+
+        let nuevosRepostajes = [];
+        let nuevosCoches = [];
+
+        // Procesar cada línea (saltamos la cabecera)
+        for (let i = 1; i < lineas.length; i++) {
+            let columnas = lineas[i].split(";");
+            if (columnas.length < 3) continue;
+
+            let tipo = columnas[0].trim();
+            
+            if (tipo === "REPOSTAJE") {
+                let fFecha = columnas[1].trim();
+                let fNombre = columnas[2].trim();
+                let fLitros = parseFloat(columnas[3]);
+                let fEuros = parseFloat(columnas[4]);
+
+                // 🛡️ FILTRO ANTI-DUPLICADOS: Buscamos si ya existe uno idéntico
+                let yaExiste = bitacora.some(b => 
+                    b.fecha === fFecha && 
+                    (b.nombre ? b.nombre.replace(/;/g, ",") : "") === fNombre && 
+                    b.litros === fLitros && 
+                    b.euros === fEuros
+                );
+
+                // Comprobamos también que no esté repetido dentro del propio archivo
+                let yaEnNuevos = nuevosRepostajes.some(b => 
+                    b.fecha === fFecha && 
+                    b.nombre === fNombre && 
+                    b.litros === fLitros && 
+                    b.euros === fEuros
+                );
+
+                if (!yaExiste && !yaEnNuevos) {
+                    nuevosRepostajes.push({
+                        id: Date.now() + i, // ID temporal
+                        fecha: fFecha,
+                        nombre: fNombre,
+                        litros: fLitros,
+                        euros: fEuros,
+                        precioL: parseFloat(columnas[5]),
+                        km: parseFloat(columnas[6]),
+                        carId: columnas[7],
+                        carName: columnas[8] ? columnas[8].trim() : ""
+                    });
+                }
+            } else if (tipo === "VEHICULO") {
+                let idCoche = columnas[7] ? columnas[7].trim() : Date.now() + i;
+                // Solo añadir si no existe ya un coche con ese ID
+                if (!myCars.find(c => String(c.id) === String(idCoche))) {
+                    nuevosCoches.push({
+                        id: idCoche,
+                        name: columnas[2],
+                        fuel: columnas[9] || "Precio Gasoleo A",
+                        consumo: parseFloat(columnas[10]) || 0,
+                        deposito: parseFloat(columnas[11]) || 0,
+                        itv: columnas[12] || "",
+                        seguro: columnas[13] || "",
+                        aceite: columnas[14] ? columnas[14].trim() : ""
+                    });
+                }
+            }
+        }
+
+        let mensaje = `Se han encontrado datos NUEVOS en el archivo:\n\n⛽ ${nuevosRepostajes.length} Repostajes nuevos\n🚗 ${nuevosCoches.length} Vehículos nuevos\n\n¿Quieres añadirlos a tu historial?`;
+
+        if (nuevosRepostajes.length === 0 && nuevosCoches.length === 0) {
+            alert("👍 Tu app ya está al día. No se han encontrado datos nuevos o diferentes en este archivo para importar.");
+            input.value = "";
+            return;
+        }
+
+        if (confirm(mensaje)) {
+            // Unimos lo nuevo con lo viejo y guardamos
+            bitacora = [...nuevosRepostajes, ...bitacora];
+            myCars = [...myCars, ...nuevosCoches];
+            
+            localStorage.setItem('gasofa_bitacora', JSON.stringify(bitacora));
+            localStorage.setItem('gasofa_cars', JSON.stringify(myCars));
+            
+            alert("✅ Datos importados correctamente.");
+            location.reload(); 
+        }
+        
+        // Vaciamos el input por si quieres subir el mismo archivo después
+        input.value = ""; 
+    };
+    reader.readAsText(file);
+}
+
+
+// --- FUNCIONES PARA LA VENTANA DE MIS VEHÍCULOS ---
+
+function abrirMisVehiculos() {
+    q('garageModal').style.display = 'none'; 
+    q('misVehiculosModal').style.display = 'flex'; 
+    renderCars(); 
+}
+
+function cerrarMisVehiculos() {
+    q('misVehiculosModal').style.display = 'none'; 
+    q('garageModal').style.display = 'flex'; 
+}
 
     </script>
 </body>
