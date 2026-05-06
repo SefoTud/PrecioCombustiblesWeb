@@ -2681,8 +2681,8 @@ function solicitarPermisoNotificaciones() {
         }
     });
 }
-
-function revisarAlertasAlEntrar() {
+ 
+  function revisarAlertasAlEntrar() {
     if (!("Notification" in window) || Notification.permission !== "granted") return;
     
     const hoy = new Date();
@@ -2726,7 +2726,7 @@ function revisarAlertasAlEntrar() {
         localStorage.setItem('gasofa_last_noti', fechaHoyStr);
     }
 }
-
+              
 
 window.addEventListener('load', () => {
     setTimeout(revisarAlertasAlEntrar, 3000);
