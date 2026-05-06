@@ -24,7 +24,7 @@
     <meta name="apple-mobile-web-app-title" content="Precio Combustibles">
 
     <meta property="og:type" content="website">
-    <meta property="og:title" content="Precio Combustibles - Ahorra en tu viaje">
+    <meta property="og:title" content="Precio Combustibles Pro - Ahorra en tu viaje">
     <meta property="og:description" content="Planificador de rutas inteligente y precios de gasolineras en tiempo real en toda España.">
     <meta property="og:image" content="https://www.preciocombustibles.com/android-chrome-512x512.png">
     <meta property="og:url" content="https://www.preciocombustibles.com">
@@ -453,8 +453,12 @@
             <div id="carList" style="border-top:1px solid var(--border-color); padding-top:10px; display:flex; flex-direction:column; gap:8px; flex:1; max-height:30vh; overflow-y:auto;">
             </div>
             
-            <button onclick="abrirHistorial()" style="margin-top:10px; background:var(--accent); color:white; border:none; padding:12px; border-radius:12px; font-weight:bold; cursor:pointer; width:100%; flex-shrink:0;">📊 Ver mis gastos / Repostajes</button>
+                        <button onclick="abrirHistorial()" style="margin-top:10px; background:var(--accent); color:white; border:none; padding:12px; border-radius:12px; font-weight:bold; cursor:pointer; width:100%; flex-shrink:0;">📊 Ver mis gastos / Repostajes</button>
+            
+            <button id="btnNotificaciones" onclick="solicitarPermisoNotificaciones()" style="margin-top:10px; background:#f39c12; color:white; border:none; padding:12px; border-radius:12px; font-weight:bold; cursor:pointer; width:100%; flex-shrink:0; display:none;">🔔 Activar avisos en el móvil</button>
+            
             <button onclick="closeGarage()" style="margin-top:10px; background:var(--bg-input); color:var(--text-main); border:none; padding:12px; border-radius:12px; font-weight:bold; cursor:pointer; width:100%; flex-shrink:0;">Cerrar</button>
+
         </div>
     </div>
 
@@ -1894,7 +1898,7 @@
                     else msgDist = '📍 En tu provincia';
 
                     let msgAhorroWa = (consumo > 0 && searchMode !== 'provincia') ? (g.aNeto > 0 ? "Ahorro Real Neto: " + g.aNeto.toFixed(2) + "€" : "¡Te cuesta más el " + (searchMode==='zona'?'viaje':'desvío') + " (" + g.cViaje.toFixed(2) + "€)!") : "Ahorras " + g.aBruto.toFixed(2) + "€ llenando hoy.";
-                    const waM = encodeURIComponent('⛽ ¡Ojo! ' + fTN + ' a ' + pN.toFixed(3) + '€/L en ' + g.Rótulo + ' (' + g.Dirección + '). ' + msgAhorroWa + ' 🚗💨\n\n📍 Míralo en Gasofa Pro:\n' + APP_URL);
+                    const waM = encodeURIComponent('⛽ ¡Ojo! ' + fTN + ' a ' + pN.toFixed(3) + '€/L en ' + g.Rótulo + ' (' + g.Dirección + '). ' + msgAhorroWa + ' 🚗💨\n\n📍 Míralo en Precio Combustibles:\n' + APP_URL);
                     const waB = '<a class="btn-action btn-wa" href="https://api.whatsapp.com/send?text=' + waM + '" target="_blank">💬 WA</a>';
                     
                                         // --- NUEVO DISEÑO POP-UP NATIVO CENTRADO ---
@@ -2094,7 +2098,7 @@
                         else msgDist = '📍 Provincia';
 
                         let msgAhorroWa = (consumo > 0 && searchMode !== 'provincia') ? (g.aNeto > 0 ? "Ahorro Real Neto: " + g.aNeto.toFixed(2) + "€" : "¡Te cuesta más el " + (searchMode==='zona'?'viaje':'desvío') + "!") : "Ahorras " + g.aBruto.toFixed(2) + "€ llenando hoy.";
-                        const waM = encodeURIComponent('⛽ ¡Ojo! ' + fTN + ' a ' + pN.toFixed(3) + '€/L en ' + g.Rótulo + ' (' + g.Dirección + '). ' + msgAhorroWa + ' 🚗💨\n\n📍 Míralo en Gasofa Pro:\n' + APP_URL);
+                        const waM = encodeURIComponent('⛽ ¡Ojo! ' + fTN + ' a ' + pN.toFixed(3) + '€/L en ' + g.Rótulo + ' (' + g.Dirección + '). ' + msgAhorroWa + ' 🚗💨\n\n📍 Míralo en Precio Combustibles:\n' + APP_URL);
                         
                         const item = D.createElement("div"); item.className = "list-item"; 
                         item.onclick = e => { if (e.target.tagName !== 'BUTTON' && e.target.tagName !== 'A' && !e.target.closest('.fav-btn') && !e.target.closest('.d-tipo')) window.centrarMapa(lat, ln); };
@@ -2230,7 +2234,19 @@
 let myCars = JSON.parse(localStorage.getItem('gasofa_cars')) || [];
 window.currentCarCapacity = 0; 
 
-function openGarage() { document.getElementById('garageModal').style.display = 'flex'; renderCars(); }
+function openGarage() { 
+    document.getElementById('garageModal').style.display = 'flex'; 
+    renderCars(); 
+    
+    // Mostramos el botón de notificaciones SOLO si el móvil lo soporta y aún no ha dado permiso
+    const btnNoti = document.getElementById('btnNotificaciones');
+    if (btnNoti && "Notification" in window && Notification.permission === "default") {
+        btnNoti.style.display = 'block';
+    } else if (btnNoti) {
+        btnNoti.style.display = 'none';
+    }
+}
+
 function closeGarage() { 
     document.getElementById('garageModal').style.display = 'none'; 
     document.getElementById('editCarId').value = ''; 
@@ -2628,6 +2644,83 @@ function cancelarEdicionBitacora() {
         q('historialModal').style.display = 'flex';
     }
 }
+
+// --- SISTEMA DE NOTIFICACIONES PWA (VERSIÓN PRO COMPATIBLE CON ANDROID) ---
+
+// 1. Función maestra que decide cómo enviar la notificación (PC vs Móvil)
+function lanzarNotificacion(titulo, cuerpo) {
+    const opciones = {
+        body: cuerpo,
+        icon: 'android-chrome-192x192.png',
+        badge: 'favicon-32x32.png', // Icono pequeñito para la barra superior de Android
+        vibrate: [200, 100, 200] // Hace vibrar el móvil
+    };
+
+    if ('serviceWorker' in navigator && navigator.serviceWorker.ready) {
+        // Método obligatorio para Chrome en Android
+        navigator.serviceWorker.ready.then(function(registration) {
+            registration.showNotification(titulo, opciones);
+        });
+    } else {
+        // Método tradicional para Safari o PC
+        new Notification(titulo, opciones);
+    }
+}
+
+function solicitarPermisoNotificaciones() {
+    if (!("Notification" in window)) {
+        alert("Tu dispositivo o navegador no soporta notificaciones.");
+        return;
+    }
+    Notification.requestPermission().then(permission => {
+        if (permission === "granted") {
+            alert("¡Activadas! Te avisaremos cuando caduque tu ITV o Seguro.");
+            document.getElementById('btnNotificaciones').style.display = 'none';
+            // Mandamos una de prueba
+            lanzarNotificacion("¡Precio Combustibles!", "Las alertas del garaje están listas y funcionando.");
+        }
+    });
+}
+
+function revisarAlertasAlEntrar() {
+    if (!("Notification" in window) || Notification.permission !== "granted") return;
+    
+    const hoy = new Date();
+    const ultimaNoti = localStorage.getItem('gasofa_last_noti');
+    const fechaHoyStr = hoy.toDateString();
+    
+    // MODO PRUEBAS: Quita las dos barras "//" de la siguiente línea para que te salte SIEMPRE que recargues la página mientras haces tests.
+     localStorage.removeItem('gasofa_last_noti'); 
+    
+    if (ultimaNoti === fechaHoyStr) return; // Ya avisó hoy
+    
+    let hayAvisos = false;
+
+    myCars.forEach(car => {
+        if (car.itv) {
+            let diasItv = (new Date(car.itv) - hoy) / (1000 * 60 * 60 * 24);
+            if (diasItv >= 0 && diasItv <= 15) { 
+                lanzarNotificacion(`⚠️ ITV de ${car.name}`, `Caduca en ${Math.ceil(diasItv)} días. ¡Pide cita!`);
+                hayAvisos = true;
+            }
+        }
+        if (car.seguro) {
+            let diasSeg = (new Date(car.seguro) - hoy) / (1000 * 60 * 60 * 24);
+            if (diasSeg >= 0 && diasSeg <= 15) {
+                lanzarNotificacion(`🛡️ Seguro de ${car.name}`, `Vence en ${Math.ceil(diasSeg)} días. Revisa tu póliza.`);
+                hayAvisos = true;
+            }
+        }
+    });
+    
+    if (hayAvisos) {
+        localStorage.setItem('gasofa_last_noti', fechaHoyStr);
+    }
+}
+
+window.addEventListener('load', () => {
+    setTimeout(revisarAlertasAlEntrar, 3000);
+});
 
     </script>
 </body>
