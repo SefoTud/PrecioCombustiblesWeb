@@ -213,7 +213,7 @@
         </div>
     </div>
 
-                <div id="bitacoraModal" class="modal-bg">
+                    <div id="bitacoraModal" class="modal-bg">
         <div class="modal-content" style="max-width:320px; width:90%;">
             <input type="hidden" id="editBitacoraId">
             <h3 id="bitacoraTitle" style="margin-top:0; text-align:center;">📓 Anotar Repostaje</h3>
@@ -228,8 +228,9 @@
                 <input type="number" id="bitacoraEuros" placeholder="Total €" step="0.01" style="flex:1; min-width:0; box-sizing:border-box; padding:12px; border-radius:8px; border:1px solid var(--border-color); text-align:center; font-weight:bold;">
             </div>
             
-            <div style="display:flex; width:100%; margin-top:10px;">
-                <input type="number" id="bitacoraKm" placeholder="Kilómetros del coche (Opcional)" style="flex:1; box-sizing:border-box; padding:12px; border-radius:8px; border:1px solid var(--border-color); text-align:center; font-weight:bold; background:var(--bg-input); color:var(--text-main);">
+            <div style="display:flex; gap:10px; width:100%; margin-top:10px;">
+                <input type="date" id="bitacoraFecha" style="flex:1; min-width:0; box-sizing:border-box; padding:12px; border-radius:8px; border:1px solid var(--border-color); text-align:center; font-weight:bold; background:var(--bg-input); color:var(--text-main);">
+                <input type="number" id="bitacoraKm" placeholder="Km coche (Opcional)" style="flex:1; min-width:0; box-sizing:border-box; padding:12px; border-radius:8px; border:1px solid var(--border-color); text-align:center; font-weight:bold; background:var(--bg-input); color:var(--text-main);">
             </div>
             
             <div style="display:flex; gap:10px; margin-top:15px; width:100%;">
@@ -239,10 +240,7 @@
         </div>
     </div>
 
-
-
-
-            <div id="historialModal" class="modal-bg">
+    <div id="historialModal" class="modal-bg">
         <div class="modal-content" style="max-width:350px;">
             <h3 style="margin-top:0; color:var(--accent); text-align:center; border-bottom:1px solid var(--border-color); padding-bottom:10px;">📊 Mis Gastos</h3>
             
@@ -251,13 +249,49 @@
             
             <div id="resumenMes" style="background:var(--bg-ahorro); padding:12px; border-radius:8px; margin-bottom:15px; text-align:center; font-weight:900; color:var(--accent-green); border: 1px dashed var(--accent-green);"></div>
             
-            <div id="listaBitacora" style="max-height:45vh; overflow-y:auto; display:flex; flex-direction:column; gap:8px; margin-bottom:15px;"></div>
+            <div style="width:100%; height:160px; margin-bottom:15px; position:relative;">
+                <canvas id="gastosChart"></canvas>
+            </div>
+            
+            <div id="listaBitacora" style="max-height:35vh; overflow-y:auto; display:flex; flex-direction:column; gap:8px; margin-bottom:15px;"></div>
             
             <button onclick="document.getElementById('historialModal').style.display='none'" style="background:var(--bg-input); color:var(--text-main); border:none; padding:12px; border-radius:12px; font-weight:bold; cursor:pointer; width:100%; flex-shrink:0;">Cerrar</button>
         </div>
     </div>
+    
+        <div id="reviewsModal" class="modal-bg">
+        <div class="modal-content" style="max-width:400px; padding: 20px;">
+            <h3 style="margin-top:0; color:var(--accent); text-align:center; border-bottom:1px solid var(--border-color); padding-bottom:10px; display:flex; align-items:center; justify-content:center; gap:8px;">
+                ⭐ Valoraciones
+            </h3>
+            <p id="revGasName" style="text-align:center; font-weight:900; color:var(--text-main); margin-bottom:15px; font-size:14px;"></p>
+            
+            <input type="hidden" id="revGasId">
 
+            <div id="revList" style="max-height:30vh; overflow-y:auto; display:flex; flex-direction:column; gap:10px; margin-bottom:15px; background:var(--bg-body); padding:10px; border-radius:12px; border:1px solid var(--border-color);">
+                <div style="text-align:center; color:var(--text-muted); font-size:12px; padding:10px;">Cargando opiniones de otros conductores...</div>
+            </div>
 
+            <div style="background:var(--bg-input); padding:15px; border-radius:12px; border:1px dashed var(--accent);">
+                <p style="text-align:center; margin:0 0 10px 0; font-size:12px; font-weight:bold; color:var(--text-muted);">Deja tu opinión</p>
+                
+                <div id="starSelector" style="text-align:center; font-size:35px; cursor:pointer; user-select:none; margin-bottom:10px; color:#bdc3c7; display:flex; justify-content:center; gap:5px;">
+                    <span onclick="marcarEstrellas(1)">★</span>
+                    <span onclick="marcarEstrellas(2)">★</span>
+                    <span onclick="marcarEstrellas(3)">★</span>
+                    <span onclick="marcarEstrellas(4)">★</span>
+                    <span onclick="marcarEstrellas(5)">★</span>
+                </div>
+                <input type="hidden" id="revStars" value="0">
+                
+                <textarea id="revText" placeholder="¿Qué tal el servicio, limpieza, etc?" style="width:100%; box-sizing:border-box; padding:12px; border-radius:8px; border:1px solid var(--border-color); resize:none; font-family:inherit; height:70px; margin-bottom:10px; background:var(--bg-panel); color:var(--text-main);"></textarea>
+                
+                <button onclick="enviarValoracion()" style="background:var(--accent-green); color:white; padding:12px; border-radius:8px; font-weight:bold; border:none; cursor:pointer; width:100%;">📤 Publicar comentario</button>
+            </div>
+
+            <button onclick="q('reviewsModal').style.display='none'" style="margin-top:15px; background:var(--bg-input); color:var(--text-main); border:none; padding:12px; border-radius:12px; font-weight:bold; cursor:pointer; width:100%;">Cerrar</button>
+        </div>
+    </div>
     
 
    <div id="controls" class="collapsed">
@@ -316,6 +350,7 @@
             <div class="row">
                 <select id="provinciaInput" style="flex:1; padding:12px 5px; border:2px solid var(--accent); font-weight:bold; color:var(--text-main); background:var(--bg-panel);">
                     <option value="">🗺️ Selecciona una provincia...</option>
+                    <option value="TODAS">🇪🇸 ESPAÑA (🏆TOP 100)</option>
                     <option value="ALAVA">Álava</option><option value="ALBACETE">Albacete</option><option value="ALICANTE">Alicante</option><option value="ALMERIA">Almería</option><option value="ASTURIAS">Asturias</option><option value="AVILA">Ávila</option><option value="BADAJOZ">Badajoz</option><option value="BALEARS">Baleares</option><option value="BARCELONA">Barcelona</option><option value="BURGOS">Burgos</option><option value="CACERES">Cáceres</option><option value="CADIZ">Cádiz</option><option value="CANTABRIA">Cantabria</option><option value="CASTELLON">Castellón</option><option value="CEUTA">Ceuta</option><option value="CIUDAD REAL">Ciudad Real</option><option value="CORDOBA">Córdoba</option><option value="CORUÑA">A Coruña</option><option value="CUENCA">Cuenca</option><option value="GIRONA">Girona</option><option value="GRANADA">Granada</option><option value="GUADALAJARA">Guadalajara</option><option value="GIPUZKOA">Guipúzcoa</option><option value="HUELVA">Huelva</option><option value="HUESCA">Huesca</option><option value="JAEN">Jaén</option><option value="LEON">León</option><option value="LLEIDA">Lleida</option><option value="LUGO">Lugo</option><option value="MADRID">Madrid</option><option value="MALAGA">Málaga</option><option value="MELILLA">Melilla</option><option value="MURCIA">Murcia</option><option value="NAVARRA">Navarra</option><option value="OURENSE">Ourense</option><option value="PALENCIA">Palencia</option><option value="PALMAS">Las Palmas</option><option value="PONTEVEDRA">Pontevedra</option><option value="RIOJA">La Rioja</option><option value="SALAMANCA">Salamanca</option><option value="SEGOVIA">Segovia</option><option value="SEVILLA">Sevilla</option><option value="SORIA">Soria</option><option value="TARRAGONA">Tarragona</option><option value="SANTA CRUZ DE TENERIFE">S.C. Tenerife</option><option value="TERUEL">Teruel</option><option value="TOLEDO">Toledo</option><option value="VALENCIA">Valencia</option><option value="VALLADOLID">Valladolid</option><option value="BIZKAIA">Vizcaya</option><option value="ZAMORA">Zamora</option><option value="ZARAGOZA">Zaragoza</option>
                 </select>
             </div>
@@ -385,8 +420,10 @@
         
         <div id="header-ahorro" style="background:var(--bg-ahorro);border-radius:12px;padding:12px;margin-bottom:15px;border:1px dashed var(--accent-green);text-align:center;">
             <span id="resumenAhorro" style="font-weight:bold;color:var(--accent-green);font-size:1.1em;">Calculando ahorro...</span>
-
+            
+            <div id="tendenciaAyer" style="font-size: 11px; color: var(--text-muted); margin-top: 5px; font-weight: 600;"></div>
         </div>
+
         
         <div id="gas-list"></div>
 
@@ -467,6 +504,20 @@
                 
                 <button id="btnNotificaciones" onclick="solicitarPermisoNotificaciones()" style="background:#f39c12; color:white; border:none; padding:12px; border-radius:12px; font-weight:bold; cursor:pointer; width:100%; display:none;">🔔 Activar avisos en el móvil</button>
             </div>
+            
+                                                <div style="margin-top: 15px; padding: 15px; background: var(--bg-input); border-radius: 16px; border: 1px solid var(--border-color);">
+                <p style="margin: 0 0 10px 0; font-size: 12px; font-weight: 800; color: var(--accent); text-align: center;">📍 LOCALIZADOR DE PARKING</p>
+                
+                <button id="btnGuardarCoche" onclick="guardarParking()" style="width: 100%; background: var(--accent); color: white; border: none; padding: 12px; border-radius: 10px; font-size: 12px; font-weight: bold; cursor: pointer;">💾 Guardar Sitio</button>
+                
+                <div id="botonesCocheGuardado" style="display: none; gap: 8px;">
+                    <button onclick="irAMiCoche()" style="flex: 1; background: #34495e; color: white; border: none; padding: 12px; border-radius: 10px; font-size: 12px; font-weight: bold; cursor: pointer;">🚶 Ir al coche</button>
+                    <button onclick="borrarParking()" style="flex: 1; background: #e74c3c; color: white; border: none; padding: 12px; border-radius: 10px; font-size: 12px; font-weight: bold; cursor: pointer;">❌ Liberar sitio</button>
+                </div>
+                
+                <p id="infoParking" style="margin: 8px 0 0 0; font-size: 10px; color: var(--text-muted); text-align: center; font-style: italic;">No hay ninguna ubicación guardada.</p>
+            </div>
+
             
             <div style="margin-top: 15px; padding-top: 15px; border-top: 1px dashed var(--border-color);">
                 <p style="font-size: 11px; color: var(--text-muted); text-align: center; margin-bottom: 5px; font-weight:bold;">💾 Copia de seguridad</p>
@@ -709,7 +760,7 @@
                                     
                                     div.innerHTML = "📍 <strong>" + nombrePrincipal + "</strong><br><span style='font-size:10px;color:var(--text-muted);'>" + nombreLimpio + "</span>";
                                     
-                                    div.onclick = function() {
+                                                                        div.onclick = function() {
                                         list.style.display = "none";
                                         input.value = ""; 
                                         
@@ -717,14 +768,23 @@
                                             if(q("cityName")) { q("cityName").style.display = "inline-block"; q("cityName").innerText = "📍 " + nombrePrincipal; }
                                             if(q("cityNameRuta")) { q("cityNameRuta").style.display = "inline-block"; q("cityNameRuta").innerText = "📍 " + nombrePrincipal; }
                                             window.isManuallyLocated = true; 
+                                            
+                                            // 1. Movemos el mapa a la ubicación elegida
                                             ponerMarcadorUsuario(parseFloat(item.lat), parseFloat(item.lon));
+                                            
+                                            // 2. CERRAMOS EL PANEL (Igual que hace la lupa)
+                                            if (!q("controls").classList.contains("collapsed")) toggleControls();
+                                            
+                                            // 3. Cargamos las gasolineras
                                             fetchGasolineras();
                                         } else {
+                                            // Lógica para Origen/Destino en Rutas
                                             if (inputId === "origenInput" && q("cityNameRuta")) { q("cityNameRuta").style.display = "inline-block"; q("cityNameRuta").innerText = "📍 " + nombrePrincipal; }
                                             if (inputId === "destinoInput" && q("cityNameDest")) { q("cityNameDest").style.display = "inline-block"; q("cityNameDest").innerText = "📍 " + nombrePrincipal; }
                                             if (inputId === "pasandoPorInput" && q("cityNameInter")) { q("cityNameInter").style.display = "inline-block"; q("cityNameInter").innerText = "📍 " + nombrePrincipal; }
                                         }
                                     };
+
                                     list.appendChild(div);
                                 });
                             } else { list.style.display = "none"; }
@@ -762,6 +822,32 @@
                     });
                 }
             });
+            
+                        // --- VIGILANTE DE MARCADORES (MUTATION OBSERVER) ---
+            // Vigila el mapa y actualiza las tendencias de las gasolineras que salen de los clusters
+            const observer = new MutationObserver((mutations) => {
+                if (!trendsLoaded) return; // Si aún no hay datos, no hacemos nada
+                mutations.forEach(mutation => {
+                    mutation.addedNodes.forEach(node => {
+                        // Comprobamos si el nodo que acaba de aparecer en el mapa es HTML válido
+                        if (node.nodeType === 1 && node.querySelectorAll) {
+                            // Buscamos si tiene el indicador de tendencia dentro
+                            let indicadores = node.classList.contains('tr-ind') ? [node] : node.querySelectorAll('.tr-ind');
+                            indicadores.forEach(el => {
+                                // Si todavía tiene el reloj de arena, se lo cambiamos por el dato real
+                                if (el.innerHTML.includes('⏳')) {
+                                    let id = el.getAttribute('data-id');
+                                    let type = el.getAttribute('data-type');
+                                    el.innerHTML = getTrendHTML(currentTrends[id], type);
+                                }
+                            });
+                        }
+                    });
+                });
+            });
+            // Le decimos al vigilante que se quede mirando el contenedor del mapa
+            observer.observe(document.getElementById('map'), { childList: true, subtree: true });
+            // ----------------------------------------------------
             
             map.on('click', () => { 
                 if(!q("controls").classList.contains("collapsed")) toggleControls(); 
@@ -1295,7 +1381,7 @@
                       let id = el.getAttribute('data-id');
                       let type = el.getAttribute('data-type');
                       el.innerHTML = getTrendHTML(currentTrends[id], type);
-                  });
+                  });             actualizarCabeceraTendencias();
               })
               .catch(e => {
                   trendsLoaded = true; 
@@ -1659,8 +1745,11 @@
 
                     if (isNaN(lat) || isNaN(lon) || lat < 25) return false;
 
-                    if (searchMode === 'provincia') {
+                     if (searchMode === 'provincia') {
+                        // Si es TODAS, no filtramos por nombre de provincia
+                        if (valProv && valProv !== "TODAS") 
                         if (valProv) {
+                        
                             if (!g.Provincia) return false;
                             let provLimpia = g.Provincia.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
                             let busquedaLimpia = valProv.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
@@ -1718,15 +1807,34 @@
                 const globalMinP = Math.min(...allPrices);
                 const globalMaxP = Math.max(...allPrices);
 
-                let filtradas = o === "favoritas" ? enRadio.filter(g => favoritos.includes(g.IDEESS)) : enRadio;
+                                let filtradas = o === "favoritas" ? enRadio.filter(g => favoritos.includes(g.IDEESS)) : enRadio;
 
                 if(filtradas.length === 0) { 
                     lD.innerHTML = "<div style='text-align:center;padding:20px;color:var(--text-muted);'>No tienes gasolineras favoritas aquí.</div>"; 
                     markersLayer.clearLayers(); return; 
                 }
                 
+                // --- LÓGICA ESPECIAL TOP 100 ESPAÑA ---
+                if (searchMode === 'provincia' && valProv === "TODAS") {
+                    // Ordenamos primero para saber cuáles son las 100 mejores/peores
+                    if (o === "caras") {
+                        filtradas.sort((a, b) => b.pN - a.pN);
+                    } else {
+                        filtradas.sort((a, b) => a.pN - b.pN);
+                    }
+                    
+                    // Cortamos la lista a 100
+                    filtradas = filtradas.slice(0, 100);
+                    
+                    // Actualizamos el cartel de arriba
+                    const fTN = q("tipoCombustible").options[q("tipoCombustible").selectedIndex].text;
+                    q('resumenAhorro').innerHTML = `🏆 TOP 100 ESPAÑA (${fTN}): Las más ${o === 'caras' ? 'caras' : 'baratas'}`;
+                }
+                // -----------------------------------------
+
                 if (searchMode === 'zona') {
                     let needsRouting = filtradas.filter(g => osrmCache[g.IDEESS] === undefined);
+
                     if(needsRouting.length > 0) {
                         q("loading-overlay").style.display = "flex"; q("loading-text").innerText = "🚗 Calculando rutas y tiempos..."; 
                         const newRoutes = await getRealDistances({lat: userCoords[0], lng: userCoords[1]}, needsRouting);
@@ -1771,6 +1879,13 @@
                         bestLat = parseFloat(g.Latitud.replace(",", ".")); bestLon = parseFloat(g["Longitud (WGS84)"].replace(",", "."));
                     }
                 });
+
+                                // --- LÓGICA AYER VS HOY (NIVEL DIOS) ---
+                window.lastFiltradas = filtradas;
+                actualizarCabeceraTendencias();
+                // --------------------------
+
+
 
                 let planViajeHtml = "";
                 window.planesUnicosGlobal = [];
@@ -1951,19 +2066,21 @@
                     // --- 3. Diseño del Pop-Up ---
                     let osmCacheHtml = window.osmCache && window.osmCache[g.IDEESS] ? window.osmCache[g.IDEESS] : '<span style="font-size:10px;color:var(--text-muted);">🔄 Buscando extras...</span>';
                     
+                                        
                     const pop = `
                     <div style="min-width: 200px; text-align: left; padding: 2px 0; font-family: -apple-system, sans-serif;">
                         
-                        <div style="display:flex; justify-content:center; align-items:center; gap:8px; margin-bottom:6px; text-align:center;">
-    <div style="font-size:14px; font-weight:900; color:var(--text-main); display:flex; align-items:center; gap:4px; max-width: 170px;">
-        ${m} 
-        <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex:1;">${g.Rótulo}</span> 
-        ${bSMPop}
-    </div>
-    <span id="${iM}" class="fav-btn fav-btn-id-${g.IDEESS}" onclick="toggleFav('${g.IDEESS}',event,'${iM}')" style="font-size:16px; margin-top:-2px;">${hIc}</span>
-</div>
+                        <div style="display:flex; flex-direction:column; align-items:center; margin-bottom:6px;">
+                            <div style="display:flex; justify-content:center; align-items:center; gap:8px; text-align:center;">
+                                <div style="font-size:14px; font-weight:900; color:var(--text-main); display:flex; align-items:center; gap:4px; max-width: 170px;">
+                                    ${m} 
+                                    <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex:1;">${g.Rótulo}</span> 
+                                    ${bSMPop}
+                                </div>
+                                <span id="${iM}" class="fav-btn fav-btn-id-${g.IDEESS}" onclick="toggleFav('${g.IDEESS}',event,'${iM}')" style="font-size:16px; margin-top:-2px;">${hIc}</span>
+                            </div>
+                            </div>
 
-                        
                         <div style="background:var(--bg-input); border-radius:8px; padding:6px 10px; margin-bottom:8px; border:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;">
                             <div style="color:${cS}; font-size:16px; font-weight:900; display:flex; align-items:center; gap:4px;">
                                 ${pStrVisualPop} <span class="tr-ind" data-type="list" data-id="${g.IDEESS}">${tH}</span>
@@ -1971,7 +2088,7 @@
                             <div>${htmlAhorroPop}</div>
                         </div>
 
-                                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; font-size:10px; color:var(--text-muted); font-weight:bold;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; font-size:10px; color:var(--text-muted); font-weight:bold;">
                             <span class="distancia-badge" style="font-size:10px; padding:3px 6px;">${msgDist}</span>
                             <span>🕒 ${g.Horario ? g.Horario.split(';')[0].substring(0,16) + (g.Horario.length>16?'...':'') : 'N/D'}</span>
                         </div>
@@ -1980,14 +2097,15 @@
                             ${osmCacheHtml}
                         </div>
 
-                                                 <div style="display:flex; gap:5px; margin-top:4px;">
+                        <div style="display:flex; flex-wrap:wrap; justify-content:center; gap:5px; margin-top:4px;">
                             <button class="btn-action btn-historial" onclick="mostrarHistorico('${sN}','${g.IDEESS}','${g.Horario||''}')" style="margin:0; padding:0 6px; height:34px; box-sizing:border-box;">📈 HISTÓRICO</button>
+                            <button class="btn-action" style="background:#7f8c8d; opacity:0.6; cursor:not-allowed; margin:0; padding:0 6px; height:34px; box-sizing:border-box;" onclick="alert('Próximamente: Valoraciones de la comunidad')">⭐ OPINIONES</button>
                             <button class="btn-action" style="background:#f39c12; margin:0; padding:0 6px; height:34px; box-sizing:border-box;" onclick="abrirAnotar('${sN}', ${g.pN})">📓 ANOTAR</button>
-                            <a class="btn-action btn-wa" href="https://api.whatsapp.com/send?text=${waM}" target="_blank" style="margin:0; padding:0 6px; height:34px; box-sizing:border-box;" onclick="if(typeof gtag === 'function') gtag('event', 'compartir_whatsapp', {'gasolinera': '${sN}'});">💬 WA</a>
-<a class="btn-action btn-directo" href="${mU}" target="_blank" style="flex:1; margin:0; padding:0 6px; height:34px; box-sizing:border-box;" onclick="if(typeof gtag === 'function') gtag('event', 'ir_a_maps', {'gasolinera': '${sN}'});">IR ↗</a>
-
+                            <a class="btn-action btn-wa" href="https://api.whatsapp.com/send?text=${waM}" target="_blank" style="margin:0; padding:0 6px; height:34px; box-sizing:border-box;">💬 WA</a>
+                            <a class="btn-action btn-directo" href="${mU}" target="_blank" style="flex:1; margin:0; padding:0 6px; height:34px; box-sizing:border-box;">IR ↗</a>
                         </div>
                     </div>`;
+
                       
 
 
@@ -2138,59 +2256,67 @@
                         const item = D.createElement("div"); item.className = "list-item"; 
                         item.onclick = e => { if (e.target.tagName !== 'BUTTON' && e.target.tagName !== 'A' && !e.target.closest('.fav-btn') && !e.target.closest('.d-tipo')) window.centrarMapa(lat, ln); };
                         
-                                                item.innerHTML = `
-                        <div style="display:flex; justify-content:space-between; align-items:stretch; width:100%; gap:10px;">
+                                                       
+                        item.innerHTML = `
+                        <div style="display:flex; justify-content:space-between; align-items:stretch; width:100%; gap:8px;">
                             
-                                                        <div style="flex:1; min-width:0; display:flex; flex-direction:column;">
-                                <div style="margin-bottom:6px;">
-                                    <span class="top-badge ${cM}">${o === "favoritas" ? '❤️ FAVORITA' : 'TOP ' + g.rP + ' ' + m}</span>${bSL}
-                                </div>
-                                <div style="font-size:15px; font-weight:900; color:var(--text-main); line-height:1.2; display:flex; align-items:flex-start; gap:6px; padding-right:5px;">
-                                    <span style="word-break:break-word;">${g.Rótulo}</span>
-                                    <span id="${iL}" class="fav-btn fav-btn-id-${g.IDEESS}" onclick="toggleFav('${g.IDEESS}',event,'${iL}')" style="font-size:18px; margin-top:-2px;">${hIc}</span>
-                                </div>
-
-                                <div style="margin-top:8px; display:flex; align-items:center; flex-wrap:wrap; gap:8px;">
-                                    <span style="background:var(--accent); color:#fff; font-weight:900; font-size:11px; padding:3px 10px; border-radius:8px; text-transform:uppercase; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                                        ${g.Municipio || ''}
-                                    </span>
-                                    <span style="font-size:13px; color:var(--text-muted); font-weight:500;">📍 ${g.Dirección}</span>
-                                </div>
-                                <div style="font-size:11px; color:var(--text-muted); margin-top:4px;">🕒 ${g.Horario||''}</div>
-                                <div style="margin-top:8px;"><span class="distancia-badge">${msgDist}</span></div>
-                                <div id="servicios-os-${g.IDEESS}" style="display:flex; flex-wrap:wrap; gap:4px; margin-top:8px; min-height:24px;"></div>
-                            </div>
-                            
-                            <div style="display:flex; flex-direction:column; align-items:flex-end; width:140px; flex-shrink:0;">
-                                <div style="text-align:right; width:100%;">
-                                    ${htmlDescuento}
-                                    <div class="price-text" style="color:${cS}; justify-content:flex-end;">${pStrVisualList}<span class="tr-ind" data-type="list" data-id="${g.IDEESS}" style="margin-left:4px;">${tH}</span></div>
-                                    <div style="margin-top:6px;">${htmlAhorroList}</div>
+                            <div style="flex:1; min-width:0; display:flex; flex-direction:column; gap:4px;">
+                                <div style="display:flex; justify-content:space-between; align-items:center;">
+                                    <span class="top-badge ${cM}" style="margin:0;">${o === "favoritas" ? '❤️ FAVORITA' : 'TOP ' + g.rP + ' ' + m}</span>${bSL}
                                 </div>
                                 
-                                                                <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; width:100%; margin-top:auto; padding-top:10px;">
-                                    <button class="btn-action btn-historial" onclick="mostrarHistorico('${sN}','${g.IDEESS}','${g.Horario||''}')" style="margin:0; padding:6px 2px; font-size:8.5px; border-radius:6px; width:100%; box-sizing:border-box; flex-direction:column; gap:3px;">
-                                        <span style="font-size:14px; line-height:1;">📈</span>
-                                        <span>HISTÓRICO</span>
+                                <div style="font-size:15px; font-weight:900; color:var(--text-main); line-height:1.1; display:flex; align-items:flex-start; justify-content:space-between; gap:4px;">
+                                    <span style="word-break:break-word; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">${g.Rótulo}</span>
+                                    <span id="${iL}" class="fav-btn fav-btn-id-${g.IDEESS}" onclick="toggleFav('${g.IDEESS}',event,'${iL}')" style="font-size:18px; line-height:1; margin-top:-2px;">${hIc}</span>
+                                </div>
+                                
+                                <div style="display:flex; align-items:center; flex-wrap:wrap; gap:6px;">
+                                    <span style="background:var(--accent); color:#fff; font-weight:900; font-size:10px; padding:2px 6px; border-radius:6px; text-transform:uppercase;">${g.Municipio || ''}</span>
+                                    <span class="distancia-badge" style="font-size:10px; padding:2px 6px;">${msgDist}</span>
+                                </div>
+                                
+                                <div style="font-size:11px; color:var(--text-muted); line-height:1.2; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">📍 ${g.Dirección}</div>
+                                <div style="font-size:10px; color:var(--text-muted);">🕒 ${g.Horario||''}</div>
+                                
+                                <div id="servicios-os-${g.IDEESS}" style="display:flex; flex-wrap:wrap; gap:3px; min-height:20px; margin-top:2px;"></div>
+
+                                <div style="margin-top:auto; padding-top:6px; width:100%;">
+                                    ${htmlAhorroList.replace('text-align:right', 'text-align:left')}
+                                </div>
+                            </div>
+                            
+                            <div style="display:flex; flex-direction:column; align-items:flex-end; width:135px; flex-shrink:0;">
+                                <div style="text-align:right; width:100%;">
+                                    ${htmlDescuento}
+                                    <div class="price-text" style="color:${cS}; justify-content:flex-end; font-size:1.3em;">${pStrVisualList}<span class="tr-ind" data-type="list" data-id="${g.IDEESS}" style="margin-left:4px;">${tH}</span></div>
+                                </div>
+                                
+                                <div style="display:grid; grid-template-columns:1fr 1fr; gap:4px; width:100%; margin-top:auto; padding-top:8px;">
+                                    
+                                    <button class="btn-action btn-historial" onclick="mostrarHistorico('${sN}','${g.IDEESS}','${g.Horario||''}')" style="margin:0; padding:6px 2px; font-size:8px; border-radius:6px; width:100%; box-sizing:border-box; flex-direction:column; gap:2px;">
+                                        <span style="font-size:13px; line-height:1;">📈</span><span>HISTÓRICO</span>
                                     </button>
                                     
-                                    <button class="btn-action" style="background:#f39c12; margin:0; padding:6px 2px; font-size:8.5px; border-radius:6px; width:100%; box-sizing:border-box; flex-direction:column; gap:3px;" onclick="abrirAnotar('${sN}', ${g.pN})">
-                                        <span style="font-size:14px; line-height:1;">📓</span>
-                                        <span>ANOTAR</span>
+                                    <button class="btn-action" style="background:#7f8c8d; opacity:0.6; cursor:not-allowed; margin:0; padding:6px 2px; font-size:8px; border-radius:6px; width:100%; box-sizing:border-box; flex-direction:column; gap:2px;" onclick="alert('Próximamente: Valoraciones de la comunidad')">
+                                        <span style="font-size:13px; line-height:1;">⭐</span><span>OPINIONES</span>
                                     </button>
                                     
-                                    <a class="btn-action btn-wa" href="https://api.whatsapp.com/send?text=${waM}" target="_blank" style="margin:0; padding:6px 2px; font-size:10px; border-radius:6px; width:100%; box-sizing:border-box; flex-direction:column; gap:3px;" onclick="if(typeof gtag === 'function') gtag('event', 'compartir_whatsapp_lista', {'gasolinera': '${sN}'});">
-    <span style="font-size:14px; line-height:1;">💬</span>
-    <span>WA</span>
-</a>
+                                    <button class="btn-action" style="background:#f39c12; margin:0; padding:6px 2px; font-size:8px; border-radius:6px; width:100%; box-sizing:border-box; flex-direction:column; gap:2px;" onclick="abrirAnotar('${sN}', ${g.pN})">
+                                        <span style="font-size:13px; line-height:1;">📓</span><span>ANOTAR</span>
+                                    </button>
+                                    
+                                    <a class="btn-action btn-wa" href="https://api.whatsapp.com/send?text=${waM}" target="_blank" style="margin:0; padding:6px 2px; font-size:8px; border-radius:6px; width:100%; box-sizing:border-box; flex-direction:column; gap:2px;">
+                                        <span style="font-size:13px; line-height:1;">💬</span><span>WA</span>
+                                    </a>
 
-<a class="btn-action btn-directo" href="${mU}" target="_blank" style="margin:0; padding:6px 2px; font-size:10px; border-radius:6px; width:100%; box-sizing:border-box; flex-direction:column; gap:3px;" onclick="if(typeof gtag === 'function') gtag('event', 'ir_a_maps_lista', {'gasolinera': '${sN}'});">
-    <span style="font-size:14px; line-height:1;">↗️</span>
-    <span>IR</span>
-</a>
-
+                                    <a class="btn-action btn-directo" href="${mU}" target="_blank" style="margin:0; padding:6px 2px; font-size:9px; border-radius:6px; width:100%; box-sizing:border-box; flex-direction:column; gap:2px; grid-column: span 2;">
+                                        <span style="font-size:14px; line-height:1;">↗️</span><span>IR A MAPS</span>
+                                    </a>
                                 </div>                        
+                            </div>
                         </div>`;
+
+                                       
 
                         lD.appendChild(item);
 
@@ -2274,6 +2400,9 @@ function openGarage() {
     document.getElementById('garageModal').style.display = 'flex'; 
     renderCars(); 
     
+    // AQUÍ ESTÁ LA LÍNEA QUE FALTABA PARA EL PARKING
+    actualizarUIResumenParking(); 
+    
     // Mostramos el botón de notificaciones SOLO si el móvil lo soporta y aún no ha dado permiso
     const btnNoti = document.getElementById('btnNotificaciones');
     if (btnNoti && "Notification" in window && Notification.permission === "default") {
@@ -2282,6 +2411,7 @@ function openGarage() {
         btnNoti.style.display = 'none';
     }
 }
+
 
 function closeGarage() { 
     document.getElementById('garageModal').style.display = 'none'; 
@@ -2564,6 +2694,25 @@ let currentAnotar = {};
 
 // --- FUNCIONES DE GASTOS / BITÁCORA ACTUALIZADAS ---
 
+// Funciones de ayuda para formatear las fechas (El input date requiere YYYY-MM-DD)
+function getHoyYMD() {
+    const d = new Date();
+    let mes = '' + (d.getMonth() + 1), dia = '' + d.getDate(), anio = d.getFullYear();
+    if (mes.length < 2) mes = '0' + mes; if (dia.length < 2) dia = '0' + dia;
+    return [anio, mes, dia].join('-');
+}
+function esToYMD(esDate) {
+    if(!esDate) return getHoyYMD();
+    let partes = esDate.split('/'); if(partes.length !== 3) return getHoyYMD();
+    let dia = partes[0].padStart(2, '0'), mes = partes[1].padStart(2, '0'), anio = partes[2];
+    return `${anio}-${mes}-${dia}`;
+}
+function ymdToEs(ymdDate) {
+    if(!ymdDate) return new Date().toLocaleDateString('es-ES');
+    let partes = ymdDate.split('-'); if(partes.length !== 3) return new Date().toLocaleDateString('es-ES');
+    return `${parseInt(partes[2])}/${parseInt(partes[1])}/${partes[0]}`;
+}
+
 function abrirAnotar(nombre, precio) {
     currentAnotar = { nombre, precio };
     q('editBitacoraId').value = ""; 
@@ -2572,7 +2721,8 @@ function abrirAnotar(nombre, precio) {
     q('bitacoraGasPrice').innerText = "Precio actual: " + precio.toFixed(3) + " €/L";
     q('bitacoraLitros').value = "";
     q('bitacoraEuros').value = "";
-    q('bitacoraKm').value = ""; // Limpiamos los km
+    q('bitacoraKm').value = ""; 
+    q('bitacoraFecha').value = getHoyYMD(); // Ponemos el día de hoy por defecto
 
     let carSelect = q('bitacoraCarSelect');
     carSelect.innerHTML = '<option value="">Sin vehículo específico</option>';
@@ -2602,7 +2752,8 @@ function editarBitacora(id) {
         q('bitacoraGasPrice').innerText = "Precio guardado: " + record.precioL.toFixed(3) + " €/L";
         q('bitacoraLitros').value = record.litros;
         q('bitacoraEuros').value = record.euros;
-        q('bitacoraKm').value = record.km || ""; // Cargamos los km si los hay
+        q('bitacoraKm').value = record.km || ""; 
+        q('bitacoraFecha').value = esToYMD(record.fecha); // Cargamos la fecha guardada
 
         let carSelect = q('bitacoraCarSelect');
         carSelect.innerHTML = '<option value="">Sin vehículo específico</option>';
@@ -2625,13 +2776,14 @@ function guardarBitacora() {
     
     let lts = parseFloat(q('bitacoraLitros').value);
     let eur = parseFloat(q('bitacoraEuros').value);
-    let kmActuales = parseFloat(q('bitacoraKm').value) || 0; // Capturamos los km
+    let kmActuales = parseFloat(q('bitacoraKm').value) || 0; 
+    let fechaFinal = ymdToEs(q('bitacoraFecha').value); // Convertimos al formato español
     let idEdit = q('editBitacoraId').value;
     
     let carId = q('bitacoraCarSelect').value;
     let carName = "";
     if (carId) {
-        let foundCar = myCars.find(c => c.id == carId);
+        let foundCar = myCars.find(c => String(c.id) === String(carId));
         if (foundCar) carName = foundCar.name;
     }
 
@@ -2643,13 +2795,16 @@ function guardarBitacora() {
             bitacora[index].litros = lts;
             bitacora[index].euros = eur;
             bitacora[index].km = kmActuales;
+            bitacora[index].fecha = fechaFinal;
             bitacora[index].carId = carId;
             bitacora[index].carName = carName;
         }
+        // Reordenamos la bitácora por fecha tras editar para que siga cronológica
+        bitacora.sort((a, b) => new Date(esToYMD(b.fecha)) - new Date(esToYMD(a.fecha)));
     } else {
-        bitacora.unshift({
+        bitacora.push({
             id: Date.now(),
-            fecha: new Date().toLocaleDateString('es-ES'),
+            fecha: fechaFinal,
             nombre: currentAnotar.nombre,
             litros: lts,
             euros: eur,
@@ -2658,6 +2813,8 @@ function guardarBitacora() {
             carId: carId,
             carName: carName
         });
+        // Ordenar siempre la más reciente arriba
+        bitacora.sort((a, b) => new Date(esToYMD(b.fecha)) - new Date(esToYMD(a.fecha)));
     }
 
     localStorage.setItem('gasofa_bitacora', JSON.stringify(bitacora));
@@ -2680,7 +2837,7 @@ function abrirHistorial() {
     filterSelect.innerHTML = '<option value="all">🚗 Todos los vehículos</option>';
     myCars.forEach(c => { filterSelect.innerHTML += `<option value="${c.id}">🚗 ${c.name}</option>`; });
     
-    if (valActual && valActual !== "all" && myCars.some(c => c.id == valActual)) {
+    if (valActual && valActual !== "all" && myCars.some(c => String(c.id) === String(valActual))) {
         filterSelect.value = valActual;
     } else {
         filterSelect.value = "all";
@@ -2695,35 +2852,88 @@ function actualizarListaHistorial() {
     
     let filterId = q('historialCarFilter').value;
     let mesActual = new Date().getMonth();
+    let anioActual = new Date().getFullYear();
     let totalMes = 0;
 
-    let filtrados = filterId === "all" ? bitacora : bitacora.filter(b => b.carId == filterId);
+    let filtrados = filterId === "all" ? bitacora : bitacora.filter(b => String(b.carId) === String(filterId));
 
     if(filtrados.length === 0) {
         lista.innerHTML = "<p style='text-align:center; color:var(--text-muted); padding-top:15px;'>No hay repostajes registrados para esta búsqueda.</p>";
+        if(window.gastosChartInstance) window.gastosChartInstance.destroy();
+        q('gastosChart').style.display = 'none';
     } else {
-        // Recorremos la lista. Como está ordenada de más reciente a más antigua, 
-        // el repostaje "anterior" es el que está más abajo en el array.
+        q('gastosChart').style.display = 'block';
+        
+        // --- 1. PROCESAR DATOS PARA LA GRÁFICA ---
+        let monthlyData = {};
+        filtrados.forEach(b => {
+            let partes = b.fecha.split('/');
+            if(partes.length === 3) {
+                let mes = partes[1].padStart(2, '0');
+                let anio = partes[2];
+                let key = `${anio}-${mes}`; // Clave para ordenar
+                let label = `${mes}/${anio.substring(2)}`; // Etiqueta (Ej: 05/26)
+                
+                if(!monthlyData[key]) monthlyData[key] = { label: label, total: 0 };
+                monthlyData[key].total += b.euros;
+            }
+        });
+
+        // Ordenamos cronológicamente y cogemos los últimos 6 meses para no saturar la gráfica
+        let sortedKeys = Object.keys(monthlyData).sort();
+        if (sortedKeys.length > 6) sortedKeys = sortedKeys.slice(-6);
+
+        let chartLabels = sortedKeys.map(k => monthlyData[k].label);
+        let chartValues = sortedKeys.map(k => monthlyData[k].total);
+
+        // Dibujar gráfica con Chart.js
+        if (window.gastosChartInstance) window.gastosChartInstance.destroy();
+        
+        const ctxGastos = q('gastosChart').getContext('2d');
+        const isDark = document.body.classList.contains('dark-mode');
+        const textColor = isDark ? '#e0e0e0' : '#4a4f56';
+        const gridColor = isDark ? '#3a3b3c' : '#e4e6eb';
+
+        window.gastosChartInstance = new Chart(ctxGastos, {
+            type: 'bar',
+            data: {
+                labels: chartLabels,
+                datasets: [{
+                    label: 'Gasto (€)',
+                    data: chartValues,
+                    backgroundColor: 'rgba(30, 122, 68, 0.7)', // Usa el accent-green con opacidad
+                    borderColor: '#1e7a44',
+                    borderWidth: 1,
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => c.parsed.y.toFixed(2) + ' €' } } },
+                scales: {
+                    y: { beginAtZero: true, ticks: { color: textColor, font: { size: 10 } }, grid: { color: gridColor } },
+                    x: { ticks: { color: textColor, font: { size: 10 } }, grid: { display: false } }
+                }
+            }
+        });
+
+        // --- 2. PINTAR LA LISTA ---
         filtrados.forEach((b, index) => {
-            let isEsteMes = new Date(b.id).getMonth() === mesActual;
+            let partesF = b.fecha.split('/');
+            let isEsteMes = partesF.length === 3 && parseInt(partesF[1]) === (mesActual + 1) && parseInt(partesF[2]) === anioActual;
             if(isEsteMes) totalMes += b.euros;
             
-                        // --- CÁLCULO DE CONSUMO REAL ---
+            // --- CÁLCULO DE CONSUMO REAL ---
             let badgeConsumo = "";
             if (b.km > 0 && b.carId) {
-                // Buscamos el repostaje inmediatamente anterior de ESTE MISMO COCHE que tenga los km apuntados
-                let repostajeAnterior = filtrados.find((prev, i) => i > index && prev.carId == b.carId && prev.km > 0);
-                
+                let repostajeAnterior = filtrados.find((prev, i) => i > index && String(prev.carId) === String(b.carId) && prev.km > 0);
                 if (repostajeAnterior && b.km > repostajeAnterior.km) {
                     let distanciaRecorrida = b.km - repostajeAnterior.km;
                     let consumoReal = (b.litros / distanciaRecorrida) * 100;
-                    
                     badgeConsumo = `<span style="font-size:10px; background:#8e44ad; color:white; padding:3px 6px; border-radius:6px;" title="Basado en ${distanciaRecorrida}km">📊 Real: ${consumoReal.toFixed(1)} L/100</span>`;
                 }
             }
-            // -------------------------------
             
-            // Usamos flex-direction:column para obligar a que bajen de línea
             let carBadge = "";
             if (b.carName) {
                 carBadge = `<div style="margin-top:4px; display:flex; flex-direction:column; align-items:flex-start; gap:4px;">
@@ -2768,6 +2978,7 @@ function cancelarEdicionBitacora() {
         q('historialModal').style.display = 'flex';
     }
 }
+
 
 
 // --- SISTEMA DE NOTIFICACIONES PWA (VERSIÓN PRO COMPATIBLE CON ANDROID) ---
@@ -2867,54 +3078,52 @@ function exportarDatosCSV() {
 
     if (typeof gtag === 'function') gtag('event', 'exportar_datos');
 
-    // 1. Nuevas Cabeceras (Añadidas las de configuración del coche)
-    let csvContent = "data:text/csv;charset=utf-8,";
-    csvContent += "TIPO;FECHA;NOMBRE/GASOLINERA;LITROS;EUROS;PRECIO_L;KM;COCHE_ID;COCHE_NOMBRE;FUEL;CONSUMO;DEPOSITO;ITV;SEGURO;ACEITE\r\n";
+    // 1. Pedimos al usuario que elija el nombre del archivo
+    let fechaHoy = new Date().toLocaleDateString('es-ES').replace(/\//g, '-');
+    let nombrePersonalizado = prompt("Ponle un nombre a tu copia de seguridad:", `Copia_Precio_Combustibles_${fechaHoy}`);
+    
+    // Si el usuario le da a "Cancelar" en la ventanita, paramos todo
+    if (!nombrePersonalizado) return;
 
-    // 2. Repostajes (Bitácora)
+    // Nos aseguramos de que el nombre siempre acabe en ".csv"
+    if (!nombrePersonalizado.toLowerCase().endsWith('.csv')) {
+        nombrePersonalizado += '.csv';
+    }
+
+    // 2. Preparamos los datos
+    let csvContent = "TIPO;FECHA;NOMBRE/GASOLINERA;LITROS;EUROS;PRECIO_L;KM;COCHE_ID;COCHE_NOMBRE;FUEL;CONSUMO;DEPOSITO;ITV;SEGURO;ACEITE\r\n";
+
     bitacora.forEach(b => {
         let fila = [
-            "REPOSTAJE",
-            b.fecha,
-            b.nombre ? b.nombre.replace(/;/g, ",") : "",
-            b.litros,
-            b.euros,
-            b.precioL,
-            b.km || 0,
-            b.carId || "",
-            b.carName ? b.carName.replace(/;/g, ",") : "",
-            "", "", "", "", "", "" // Los campos extra del coche van vacíos en la fila del repostaje
+            "REPOSTAJE", b.fecha, b.nombre ? b.nombre.replace(/;/g, ",") : "", b.litros, b.euros, b.precioL,
+            b.km || 0, b.carId || "", b.carName ? b.carName.replace(/;/g, ",") : "", "", "", "", "", "", ""
         ];
         csvContent += fila.join(";") + "\r\n";
     });
 
-    // 3. Vehículos completos
     myCars.forEach(c => {
         let fila = [
-            "VEHICULO",
-            "",
-            c.name ? c.name.replace(/;/g, ",") : "",
-            "", "", "", "",
-            c.id,
-            c.name ? c.name.replace(/;/g, ",") : "",
-            c.fuel || "",
-            c.consumo || "",
-            c.deposito || "",
-            c.itv || "",
-            c.seguro || "",
-            c.aceite || ""
+            "VEHICULO", "", c.name ? c.name.replace(/;/g, ",") : "", "", "", "", "",
+            c.id, c.name ? c.name.replace(/;/g, ",") : "", c.fuel || "", c.consumo || 0, c.deposito || 0,
+            c.itv || "", c.seguro || "", c.aceite || ""
         ];
         csvContent += fila.join(";") + "\r\n";
     });
 
-    const encodedUri = encodeURI(csvContent);
+    // 3. Convertimos el texto (Le añadimos \uFEFF para que Excel lea bien los acentos)
+    const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
+    
+    // 4. Forzamos la descarga directa a la carpeta "Descargas"
+    const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `Copia_Seguridad_PrecioCombustibles_${new Date().toLocaleDateString()}.csv`);
+    link.setAttribute("href", url);
+    link.setAttribute("download", nombrePersonalizado); // Usa el nombre que has escrito
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    URL.revokeObjectURL(url); // Limpiamos la memoria
 }
+
 
 function importarDatosCSV(input) {
     const file = input.files[0];
@@ -3029,6 +3238,160 @@ function cerrarMisVehiculos() {
     q('misVehiculosModal').style.display = 'none'; 
     q('garageModal').style.display = 'flex'; 
 }
+
+// --- SISTEMA DE VALORACIONES Y COMENTARIOS ---
+
+function abrirValoraciones(id, nombre) {
+    q('revGasId').value = id;
+    q('revGasName').innerText = nombre;
+    q('revText').value = ""; // Limpiamos texto anterior
+    marcarEstrellas(0); // Reiniciamos estrellas
+    
+    // Aquí en el futuro haremos un fetch() al servidor para pedir los comentarios de este 'id'
+    q('revList').innerHTML = "<div style='text-align:center; color:var(--text-muted); font-size:12px; padding:10px;'>Conectando con la nube...</div>";
+    
+    q('reviewsModal').style.display = 'flex';
+}
+
+function marcarEstrellas(num) {
+    q('revStars').value = num;
+    let estrellas = q('starSelector').querySelectorAll('span');
+    estrellas.forEach((estrella, index) => {
+        if (index < num) {
+            estrella.style.color = '#f1c40f'; // Color oro para las marcadas
+            estrella.style.transform = 'scale(1.1)';
+        } else {
+            estrella.style.color = '#bdc3c7'; // Color gris para las vacías
+            estrella.style.transform = 'scale(1)';
+        }
+    });
+}
+
+function enviarValoracion() {
+    let id = q('revGasId').value;
+    let estrellas = parseInt(q('revStars').value);
+    let texto = q('revText').value.trim();
+
+    if (estrellas === 0) { alert("⚠️ Por favor, selecciona al menos 1 estrella."); return; }
+    if (texto.length < 5) { alert("⚠️ Escribe un comentario un poquito más largo."); return; }
+
+    q('revList').innerHTML = `<div style='text-align:center; color:var(--accent-green); font-size:13px; font-weight:bold; padding:10px;'>⏳ Enviando a la nube...</div>`;
+    
+    // [AQUÍ IRÁ LA CONEXIÓN REAL CON GOOGLE APPS SCRIPT]
+    
+    // Simulamos que se envía para que veas cómo queda
+    setTimeout(() => {
+        q('revList').innerHTML = `
+            <div style="background:var(--bg-panel); padding:10px; border-radius:8px; border:1px solid var(--border-color);">
+                <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                    <span style="color:#f1c40f; font-size:14px;">${'★'.repeat(estrellas)}${'☆'.repeat(5-estrellas)}</span>
+                    <span style="font-size:10px; color:var(--text-muted);">Justo ahora</span>
+                </div>
+                <div style="font-size:12px; color:var(--text-main);">${texto}</div>
+            </div>
+        `;
+        q('revText').value = "";
+        marcarEstrellas(0);
+        alert("✅ ¡Comentario publicado para toda la comunidad!");
+    }, 1000);
+}
+
+// --- FUNCIONES DEL PARKING ---
+function guardarParking() {
+    const btn = document.getElementById('btnGuardarCoche');
+    btn.innerText = "⏳ Guardando..."; // Cambiamos el texto
+    btn.disabled = true; // Bloqueamos el botón para que no le den 20 veces
+
+    navigator.geolocation.getCurrentPosition(pos => {
+        const coords = { lat: pos.coords.latitude, lon: pos.coords.longitude, fecha: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) };
+        localStorage.setItem('gasofa_parking', JSON.stringify(coords));
+        
+        btn.innerText = "💾 Guardar Sitio"; // Lo volvemos a poner normal
+        btn.disabled = false;
+        
+        alert("✅ Ubicación guardada. ¡Ya puedes irte tranquilo!");
+        actualizarUIResumenParking();
+    }, () => {
+        btn.innerText = "💾 Guardar Sitio";
+        btn.disabled = false;
+        alert("❌ Error: Necesito el GPS para guardar el parking.");
+    }, { enableHighAccuracy: true, timeout: 10000 });
+}
+
+function irAMiCoche() {
+    const coords = JSON.parse(localStorage.getItem('gasofa_parking'));
+    if (coords) {
+        // Enlace 100% oficial de Google Maps para forzar ruta a pie
+        const url = `https://www.google.com/maps/dir/?api=1&destination=${coords.lat},${coords.lon}&travelmode=walking`;
+        window.open(url, '_blank');
+    }
+}
+
+function borrarParking() {
+    if(confirm("¿Seguro que quieres borrar la ubicación de tu coche?")) {
+        localStorage.removeItem('gasofa_parking');
+        actualizarUIResumenParking();
+    }
+}
+
+function actualizarUIResumenParking() {
+    const coords = JSON.parse(localStorage.getItem('gasofa_parking'));
+    const btnGuardar = document.getElementById('btnGuardarCoche');
+    const divGuardado = document.getElementById('botonesCocheGuardado');
+    const info = document.getElementById('infoParking');
+    
+    if (coords) {
+        if(btnGuardar) btnGuardar.style.display = 'none'; // Ocultamos Guardar
+        if(divGuardado) divGuardado.style.display = 'flex'; // Mostramos los otros dos
+        if(info) info.innerText = `Aparcado a las ${coords.fecha}`;
+    } else {
+        if(btnGuardar) btnGuardar.style.display = 'block'; // Mostramos Guardar
+        if(divGuardado) divGuardado.style.display = 'none'; // Ocultamos los otros dos
+        if(info) info.innerText = `No hay ninguna ubicación guardada.`;
+    }
+}
+
+// --- CALCULADORA DE TENDENCIAS EN PANTALLA ---
+function actualizarCabeceraTendencias() {
+    if (!q('tendenciaAyer') || !window.lastFiltradas || window.lastFiltradas.length === 0) return;
+    
+    let fTN = q("tipoCombustible").options[q("tipoCombustible").selectedIndex].text;
+    
+    if (!trendsLoaded) {
+        q('tendenciaAyer').innerHTML = "📊 " + fTN + ": Calculando tendencia exacta... ⏳";
+        return;
+    }
+
+    let sumaHoy = 0, sumaAyer = 0, comparables = 0;
+
+    window.lastFiltradas.forEach(g => {
+        let tData = currentTrends[g.IDEESS];
+        // Si tenemos el dato de tendencia de esta gasolinera desde el servidor
+        if (tData && typeof tData.diff !== 'undefined') {
+            let precioHoy = g.pN;
+            let precioAyer = precioHoy - tData.diff; // Matemáticas: Ayer = Hoy - Diferencia
+            
+            sumaHoy += precioHoy;
+            sumaAyer += precioAyer;
+            comparables++;
+        }
+    });
+
+    if (comparables > 0) {
+        let dif = (sumaHoy / comparables) - (sumaAyer / comparables);
+        let txt = Math.abs(dif) < 0.001 
+            ? "Igual que ayer ⚖️" 
+            : (dif > 0 ? `<span style="color:#e74c3c;">▲ sube ${dif.toFixed(3)}€</span> respecto a ayer` 
+                       : `<span style="color:#27ae60;">▼ baja ${Math.abs(dif).toFixed(3)}€</span> respecto a ayer`);
+        
+        let zonaStr = searchMode === 'provincia' ? "en provincia" : (searchMode === 'ruta' ? "en ruta" : "en pantalla");
+        
+        q('tendenciaAyer').innerHTML = "📊 " + fTN + ": " + txt + " <small>(" + zonaStr + ")</small>";
+    } else {
+        q('tendenciaAyer').innerHTML = "📊 " + fTN + ": Datos de ayer no disponibles ➖";
+    }
+}
+
 
     </script>
 </body>
