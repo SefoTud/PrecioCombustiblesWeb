@@ -24,7 +24,7 @@
     <meta name="apple-mobile-web-app-title" content="Precio Combustibles">
 
     <meta property="og:type" content="website">
-    <meta property="og:title" content="Precio Combustibles - Ahorra en tu viaje">
+    <meta property="og:title" content="Precio Combustibles Pro - Ahorra en tu viaje">
     <meta property="og:description" content="Planificador de rutas inteligente y precios de gasolineras en tiempo real en toda España.">
     <meta property="og:image" content="https://www.preciocombustibles.com/android-chrome-512x512.png">
     <meta property="og:url" content="https://www.preciocombustibles.com">
@@ -2910,7 +2910,7 @@ function exportarDatosCSV() {
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `Copia_Seguridad_Gasofa_${new Date().toLocaleDateString()}.csv`);
+    link.setAttribute("download", `Copia_Seguridad_PrecioCombustibles_${new Date().toLocaleDateString()}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
