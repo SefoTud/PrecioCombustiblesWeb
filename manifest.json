@@ -20,32 +20,5 @@
       "type": "image/png",
       "purpose": "any maskable"
     }
-  ],
-  "shortcuts": [
-    {
-      "name": "Ver mapa",
-      "short_name": "Mapa",
-      "description": "Abre directamente el mapa de gasolineras",
-      "url": "/?action=mapa",
-      "icons": [{"src": "android-chrome-192x192.png", "sizes": "192x192"}]
-    },
-    {
-      "name": "Más baratas hoy",
-      "short_name": "Baratas",
-      "description": "Calcula la ruta más barata",
-      "url": "/?action=baratas",
-      "icons": [{"src": "android-chrome-192x192.png", "sizes": "192x192"}]
-    }
-  ],
-  "widgets": [
-    {
-      "name": "Precio mínimo",
-      "short_name": "Precio",
-      "description": "Mira el precio más bajo sin abrir la app",
-      "tag": "gas-price-widget",
-      "template": "widget-template",
-      "ms_allow_on_edges": true,
-      "icons": [{"src": "android-chrome-192x192.png", "sizes": "192x192"}]
-    }
   ]
 }
