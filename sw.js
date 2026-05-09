@@ -1,10 +1,9 @@
-// Cambia este número de versión cada vez que actualices tu index.html
-const CACHE_NAME = 'gasofa-cache-v1'; 
+// Cambiamos a v2 para que el móvil reconozca que hay cambios nuevos y actualice
+const CACHE_NAME = 'gasofa-cache-v2'; 
 
 const urlsToCache = [
     '/',
     '/index.html'
-    // Si tienes iconos locales, podrías añadirlos aquí, ej: '/favicon.ico'
 ];
 
 // 1. INSTALACIÓN: Guarda los archivos básicos en la caja fuerte
@@ -51,8 +50,23 @@ self.addEventListener('fetch', event => {
                 return response;
             })
             .catch(() => {
-                // Si no hay internet, sacamos la última versión guardada de la caja fuerte
+                // Si no hay internet, sacamos la última versión guardada
                 return caches.match(event.request);
             })
     );
+});
+
+// ==========================================
+// 4. SECCIÓN WIDGETS (El molde para el futuro)
+// ==========================================
+
+// Avisa cuando el usuario coloca el widget en su pantalla
+self.addEventListener('widgetinstall', event => {
+    console.log('Widget instalado en la pantalla:', event.widget.tag);
+});
+
+// Avisa cuando el usuario mira el widget (momento para pedir datos nuevos)
+self.addEventListener('widgetresume', event => {
+    console.log('El widget se está mostrando. Pidiendo datos actualizados...', event.widget.tag);
+    // Aquí es donde, en el futuro, conectaríamos con Google Scripts para pintar el precio en el widget.
 });
