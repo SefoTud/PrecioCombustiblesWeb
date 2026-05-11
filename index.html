@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"> 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     
     <title>Precio Combustibles hoy en España | Gasolineras Baratas y Rutas</title>
     <meta name="description" content="Ahorra en gasolina y diésel con nuestro planificador de rutas inteligente. Precios en tiempo real, histórico de 30 días y buscador de gasolineras baratas.">
@@ -41,9 +41,6 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-
-
-
     <style>
         /* --- ESTILOS APP NATIVA MODERNA --- */
                :root {
@@ -58,7 +55,6 @@
         }
         /* Estilo para los círculos de agrupación en el mapa */
         .my-cluster-icon { background-color: var(--accent); color: white; border: 2px solid white; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 14px; box-shadow: 0 2px 5px rgba(0,0,0,0.4); }
-
 
         body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden;background:var(--bg-body);color:var(--text-main);transition:background 0.3s, color 0.3s;}
         
@@ -85,13 +81,12 @@
         .checkbox-container{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--text-main);background:var(--bg-input);padding:10px;border-radius:12px;cursor:pointer;white-space:nowrap;border:none;}
         .checkbox-container input{width:auto;margin:0}
     
-                                 /* LISTA RESULTADOS (Animada para estirar el mapa) */
+        /* LISTA RESULTADOS (Animada para estirar el mapa) */
         #list-container{height:42vh;background:var(--bg-body);border-top:none;overflow-y:auto;padding:15px 15px 85px 15px;z-index:1000;position:relative; border-top-left-radius: 20px; border-top-right-radius: 20px; margin-top: -15px; box-shadow: 0 -4px 15px rgba(0,0,0,0.05); transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), height 0.4s ease, padding 0.4s ease, margin 0.4s ease, opacity 0.3s ease;}
         #list-container.bloqueado { overflow: hidden !important; } 
         #list-container.hidden-down { transform: translateY(100%); height: 65px !important; padding-top: 0 !important; padding-bottom: env(safe-area-inset-bottom) !important; margin-top: 0 !important; opacity: 0; pointer-events: none; }
 
-        
-               /* TARJETAS NATIVAS ARREGLADAS */
+        /* TARJETAS NATIVAS ARREGLADAS */
         .list-item { background:var(--bg-panel); border-radius:16px; padding:15px; margin-bottom:12px; box-shadow:0 3px 10px rgba(0,0,0,0.06); border:1px solid var(--border-color); cursor:pointer; display:flex; flex-direction:column; gap:0; }
 
         .list-info { flex: 1; min-width: 0; }
@@ -114,7 +109,6 @@
         .btn-action { color:#fff!important; border:none; padding:8px 10px; border-radius:8px; text-decoration:none; font-size:11px; font-weight:bold; margin:4px 2px 0 0; cursor:pointer; display:inline-flex; align-items:center; gap:4px; text-transform:uppercase; justify-content:center; }
         .btn-historial { background:#9b59b6; } .btn-directo { background:var(--accent); } .btn-wa { background:#25D366; }
 
-
         /* --- BARRA DE NAVEGACIÓN INFERIOR --- */
         .bottom-nav { position:fixed; bottom:0; left:0; width:100%; height:65px; background:var(--bg-panel); border-top:1px solid var(--border-color); display:flex; justify-content:space-around; align-items:center; z-index:5000; padding-bottom:env(safe-area-inset-bottom); box-shadow:0 -2px 10px rgba(0,0,0,0.05); }
         .nav-item { display:flex; flex-direction:column; align-items:center; justify-content:center; color:var(--text-muted); font-size:11px; font-weight:600; cursor:pointer; width:20%; transition:all 0.2s; }
@@ -122,9 +116,12 @@
         .nav-item.active { color:var(--accent); }
         .nav-item.active .icon { transform:scale(1.15); }
 
-        /* BOTÓN GPS MAPA FLOTANTE */
+        /* BOTÓN GPS Y TRÁFICO MAPA FLOTANTE */
         .btn-gps { position:absolute; bottom:20px; right:15px; z-index:1500; width:48px; height:48px; border-radius:50%; background:var(--bg-panel); color:var(--accent); border:none; box-shadow:0 4px 12px rgba(0,0,0,0.15); display:flex; align-items:center; justify-content:center; font-size:22px; cursor:pointer; }
         .btn-gps:active { transform:scale(0.9); }
+        
+        .btn-trafico { position:absolute; bottom:80px; right:15px; z-index:1500; width:48px; height:48px; border-radius:50%; background:var(--bg-panel); color:var(--accent); border:none; box-shadow:0 4px 12px rgba(0,0,0,0.15); display:flex; align-items:center; justify-content:center; font-size:22px; cursor:pointer; transition: background 0.3s;}
+        .btn-trafico.active { background: #e74c3c; color: white; }
 
         .price-label-wrapper{background:var(--bg-panel);color:var(--text-main);padding:2px 5px;border-radius:8px;font-weight:bold;font-size:13px;box-shadow:0 2px 6px rgba(0,0,0,.3);text-align:center;border:2.5px solid;cursor:pointer;display:flex;align-items:center;justify-content:center;}
         .desc-badge { background: #f1c40f; color: #000; font-size: 10px; padding: 2px 4px; border-radius: 4px; font-weight: bold; margin-left: 4px; }
@@ -174,6 +171,8 @@
                 <button class="time-btn" onclick="updateChartRange(3, this)">3 Días</button>
                 <button class="time-btn active" onclick="updateChartRange(7, this)">1 Semana</button>
                 <button class="time-btn" onclick="updateChartRange(30, this)">1 Mes</button>
+                
+                <div id="tendenciaTotalResumen" style="text-align:center; font-size:13px; margin-bottom:15px; color:var(--text-muted);"></div>
             </div>
 
             <div id="chartStatus">
@@ -186,7 +185,7 @@
         </div>
     </div>
 
-        <div id="descModal" class="modal-bg">
+    <div id="descModal" class="modal-bg">
         <div class="modal-content" style="max-width:400px;">
             <h3 style="margin-top:0; color:var(--accent); border-bottom:1px solid var(--border-color); padding-bottom:10px; text-align:center;">💳 Mis Tarjetas</h3>
             <p style="font-size:12px; color:var(--text-muted); text-align:center; margin-bottom:15px;">La app restará el descuento automáticamente si vas a esa marca.</p>
@@ -213,7 +212,7 @@
         </div>
     </div>
 
-                    <div id="bitacoraModal" class="modal-bg">
+    <div id="bitacoraModal" class="modal-bg">
         <div class="modal-content" style="max-width:320px; width:90%;">
             <input type="hidden" id="editBitacoraId">
             <h3 id="bitacoraTitle" style="margin-top:0; text-align:center;">📓 Anotar Repostaje</h3>
@@ -259,7 +258,7 @@
         </div>
     </div>
     
-        <div id="reviewsModal" class="modal-bg">
+    <div id="reviewsModal" class="modal-bg">
         <div class="modal-content" style="max-width:400px; padding: 20px;">
             <h3 style="margin-top:0; color:var(--accent); text-align:center; border-bottom:1px solid var(--border-color); padding-bottom:10px; display:flex; align-items:center; justify-content:center; gap:8px;">
                 ⭐ Valoraciones
@@ -293,7 +292,6 @@
         </div>
     </div>
     
-
    <div id="controls" class="collapsed">
         <div style="display:flex; justify-content:space-between; align-items:center;">
             <strong style="font-size:18px;">⚙️ Filtros y Ajustes <span id="alertaGarajeTop" style="display:none; font-size:12px; font-weight:900; background:#34495e; color:#fff; padding:2px 6px; border-radius:8px; vertical-align:middle; margin-left:5px;"></span></strong>
@@ -389,7 +387,7 @@
         </div>
 
 
-               <div class="social-footer" style="display:flex; justify-content:center; gap:30px; margin-top:15px; border-top:1px solid var(--border-color); padding:15px 0;">
+        <div class="social-footer" style="display:flex; justify-content:center; gap:30px; margin-top:15px; border-top:1px solid var(--border-color); padding:15px 0;">
             <a href="https://instagram.com/preciocombustibles" target="_blank" aria-label="Instagram"><img src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png" width="35" height="35" alt="Logotipo de Instagram" loading="lazy" style="border-radius:8px;"></a>
             <a href="https://tiktok.com/@preciocombustibles" target="_blank" aria-label="TikTok"><img src="https://img.icons8.com/color/512/tiktok.png" width="35" height="35" alt="Logotipo de TikTok" loading="lazy"></a>
             <a href="https://x.com/PrecioCombusti" target="_blank" aria-label="X Twitter"><img src="https://upload.wikimedia.org/wikipedia/commons/c/ce/X_logo_2023.svg" width="35" height="35" alt="Logotipo de X" loading="lazy" style="border-radius:8px; background-color:white; padding:5px; box-sizing:border-box;"></a>
@@ -400,6 +398,8 @@
     <div style="flex: 1; position: relative; width: 100%; overflow: hidden;">
         <div id="map"></div>
         <button class="btn-gps" onclick="irAMiUbicacion(false)" title="Mi Ubicación" aria-label="Centrar mapa en mi ubicación actual">📍</button>
+        
+        <button class="btn-trafico" id="btnToggleCamaras" onclick="toggleCamarasTrafico()" title="Cámaras de Tráfico DGT" aria-label="Mostrar cámaras de tráfico de la DGT">🎥</button>
     </div>
 
     <div id="list-container">
@@ -422,7 +422,13 @@
             <span id="resumenAhorro" style="font-weight:bold;color:var(--accent-green);font-size:1.1em;">Calculando ahorro...</span>
             
             <div id="tendenciaAyer" style="font-size: 11px; color: var(--text-muted); margin-top: 5px; font-weight: 600;"></div>
-        </div>
+            
+    
+    <button onclick="mostrarTendenciaZona()" style="margin-top:10px; background:transparent; border:1px solid var(--accent); color:var(--accent); padding:6px 12px; border-radius:20px; font-size:11px; font-weight:bold; cursor:pointer; display:inline-flex; align-items:center; gap:5px;">
+        📈 Ver tendencia de esta zona
+    </button>
+</div>
+
 
         
         <div id="gas-list"></div>
@@ -546,6 +552,26 @@
             <button onclick="cerrarMisVehiculos()" style="background:var(--bg-input); color:var(--text-main); border:none; padding:12px; border-radius:12px; font-weight:bold; cursor:pointer; width:100%;">Volver al Garaje</button>
         </div>
     </div>
+    
+            <div id="camaraModal" class="modal-bg" onclick="this.style.display='none'" style="cursor: pointer; z-index: 8000;">
+        <div style="position: relative; width: 95%; max-width: 600px; display: flex; flex-direction: column; align-items: center; gap: 10px;" onclick="event.stopPropagation();">
+            
+            <div style="width: 100%; display: flex; justify-content: space-between; align-items: center;">
+                <h3 id="camaraModalTitle" style="color: white; margin: 0; text-shadow: 0 2px 4px rgba(0,0,0,0.8); font-size: 16px;">🎥 Cámara</h3>
+                <span onclick="document.getElementById('camaraModal').style.display='none'" style="color: white; font-size: 28px; font-weight: bold; cursor: pointer; text-shadow: 0 2px 4px rgba(0,0,0,0.8);">×</span>
+            </div>
+            
+            <div id="camaraImgContainer" style="width: 100%; max-height: 75vh; overflow: auto; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.6); background: #111;">
+                <img id="camaraModalImg" src="" style="width: 100%; display: block; cursor: zoom-in; transition: width 0.3s ease;" onclick="toggleZoomCamara(event, this)">
+            </div>
+
+            <p id="camaraZoomText" style="color: rgba(255,255,255,0.7); font-size: 11px; margin: 0; text-align: center;">Toca la foto para hacer zoom • Toca fuera para cerrar</p>
+        </div>
+    </div>
+
+
+    <nav class="bottom-nav">
+
 
         <nav class="bottom-nav">
         <div class="nav-item active" id="nav-zona" onclick="document.querySelectorAll('.nav-item').forEach(e=>e.classList.remove('active')); this.classList.add('active'); if(document.getElementById('controls').classList.contains('collapsed')) toggleControls(); setMode('zona');">
@@ -635,6 +661,9 @@
         L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(map);
         map.createPane("puntos_rojo").style.zIndex = 400; map.createPane("puntos_amar").style.zIndex = 401; map.createPane("puntos_verde").style.zIndex = 402;
         map.createPane("precios_rojo").style.zIndex = 600; map.createPane("precios_amar").style.zIndex = 601; map.createPane("precios_verde").style.zIndex = 602;
+        
+        // NUEVO: PANE PARA LAS CÁMARAS PARA QUE SE VEAN POR ENCIMA
+        map.createPane("puntos_camaras").style.zIndex = 610;
 
         document.addEventListener("visibilitychange", () => {
             if (document.visibilityState === 'visible') {
@@ -1588,30 +1617,88 @@
         function cerrarGrafico() { if(chartInstance) { chartInstance.destroy(); chartInstance = null; } q('chartModal').style.display = 'none'; currentModalStationId = null; }
         
         window.updateChartRange = function(days, btn) {
-            if (!window.fullChartData || !chartInstance) return;
-            if (btn) {
-                D.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
+    if (!window.fullChartData || !chartInstance) return;
+    
+    if (btn) {
+        document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+    }
+    
+    let slicedLabels = window.fullChartData.labels.slice(-days);
+    
+    let slicedDatasets = window.fullChartData.datasets.map(ds => {
+        return { ...ds, data: ds.data.slice(-days) };
+    });
+
+    // Mantenemos la regla infalible de colores para las barras de zona
+    if (chartInstance.config.type === 'bar') {
+        slicedDatasets[0].backgroundColor = slicedDatasets[0].data.map(val => val > 0 ? 'rgba(231, 76, 60, 0.7)' : 'rgba(39, 174, 96, 0.7)');
+        slicedDatasets[0].borderColor = slicedDatasets[0].data.map(val => val > 0 ? '#c0392b' : '#1e7a44');
+        slicedDatasets[0].borderWidth = 2;
+        slicedDatasets[0].borderRadius = 4;
+    }
+
+    chartInstance.data.labels = slicedLabels;
+    chartInstance.data.datasets = slicedDatasets;
+    chartInstance.update();
+
+       // --- MAGIA NUEVA CORREGIDA: CALCULADORA DE RESUMEN TOTAL ---
+    let resumenDiv = document.getElementById('tendenciaTotalResumen');
+    if (resumenDiv) {
+        let totalVariacion = 0;
+        
+        // AQUÍ ESTÁ EL ARREGLO GRAMATICAL:
+        let textoTiempo = days === 3 ? "estos 3 días" : (days === 7 ? "esta semana" : "estos 30 días");
+        let prefijoCombustible = "";
+
+        if (chartInstance.config.type === 'bar') {
+            let datosBarra = slicedDatasets[0].data;
+            totalVariacion = datosBarra.reduce((acc, val) => acc + val, 0);
+            
+        } else if (chartInstance.config.type === 'line') {
+            let selectCombustible = document.getElementById("tipoCombustible");
+            let nombreCombustible = selectCombustible.options[selectCombustible.selectedIndex].text;
+            
+            let datasetCorrecto = slicedDatasets.find(ds => ds.label.toLowerCase() === nombreCombustible.toLowerCase());
+            
+            if (!datasetCorrecto) {
+                datasetCorrecto = slicedDatasets.find(ds => ds.hidden !== true) || slicedDatasets[0];
             }
             
-            let slicedLabels = window.fullChartData.labels.slice(-days);
-            let slicedDatasets = window.fullChartData.datasets.map(ds => {
-                return { ...ds, data: ds.data.slice(-days) };
-            });
+            let datosLinea = datasetCorrecto.data.filter(val => val !== null);
+            if (datosLinea.length > 1) {
+                totalVariacion = datosLinea[datosLinea.length - 1] - datosLinea[0];
+            }
+            prefijoCombustible = `del <b>${datasetCorrecto.label}</b> `;
+        }
 
-            chartInstance.data.labels = slicedLabels;
-            chartInstance.data.datasets = slicedDatasets;
-            chartInstance.update();
-        };
+        // Y le quitamos el "estos" fijo de la frase para usar nuestra nueva variable:
+        if (Math.abs(totalVariacion) < 0.001) {
+            resumenDiv.innerHTML = `En ${textoTiempo} la tendencia ${prefijoCombustible}se ha <b>mantenido</b> ⚖️`;
+        } else if (totalVariacion > 0) {
+            resumenDiv.innerHTML = `En ${textoTiempo} la tendencia ${prefijoCombustible}es de <span style="color:#e74c3c; font-weight:900;">▲ SUBIDA (+${totalVariacion.toFixed(3)}€)</span>`;
+        } else {
+            resumenDiv.innerHTML = `En ${textoTiempo} la tendencia ${prefijoCombustible}es de <span style="color:#27ae60; font-weight:900;">▼ BAJADA (${totalVariacion.toFixed(3)}€)</span>`;
+        }
+    }
+};
+
+
+
+
 
         function mostrarHistorico(n, id, h) {
-            if (typeof gtag === 'function') gtag('event', 'ver_historico', { 'gasolinera': n });
-            if(chartInstance) chartInstance.destroy();
-            currentModalStationId = id;
-            q('chartModal').style.display = 'flex'; 
-            q('modalTitle').innerText = n + " (ID: " + id + ")"; 
-            q('modalHorario').innerText = h ? "🕒 " + h : "🕒 Horario no disponible";
-            q('chartTimeButtons').style.display = 'none';
+    if (typeof gtag === 'function') gtag('event', 'ver_historico', { 'gasolinera': n });
+    if(chartInstance) chartInstance.destroy();
+    currentModalStationId = id;
+    
+    // ---> AÑADE ESTA LÍNEA AQUÍ PARA ASEGURARTE DE QUE SE VE EL CORAZÓN <---
+    document.getElementById('modalFavHeart').style.display = 'inline-block';
+    
+    q('chartModal').style.display = 'flex'; 
+    q('modalTitle').innerText = n + " (ID: " + id + ")"; 
+    q('modalHorario').innerText = h ? "🕒 " + h : "🕒 Horario no disponible";
+    q('chartTimeButtons').style.display = 'none';
             
             const mFav = q('modalFavHeart'); mFav.innerText = favoritos.includes(id) ? '❤️' : '🤍'; mFav.onclick = e => toggleFav(id, e, 'modalFavHeart');
             const st = q('chartStatus'); 
@@ -3377,12 +3464,15 @@ function actualizarCabeceraTendencias() {
         }
     });
 
-    if (comparables > 0) {
+        if (comparables > 0) {
         let dif = (sumaHoy / comparables) - (sumaAyer / comparables);
+        
+        // --- NUEVAS FRASES MÁS PRECISAS ---
         let txt = Math.abs(dif) < 0.001 
-            ? "Igual que ayer ⚖️" 
-            : (dif > 0 ? `<span style="color:#e74c3c;">▲ sube ${dif.toFixed(3)}€</span> respecto a ayer` 
-                       : `<span style="color:#27ae60;">▼ baja ${Math.abs(dif).toFixed(3)}€</span> respecto a ayer`);
+            ? "Ayer la tendencia se mantuvo igual ⚖️" 
+            : (dif > 0 ? `La tendencia de ayer fue de <span style="color:#e74c3c;">▲ subida (+${dif.toFixed(3)}€)</span>` 
+                       : `La tendencia de ayer fue a la <span style="color:#27ae60;">▼ baja (-${Math.abs(dif).toFixed(3)}€)</span>`);
+        // ---------------------------------
         
         let zonaStr = searchMode === 'provincia' ? "en provincia" : (searchMode === 'ruta' ? "en ruta" : "en pantalla");
         
@@ -3390,8 +3480,229 @@ function actualizarCabeceraTendencias() {
     } else {
         q('tendenciaAyer').innerHTML = "📊 " + fTN + ": Datos de ayer no disponibles ➖";
     }
+
 }
 
+// --- NUEVO: CÁMARAS DE TRÁFICO DGT (Conectado a Google Sheets) ---
+let layerCamaras = L.markerClusterGroup({
+    maxClusterRadius: 50,
+    iconCreateFunction: function(cluster) {
+        // Cuadrado rojo para las agrupaciones
+        return L.divIcon({ 
+            html: '<div style="background-color: #e74c3c; color: white; border: 2px solid white; border-radius: 4px; display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.4);"><span>' + cluster.getChildCount() + '</span></div>', 
+            className: '', 
+            iconSize: L.point(35, 35) 
+        });
+    }
+});
+
+let camarasCargadas = false;
+let camarasActivas = false;
+
+// Variable para saber si la foto está ampliada o no
+window.esZoomCamara = false;
+
+// Función para abrir la cámara por primera vez
+window.abrirCamaraCompleta = function(src, nombre) {
+    const img = document.getElementById('camaraModalImg');
+    img.src = src;
+    document.getElementById('camaraModalTitle').innerText = "🎥 " + nombre;
+    document.getElementById('camaraModal').style.display = 'flex';
+    
+    // Resetear el zoom siempre que se abre una cámara nueva
+    window.esZoomCamara = false;
+    img.style.width = '100%';
+    img.style.cursor = 'zoom-in';
+    document.getElementById('camaraZoomText').innerText = "Toca la foto para hacer zoom • Toca fuera para cerrar";
+};
+
+// Función para hacer el Zoom al tocar la foto
+window.toggleZoomCamara = function(e, img) {
+    e.stopPropagation(); // Evita que se cierre el modal al tocar
+    const container = document.getElementById('camaraImgContainer');
+    window.esZoomCamara = !window.esZoomCamara;
+    
+    if (window.esZoomCamara) {
+        // Hacemos la foto gigante (250%)
+        img.style.width = '250%'; 
+        img.style.cursor = 'zoom-out';
+        document.getElementById('camaraZoomText').innerText = "Desliza para ver los detalles • Toca la foto para alejar";
+        
+        // Centramos el scroll automáticamente en medio de la foto
+        setTimeout(() => {
+            container.scrollLeft = (container.scrollWidth - container.clientWidth) / 2;
+            container.scrollTop = (container.scrollHeight - container.clientHeight) / 2;
+        }, 50);
+    } else {
+        // Volvemos al tamaño normal
+        img.style.width = '100%';
+        img.style.cursor = 'zoom-in';
+        document.getElementById('camaraZoomText').innerText = "Toca la foto para hacer zoom • Toca fuera para cerrar";
+    }
+};
+
+
+async function toggleCamarasTrafico() {
+    const btn = document.getElementById('btnToggleCamaras');
+    camarasActivas = !camarasActivas;
+    
+    if (camarasActivas) {
+        btn.classList.add('active');
+        
+        if (!camarasCargadas) {
+            try {
+                // Mensaje de carga mientras descarga las cámaras
+                btn.innerHTML = '⏳';
+                
+                const response = await fetch(WEB_APP_URL + "?accion=obtenerCamaras");
+                const data = await response.json();
+                
+                if (data.error) throw new Error(data.error);
+                
+                data.forEach(cam => {
+                    let iconCam = L.divIcon({
+                        className: '', 
+                        html: '<div style="background:#e74c3c; color:white; padding:4px; border-radius:4px; box-shadow:0 2px 4px rgba(0,0,0,0.4); border:1px solid white; display:flex; align-items:center; justify-content:center; width:22px; height:22px; font-size:14px;">🎥</div>',
+                        iconSize: [30, 30],
+                        iconAnchor: [15, 15]
+                    });
+
+                    let nombreReal = cam.nombre || "Cámara DGT";
+                    
+                    // ESCUDO ANTI-ERRORES: Limpiamos el nombre para que el click nunca falle
+                    let nombreSeguro = nombreReal.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                    
+                    // Anti-Caché: Para que la foto se actualice
+                    let urlCamara = cam.url + "?t=" + new Date().getTime();
+
+                    let popupContent = `
+                        <div style="text-align:center; min-width: 250px;">
+                            <h4 style="margin: 0 0 5px 0; color:#e74c3c; font-size:13px;">🎥 ${nombreReal}</h4>
+                            <img src="${urlCamara}" alt="Cámara DGT" style="width:100%; border-radius:8px; border:1px solid var(--border-color); min-height: 150px; background: #eee; cursor: pointer; display:block;" onerror="this.src='https://via.placeholder.com/250x150.png?text=Cámara+no+disponible'" onclick="window.abrirCamaraCompleta(this.src, '${nombreSeguro}')">
+                            <p style="font-size:10px; color:var(--text-muted); margin: 5px 0 0 0;">Toca la foto para ampliarla</p>
+                        </div>
+                    `;
+
+                    let marker = L.marker([parseFloat(cam.lat.toString().replace(',','.')), parseFloat(cam.lon.toString().replace(',','.'))], { icon: iconCam, pane: "puntos_camaras" })
+                                  .bindPopup(popupContent);
+
+                    layerCamaras.addLayer(marker);
+                });
+                camarasCargadas = true;
+                btn.innerHTML = '🎥'; // Volvemos a poner la cámara
+                
+            } catch (error) {
+                console.error("Error cargando cámaras:", error);
+                btn.innerHTML = '🎥';
+                alert("No se ha podido conectar con tu base de datos de cámaras.");
+            }
+        }
+        map.addLayer(layerCamaras);
+    } else {
+        btn.classList.remove('active');
+        map.removeLayer(layerCamaras);
+    }
+}
+
+async function mostrarTendenciaZona() {
+    if (!window.lastFiltradas || window.lastFiltradas.length === 0) {
+        alert("Busca primero gasolineras en una zona.");
+        return;
+    }
+
+    const topGasolineras = window.lastFiltradas.slice(0, 200);
+    const idsEnPantalla = topGasolineras.map(g => g.IDEESS).join(",");
+    const fT = document.getElementById("tipoCombustible").value;
+
+    const modal = document.getElementById('chartModal');
+    const st = document.getElementById('chartStatus');
+    const ctxElement = document.getElementById('priceChart');
+    
+    modal.style.display = 'flex';
+    document.getElementById('modalTitle').innerText = "📊 Tendencia de Variación";
+    document.getElementById('modalHorario').innerText = "Subidas/Bajadas medias de " + topGasolineras.length + " gasolineras de la zona";
+    
+    document.getElementById('modalFavHeart').style.display = 'none';
+    document.getElementById('chartTimeButtons').style.display = 'none';
+    
+    // --- DESTRUCTOR DE GRÁFICAS FANTASMA ---
+    let chartExistente = Chart.getChart(ctxElement);
+    if (chartExistente) chartExistente.destroy();
+    if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
+    // ---------------------------------------
+    
+    st.style.display = 'flex';
+    document.getElementById('chartSpinner').style.display = 'block';
+    document.getElementById('chartText').innerText = "Analizando el histórico de la zona...";
+
+    try {
+        const url = WEB_APP_URL + "?accion=obtenerTendenciaMasiva&ids=" + idsEnPantalla + "&combustible=" + encodeURIComponent(fT);
+        const res = await fetch(url);
+        const data = await res.json();
+
+        if (data.error || !data.labels || data.labels.length === 0) {
+            throw new Error(data.error || "Datos insuficientes");
+        }
+
+        st.style.display = 'none';
+        document.getElementById('chartTimeButtons').style.display = 'flex';
+
+        const tColor = document.body.classList.contains('dark-mode') ? '#e0e0e0' : '#333';
+        const gColor = document.body.classList.contains('dark-mode') ? '#333' : '#ddd';
+
+        // --- COLORES INFALIBLES (Nunca se pondrá azul) ---
+        const coloresFondo = data.datasets[0].data.map(val => val > 0 ? 'rgba(231, 76, 60, 0.7)' : 'rgba(39, 174, 96, 0.7)');
+        const coloresBorde = data.datasets[0].data.map(val => val > 0 ? '#c0392b' : '#1e7a44');
+
+        data.datasets[0].backgroundColor = coloresFondo;
+        data.datasets[0].borderColor = coloresBorde;
+        data.datasets[0].borderWidth = 2;
+        data.datasets[0].borderRadius = 4;
+        
+        window.fullChartData = JSON.parse(JSON.stringify(data));
+
+        chartInstance = new Chart(ctxElement.getContext('2d'), {
+            type: 'bar',
+            data: data,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { 
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let val = context.parsed.y;
+                                let signo = val > 0 ? "+" : "";
+                                return " Diferencia: " + signo + val.toFixed(3) + " €/L";
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: { 
+                        ticks: { color: tColor }, 
+                        grid: { 
+                            color: (context) => context.tick.value === 0 ? tColor : gColor,
+                            lineWidth: (context) => context.tick.value === 0 ? 2 : 1
+                        } 
+                    },
+                    x: { ticks: { color: tColor }, grid: { display: false } }
+                }
+            }
+        });
+
+        const botonesTiempo = document.querySelectorAll('#chartTimeButtons .time-btn');
+        if (botonesTiempo.length > 2) {
+            updateChartRange(30, botonesTiempo[2]);
+        }
+
+    } catch (e) {
+        document.getElementById('chartSpinner').style.display = 'none';
+        document.getElementById('chartText').innerHTML = "❌ Error al calcular la tendencia masiva.<br><small>" + e.message + "</small>";
+        console.error(e);
+    }
+}
 
     </script>
 </body>
