@@ -692,6 +692,9 @@
                 <button class="time-btn" onclick="updateChartRange(3, this)">3 Días</button>
                 <button class="time-btn active" onclick="updateChartRange(7, this)">1 Semana</button>
                 <button class="time-btn" onclick="updateChartRange(30, this)">1 Mes</button>
+
+                <div id="tendenciaTotalResumen"
+                    style="text-align:center; font-size:13px; margin-bottom:15px; color:var(--text-muted);"></div>
             </div>
 
             <div id="chartStatus">
@@ -1111,6 +1114,10 @@
             style="background:var(--bg-ahorro);border-radius:12px;padding:12px;margin-bottom:15px;border:1px dashed var(--accent-green);text-align:center;">
             <span id="resumenAhorro" style="font-weight:bold;color:var(--accent-green);font-size:1.1em;">Calculando
                 ahorro...</span>
+
+            <div id="mediaNacionalTop"
+                style="font-size: 11.5px; color: var(--text-muted); margin-top: 6px; padding-top: 6px; border-top: 1px dashed rgba(0,0,0,0.1);">
+            </div>
 
             <div id="tendenciaAyer"
                 style="font-size: 11px; color: var(--text-muted); margin-top: 5px; font-weight: 600;"></div>
@@ -1651,6 +1658,17 @@
                 map.on('popupopen', function (e) {
                     let node = e.popup._contentNode;
                     if (!node) return;
+
+                    // CHIVATO: Abrir Pop-up en el mapa
+                    let spanRotulo = node.querySelector('span[style*="white-space:nowrap; overflow:hidden"]');
+                    let nombreGas = spanRotulo ? spanRotulo.innerText : "Desconocida";
+                    if (typeof gtag !== 'undefined') {
+                        gtag('event', 'abrir_popup_mapa', {
+                            'event_category': 'Interaccion_Usuario',
+                            'nombre_gasolinera': nombreGas
+                        });
+                    }
+
 
                     // 1. Inyectar servicios OSM si ya han cargado
                     let placeholder = node.querySelector('.osm-pop-placeholder');
@@ -2383,25 +2401,83 @@
 
             window.updateChartRange = function (days, btn) {
                 if (!window.fullChartData || !chartInstance) return;
+
                 if (btn) {
-                    D.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
+                    document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
                     btn.classList.add('active');
                 }
 
                 let slicedLabels = window.fullChartData.labels.slice(-days);
+
                 let slicedDatasets = window.fullChartData.datasets.map(ds => {
                     return { ...ds, data: ds.data.slice(-days) };
                 });
 
+                // Mantenemos la regla infalible de colores para las barras de zona
+                if (chartInstance.config.type === 'bar') {
+                    slicedDatasets[0].backgroundColor = slicedDatasets[0].data.map(val => val > 0 ? 'rgba(231, 76, 60, 0.7)' : 'rgba(39, 174, 96, 0.7)');
+                    slicedDatasets[0].borderColor = slicedDatasets[0].data.map(val => val > 0 ? '#c0392b' : '#1e7a44');
+                    slicedDatasets[0].borderWidth = 2;
+                    slicedDatasets[0].borderRadius = 4;
+                }
+
                 chartInstance.data.labels = slicedLabels;
                 chartInstance.data.datasets = slicedDatasets;
                 chartInstance.update();
+
+                // --- MAGIA NUEVA CORREGIDA: CALCULADORA DE RESUMEN TOTAL ---
+                let resumenDiv = document.getElementById('tendenciaTotalResumen');
+                if (resumenDiv) {
+                    let totalVariacion = 0;
+
+                    // AQUÍ ESTÁ EL ARREGLO GRAMATICAL:
+                    let textoTiempo = days === 3 ? "estos 3 días" : (days === 7 ? "esta semana" : "estos 30 días");
+                    let prefijoCombustible = "";
+
+                    if (chartInstance.config.type === 'bar') {
+                        let datosBarra = slicedDatasets[0].data;
+                        totalVariacion = datosBarra.reduce((acc, val) => acc + val, 0);
+
+                    } else if (chartInstance.config.type === 'line') {
+                        let selectCombustible = document.getElementById("tipoCombustible");
+                        let nombreCombustible = selectCombustible.options[selectCombustible.selectedIndex].text;
+
+                        let datasetCorrecto = slicedDatasets.find(ds => ds.label.toLowerCase() === nombreCombustible.toLowerCase());
+
+                        if (!datasetCorrecto) {
+                            datasetCorrecto = slicedDatasets.find(ds => ds.hidden !== true) || slicedDatasets[0];
+                        }
+
+                        let datosLinea = datasetCorrecto.data.filter(val => val !== null);
+                        if (datosLinea.length > 1) {
+                            totalVariacion = datosLinea[datosLinea.length - 1] - datosLinea[0];
+                        }
+                        prefijoCombustible = `del <b>${datasetCorrecto.label}</b> `;
+                    }
+
+                    // Y le quitamos el "estos" fijo de la frase para usar nuestra nueva variable:
+                    if (Math.abs(totalVariacion) < 0.001) {
+                        resumenDiv.innerHTML = `En ${textoTiempo} la tendencia ${prefijoCombustible}se ha <b>mantenido</b> ⚖️`;
+                    } else if (totalVariacion > 0) {
+                        resumenDiv.innerHTML = `En ${textoTiempo} la tendencia ${prefijoCombustible}es de <span style="color:#e74c3c; font-weight:900;">▲ SUBIDA (+${totalVariacion.toFixed(3)}€)</span>`;
+                    } else {
+                        resumenDiv.innerHTML = `En ${textoTiempo} la tendencia ${prefijoCombustible}es de <span style="color:#27ae60; font-weight:900;">▼ BAJADA (${totalVariacion.toFixed(3)}€)</span>`;
+                    }
+                }
             };
+
+
+
+
 
             function mostrarHistorico(n, id, h) {
                 if (typeof gtag === 'function') gtag('event', 'ver_historico', { 'gasolinera': n });
                 if (chartInstance) chartInstance.destroy();
                 currentModalStationId = id;
+
+                // ---> AÑADE ESTA LÍNEA AQUÍ PARA ASEGURARTE DE QUE SE VE EL CORAZÓN <---
+                document.getElementById('modalFavHeart').style.display = 'inline-block';
+
                 q('chartModal').style.display = 'flex';
                 q('modalTitle').innerText = n + " (ID: " + id + ")";
                 q('modalHorario').innerText = h ? "🕒 " + h : "🕒 Horario no disponible";
@@ -3054,7 +3130,19 @@
                             const waM = encodeURIComponent('⛽ ¡Ojo! ' + fTN + ' a ' + pN.toFixed(3) + '€/L en ' + g.Rótulo + ' (' + g.Dirección + '). ' + msgAhorroWa + ' 🚗💨\n\n📍 Míralo en Precio Combustibles:\n' + APP_URL);
 
                             const item = D.createElement("div"); item.className = "list-item";
-                            item.onclick = e => { if (e.target.tagName !== 'BUTTON' && e.target.tagName !== 'A' && !e.target.closest('.fav-btn') && !e.target.closest('.d-tipo')) window.centrarMapa(lat, ln); };
+                            item.onclick = e => {
+                                if (e.target.tagName !== 'BUTTON' && e.target.tagName !== 'A' && !e.target.closest('.fav-btn') && !e.target.closest('.d-tipo')) {
+                                    // CHIVATO: Clic en la lista
+                                    if (typeof gtag !== 'undefined') {
+                                        gtag('event', 'clic_lista_gasolinera', {
+                                            'event_category': 'Interaccion_Usuario',
+                                            'nombre_gasolinera': g.Rótulo
+                                        });
+                                    }
+                                    window.centrarMapa(lat, ln);
+                                }
+                            };
+
 
 
                             item.innerHTML = `
@@ -3130,7 +3218,10 @@
                         cargarServiciosOSM(filtradas);
                     }
 
-                } catch (errorFinal) {
+                    if (window.calcularMediaNacional) window.calcularMediaNacional();
+                }
+
+                catch (errorFinal) {
                     console.error(errorFinal);
                 } finally {
                     q("loading-overlay").style.display = "none";
@@ -4179,17 +4270,22 @@
 
                 if (comparables > 0) {
                     let dif = (sumaHoy / comparables) - (sumaAyer / comparables);
-                    let txt = Math.abs(dif) < 0.001
-                        ? "Igual que ayer ⚖️"
-                        : (dif > 0 ? `<span style="color:#e74c3c;">▲ sube ${dif.toFixed(3)}€</span> respecto a ayer`
-                            : `<span style="color:#27ae60;">▼ baja ${Math.abs(dif).toFixed(3)}€</span> respecto a ayer`);
 
-                    let zonaStr = searchMode === 'provincia' ? "en provincia" : (searchMode === 'ruta' ? "en ruta" : "en pantalla");
+                    // --- NUEVAS FRASES MÁS PRECISAS (ACTUALIZADAS A HOY) ---
+                    let txt = Math.abs(dif) < 0.001
+                        ? "Hoy la tendencia se mantiene igual ⚖️"
+                        : (dif > 0 ? `La tendencia hoy es de <span style="color:#e74c3c;">▲ subida (+${dif.toFixed(3)}€)</span>`
+                            : `La tendencia hoy es a la <span style="color:#27ae60;">▼ baja (-${Math.abs(dif).toFixed(3)}€)</span>`);
+                    // ---------------------------------
+
+
+                    let zonaStr = searchMode === 'provincia' ? "en provincia" : (searchMode === 'ruta' ? "en ruta" : "gasolineras mostradas en pantalla");
 
                     q('tendenciaAyer').innerHTML = "📊 " + fTN + ": " + txt + " <small>(" + zonaStr + ")</small>";
                 } else {
                     q('tendenciaAyer').innerHTML = "📊 " + fTN + ": Datos de ayer no disponibles ➖";
                 }
+
             }
 
             // --- NUEVO: CÁMARAS DE TRÁFICO DGT (Conectado a Google Sheets) ---
@@ -4213,6 +4309,14 @@
 
             // Función para abrir la cámara por primera vez
             window.abrirCamaraCompleta = function (src, nombre) {
+
+                // CHIVATO: Ver una cámara concreta
+                if (typeof gtag !== 'undefined') {
+                    gtag('event', 'ver_camara_especifica', {
+                        'event_category': 'Trafico',
+                        'carretera_camara': nombre
+                    });
+                }
                 const img = document.getElementById('camaraModalImg');
                 img.src = src;
                 document.getElementById('camaraModalTitle').innerText = "🎥 " + nombre;
@@ -4254,6 +4358,15 @@
             async function toggleCamarasTrafico() {
                 const btn = document.getElementById('btnToggleCamaras');
                 camarasActivas = !camarasActivas;
+
+                // CHIVATO: Activar/Desactivar botón de cámaras general
+                if (typeof gtag !== 'undefined') {
+                    gtag('event', 'clic_boton_camaras_dgt', {
+                        'event_category': 'Trafico',
+                        'accion': camarasActivas ? 'Activar' : 'Desactivar'
+                    });
+                }
+
 
                 if (camarasActivas) {
                     btn.classList.add('active');
@@ -4314,25 +4427,40 @@
             }
 
             async function mostrarTendenciaZona() {
+
+                // CHIVATO: Ver gráfica de tendencias globales de la zona/provincia
+                if (typeof gtag !== 'undefined') {
+                    let fTN = document.getElementById("tipoCombustible").options[document.getElementById("tipoCombustible").selectedIndex].text;
+                    gtag('event', 'ver_tendencias_zona', {
+                        'event_category': 'Interaccion_Usuario',
+                        'tipo_combustible': fTN // Así sabrás si miran más la tendencia del Diesel o de la Gasolina
+                    });
+                }
                 if (!window.lastFiltradas || window.lastFiltradas.length === 0) {
                     alert("Busca primero gasolineras en una zona.");
                     return;
                 }
 
-                const topGasolineras = window.lastFiltradas.slice(0, 15);
+                const topGasolineras = window.lastFiltradas.slice(0, 200);
                 const idsEnPantalla = topGasolineras.map(g => g.IDEESS).join(",");
                 const fT = document.getElementById("tipoCombustible").value;
 
                 const modal = document.getElementById('chartModal');
                 const st = document.getElementById('chartStatus');
-                const ctx = document.getElementById('priceChart').getContext('2d');
+                const ctxElement = document.getElementById('priceChart');
 
                 modal.style.display = 'flex';
                 document.getElementById('modalTitle').innerText = "📊 Tendencia de Variación";
-                document.getElementById('modalHorario').innerText = "Subidas/Bajadas de las " + topGasolineras.length + " gasolineras más baratas";
+                document.getElementById('modalHorario').innerText = "Subidas/Bajadas medias de " + topGasolineras.length + " gasolineras de la zona";
+
+                document.getElementById('modalFavHeart').style.display = 'none';
                 document.getElementById('chartTimeButtons').style.display = 'none';
 
-                if (chartInstance) chartInstance.destroy();
+                // --- DESTRUCTOR DE GRÁFICAS FANTASMA ---
+                let chartExistente = Chart.getChart(ctxElement);
+                if (chartExistente) chartExistente.destroy();
+                if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
+                // ---------------------------------------
 
                 st.style.display = 'flex';
                 document.getElementById('chartSpinner').style.display = 'block';
@@ -4353,23 +4481,25 @@
                     const tColor = document.body.classList.contains('dark-mode') ? '#e0e0e0' : '#333';
                     const gColor = document.body.classList.contains('dark-mode') ? '#333' : '#ddd';
 
-                    // MAGIA VISUAL: Si el número es mayor a 0 (sube), ROJO. Si es menor (baja), VERDE.
+                    // --- COLORES INFALIBLES (Nunca se pondrá azul) ---
                     const coloresFondo = data.datasets[0].data.map(val => val > 0 ? 'rgba(231, 76, 60, 0.7)' : 'rgba(39, 174, 96, 0.7)');
                     const coloresBorde = data.datasets[0].data.map(val => val > 0 ? '#c0392b' : '#1e7a44');
 
                     data.datasets[0].backgroundColor = coloresFondo;
                     data.datasets[0].borderColor = coloresBorde;
                     data.datasets[0].borderWidth = 2;
-                    data.datasets[0].borderRadius = 4; // Bordes redondeados chulos
+                    data.datasets[0].borderRadius = 4;
 
-                    chartInstance = new Chart(ctx, {
-                        type: 'bar', // Cambiamos de línea a BARRAS
+                    window.fullChartData = JSON.parse(JSON.stringify(data));
+
+                    chartInstance = new Chart(ctxElement.getContext('2d'), {
+                        type: 'bar',
                         data: data,
                         options: {
                             responsive: true,
                             maintainAspectRatio: false,
                             plugins: {
-                                legend: { display: false }, // Ocultamos la leyenda
+                                legend: { display: false },
                                 tooltip: {
                                     callbacks: {
                                         label: function (context) {
@@ -4384,9 +4514,8 @@
                                 y: {
                                     ticks: { color: tColor },
                                     grid: {
-                                        // Resalta la línea del CERO (0) más fuerte para ver qué sube y qué baja
-                                        color: (ctx) => ctx.tick.value === 0 ? tColor : gColor,
-                                        lineWidth: (ctx) => ctx.tick.value === 0 ? 2 : 1
+                                        color: (context) => context.tick.value === 0 ? tColor : gColor,
+                                        lineWidth: (context) => context.tick.value === 0 ? 2 : 1
                                     }
                                 },
                                 x: { ticks: { color: tColor }, grid: { display: false } }
@@ -4394,12 +4523,49 @@
                         }
                     });
 
+                    const botonesTiempo = document.querySelectorAll('#chartTimeButtons .time-btn');
+                    if (botonesTiempo.length > 2) {
+                        updateChartRange(30, botonesTiempo[2]);
+                    }
+
                 } catch (e) {
                     document.getElementById('chartSpinner').style.display = 'none';
                     document.getElementById('chartText').innerHTML = "❌ Error al calcular la tendencia masiva.<br><small>" + e.message + "</small>";
                     console.error(e);
                 }
             }
+
+            // --- CALCULADORA DE MEDIA NACIONAL EN TIEMPO REAL ---
+            window.calcularMediaNacional = function () {
+                if (!cacheGasolineras || cacheGasolineras.length === 0) return;
+
+                const fT = document.getElementById("tipoCombustible").value;
+                const fTN = document.getElementById("tipoCombustible").options[document.getElementById("tipoCombustible").selectedIndex].text;
+
+                let suma = 0;
+                let contador = 0;
+
+                cacheGasolineras.forEach(g => {
+                    let precioStr = (fT === "AdBlue") ? g["AdBlue"] : g[fT];
+
+                    if (precioStr) {
+                        let precio = parseFloat(precioStr.replace(",", "."));
+                        // Filtramos precios a cero o errores para que la media sea exacta
+                        if (!isNaN(precio) && precio > 0.1 && precio < 5) {
+                            suma += precio;
+                            contador++;
+                        }
+                    }
+                });
+
+                if (contador > 0) {
+                    let media = suma / contador;
+                    let divMedia = document.getElementById("mediaNacionalTop");
+                    if (divMedia) {
+                        divMedia.innerHTML = `🇪🇸 Media en España (${fTN}): <b style="color:var(--text-main); font-size:13px;">${media.toFixed(3)} €/L</b>`;
+                    }
+                }
+            };
 
 
         </script>
