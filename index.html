@@ -698,6 +698,40 @@
         .active-route-tooltip::before {
             display: none !important;
         }
+        
+        /* --- ANIMACIÓN SKELETON (CARGA NATIVA) --- */
+@keyframes shimmer {
+    0% { background-position: -468px 0; }
+    100% { background-position: 468px 0; }
+}
+
+.skeleton {
+    background: #f6f7f8;
+    background-image: linear-gradient(to right, #f6f7f8 0%, #edeef1 20%, #f6f7f8 40%, #f6f7f8 100%);
+    background-repeat: no-repeat;
+    background-size: 800px 104px;
+    animation: shimmer 1.5s linear infinite forwards;
+    border-radius: 8px;
+}
+
+body.dark-mode .skeleton {
+    background: #3a3b3c;
+    background-image: linear-gradient(to right, #3a3b3c 0%, #4a4b4c 20%, #3a3b3c 40%, #3a3b3c 100%);
+}
+
+.sk-card {
+    padding: 15px; 
+    border-radius: 16px; 
+    margin-bottom: 12px; 
+    border: 1px solid var(--border-color); 
+    background: var(--bg-panel);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.sk-line-1 { height: 24px; width: 60%; }
+.sk-line-2 { height: 14px; width: 40%; }
+.sk-line-3 { height: 35px; width: 100%; border-radius: 12px; margin-top: 5px; }
     </style>
 </head>
 
@@ -1487,6 +1521,7 @@
                         if (e.matches) { document.body.classList.add('dark-mode'); q('btnDarkMode').innerText = '☀️ Oscuro'; }
                         else { document.body.classList.remove('dark-mode'); q('btnDarkMode').innerText = '🌙 Oscuro'; }
                     }
+                    
                 });
 
                 if ('serviceWorker' in navigator) {
@@ -1514,6 +1549,8 @@
                 } catch (e) { }
 
                 irAMiUbicacion(!tieneCacheValida);
+                
+                if (!tieneCacheValida) mostrarSkeleton();
 
                 fetch(WEB_APP_URL + "?accion=obtenerDatosDesdeDrive&t=" + Date.now(), { redirect: "follow" })
                     .then(res => res.text())
@@ -1718,13 +1755,35 @@
                         trendPlaceholder.innerHTML = getTrendHTML(currentTrends[id], type);
                     }
 
-                    // Mover la cámara al centro exacto con un pequeño desplazamiento
-                    let targetPoint = map.project(e.popup.getLatLng(), map.getZoom()).subtract([0, 130]);
-                    let targetLatLng = map.unproject(targetPoint, map.getZoom());
+                                      // Movemos el mapa hacia abajo 150px para compensar la altura de la lista blanca
+            map.panTo(e.popup.getLatLng(), { animate: true, duration: 0.3 });
+            setTimeout(() => { map.panBy([0,-100], { animate: true, duration: 0.3 }); }, 300);
+     
+                    
+                            // --- 3. AUTO-SCROLL EN LA LISTA INFERIOR ---
+        if (trendPlaceholder) {
+            let idGasolinera = trendPlaceholder.getAttribute('data-id');
+            let tarjetaDOM = document.getElementById('tarjeta-' + idGasolinera);
+            
+            if (tarjetaDOM) {
+                // Scrolleamos suavemente hasta la tarjeta
+                tarjetaDOM.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                
+                // Le damos un efecto visual de parpadeo (iluminar la tarjeta)
+                let colorOriginal = tarjetaDOM.style.background;
+                tarjetaDOM.style.transition = 'background 0.5s ease';
+                tarjetaDOM.style.background = 'var(--bg-ahorro)'; // La iluminamos con el color de ahorro
+                
+                // Se lo quitamos al cabo de 1.5 segundos
+                setTimeout(() => {
+                    tarjetaDOM.style.background = colorOriginal;
+                }, 1500);
+            }
+        }
 
-                    map.panTo(targetLatLng, { animate: true, duration: 0.4 });
                 });
 
+activarSwipeModales();
 
             };
 
@@ -2100,10 +2159,18 @@
                 }
             }
 
-            window.centrarMapa = function (lat, lon) {
+                        window.centrarMapa = function (lat, lon) {
                 if (!q("controls").classList.contains("collapsed")) toggleControls();
-                map.setView(map.unproject(map.project([lat, lon], 16).subtract([0, 150]), 16), 16);
+                
+                // Calculamos el centro desplazado para que no quede tapado por la lista
+                let targetPoint = map.project([lat, lon], 16);
+                targetPoint.y += 180; // Sumamos a Y para que el marcador suba a la vista
+                let targetLatLng = map.unproject(targetPoint, 16);
+                
+                map.setView(targetLatLng, 16);
+                
                 setTimeout(() => {
+
                     markersLayer.eachLayer(l => {
                         if (l.getLatLng) {
                             const pos = l.getLatLng();
@@ -2337,7 +2404,7 @@
                 return foundValidDay ? isOpen : true;
             }
 
-            function irAMiUbicacion(mostrarCargando) {
+                        function irAMiUbicacion(mostrarCargando) {
                 window.isManuallyLocated = false;
 
                 const cn = q("cityName");
@@ -2346,9 +2413,43 @@
                 if (mostrarCargando) {
                     if (cn) { cn.style.display = "inline-block"; cn.innerText = "📍 Buscando GPS..."; }
                     if (cnRuta) { cnRuta.style.display = "inline-block"; cnRuta.innerText = "📍 Buscando GPS..."; }
+                    // Nos aseguramos de mostrar el esqueleto mientras busca
+                    mostrarSkeleton();
+                }
+
+                // Definimos la función de error centralizada
+                const manejarErrorGPS = () => {
+                    if (cn) cn.style.display = "none";
+                    if (cnRuta) cnRuta.style.display = "none";
+                    if (mostrarCargando) q("loading-overlay").style.display = "none";
+                    
+                    // Quitamos el estado de carga
+                    isFetching = false;
+                    const listContainer = q("list-container");
+                    if (listContainer) listContainer.classList.remove("bloqueado");
+
+                    // Si la lista tiene el esqueleto, lo cambiamos por un mensaje amigable
+                    const lD = q("gas-list");
+                    if (lD && lD.innerHTML.includes("sk-card")) {
+                        lD.innerHTML = "<div style='text-align:center;padding:30px 20px;color:var(--text-muted);'><span style='font-size:40px;display:block;margin-bottom:10px;'>📍</span><b>No detectamos tu ubicación.</b><br>Escribe tu ciudad o código postal en el buscador de arriba.</div>";
+                    }
+                };
+
+                // Seguro de vida: Si en 6 segundos no hay respuesta del GPS, forzamos el error
+                let timeoutGPS = setTimeout(() => {
+                    console.warn("Tiempo de espera agotado para el GPS.");
+                    manejarErrorGPS();
+                }, 6000);
+
+                if (!navigator.geolocation) {
+                    clearTimeout(timeoutGPS);
+                    manejarErrorGPS();
+                    return;
                 }
 
                 navigator.geolocation.getCurrentPosition(pos => {
+                    clearTimeout(timeoutGPS); // Cancelamos el seguro de vida porque ha habido éxito
+                    
                     if (window.isManuallyLocated) return;
 
                     let lat = pos.coords.latitude;
@@ -2391,12 +2492,13 @@
                             if (cn) cn.style.display = "none";
                             if (cnRuta) cnRuta.style.display = "none";
                         });
-                }, () => {
-                    if (cn) cn.style.display = "none";
-                    if (cnRuta) cnRuta.style.display = "none";
-                    if (mostrarCargando) q("loading-overlay").style.display = "none";
-                }, { enableHighAccuracy: true });
+                }, (error) => {
+                    clearTimeout(timeoutGPS); // Cancelamos el seguro de vida
+                    console.warn("Error de geolocalización:", error.message);
+                    manejarErrorGPS();
+                }, { enableHighAccuracy: true, timeout: 5000 }); // timeout nativo añadido aquí también
             }
+
 
             async function buscarPorCP() {
                 if (typeof gtag === 'function') gtag('event', 'buscar_zona');
@@ -2451,6 +2553,26 @@
                 if (t === "AdBlue") return g["AdBlue"] || "";
                 return g[t] || "";
             }
+
+function mostrarSkeleton() {
+    // Ocultamos el spinner central si estaba visible
+    const overlay = document.getElementById("loading-overlay");
+    if (overlay) overlay.style.display = "none";
+    
+    let html = "";
+    for (let i = 0; i < 5; i++) {
+        html += `<div class="sk-card">
+                    <div style="display:flex; justify-content:space-between;">
+                        <div class="skeleton sk-line-1"></div>
+                        <div class="skeleton" style="height:24px; width:24px; border-radius:50%;"></div>
+                    </div>
+                    <div class="skeleton sk-line-2"></div>
+                    <div class="skeleton sk-line-3"></div>
+                 </div>`;
+    }
+    document.getElementById("gas-list").innerHTML = html;
+}
+
 
             function cerrarGrafico() { if (chartInstance) { chartInstance.destroy(); chartInstance = null; } q('chartModal').style.display = 'none'; currentModalStationId = null; }
 
@@ -2637,6 +2759,8 @@
                 isFetching = true;
                 q("list-container").classList.add("bloqueado");
                 q("list-container").scrollTop = 0;
+                
+                mostrarSkeleton();
 
                 try {
                     const fT = q("tipoCombustible").value, fTN = q("tipoCombustible").options[q("tipoCombustible").selectedIndex].text, mD = parseFloat(q("radioBusqueda").value), fM = q("marcaInput").value.toUpperCase(), o = q("ordenarPor").value, lts = parseFloat(q("litrosInput").value) || 0, consumo = parseFloat(q("consumoInput").value) || 0, idV = q("idaVueltaInput").checked, sA = q("abiertasInput").checked, lD = q("gas-list");
@@ -2731,7 +2855,11 @@
 
                     if (enRadio.length === 0) {
                         lD.innerHTML = "<div style='text-align:center;padding:20px;color:var(--text-muted);'>Sin resultados.</div>";
-                        markersLayer.clearLayers(); return;
+                        markersLayer.clearLayers(); 
+                        
+                        isFetching = false;
+                        q("list-container").classList.remove("bloqueado");
+                        return;
                     }
 
                     let allPrices = enRadio.map(g => g.pN);
@@ -3141,11 +3269,16 @@
                         lD.innerHTML = planViajeHtml;
                     }
 
-                    if (o !== "inteligente") {
-                        if (o === "distancia" && searchMode !== 'provincia') filtradas.sort((a, b) => a.distCalculada - b.distCalculada);
+                                       if (o !== "inteligente") {
+                        if (o === "distancia" && searchMode !== 'provincia') {
+                            // Si estamos en ruta, ordenamos por orden de aparición en el viaje. Si no, por cercanía al GPS.
+                            if (searchMode === 'ruta') filtradas.sort((a, b) => a.distDesdeOrigen - b.distDesdeOrigen);
+                            else filtradas.sort((a, b) => a.distCalculada - b.distCalculada);
+                        }
                         else if (o === "ahorro" && searchMode !== 'provincia') filtradas.sort((a, b) => b.aNeto - a.aNeto);
                         else if (o === "caras") filtradas.sort((a, b) => b.pN - a.pN);
                         else filtradas.sort((a, b) => a.pN - b.pN);
+
 
                         filtradas.forEach((g, i) => g.rP = i + 1);
 
@@ -3184,7 +3317,10 @@
                             let msgAhorroWa = (consumo > 0 && searchMode !== 'provincia') ? (g.aNeto > 0 ? "Ahorro Real Neto: " + g.aNeto.toFixed(2) + "€" : "¡Te cuesta más el " + (searchMode === 'zona' ? 'viaje' : 'desvío') + "!") : "Ahorras " + g.aBruto.toFixed(2) + "€ llenando hoy.";
                             const waM = encodeURIComponent('⛽ ¡Ojo! ' + fTN + ' a ' + pN.toFixed(3) + '€/L en ' + g.Rótulo + ' (' + g.Dirección + '). ' + msgAhorroWa + ' 🚗💨\n\n📍 Míralo en Precio Combustibles:\n' + APP_URL);
 
-                            const item = D.createElement("div"); item.className = "list-item";
+                            const item = D.createElement("div"); 
+item.className = "list-item";
+item.id = "tarjeta-" + g.IDEESS; // <-- AÑADIDO
+
                             item.onclick = e => {
                                 if (e.target.tagName !== 'BUTTON' && e.target.tagName !== 'A' && !e.target.closest('.fav-btn') && !e.target.closest('.d-tipo')) {
                                     // CHIVATO: Clic en la lista
@@ -4589,6 +4725,59 @@
                     console.error(e);
                 }
             }
+
+function activarSwipeModales() {
+    const modales = document.querySelectorAll('.modal-bg');
+    
+    modales.forEach(modal => {
+        const content = modal.querySelector('.modal-content');
+        if (!content) return;
+        
+        let startY = 0;
+        let currentY = 0;
+        let isDragging = false;
+        
+        content.addEventListener('touchstart', e => {
+            // Solo activamos el arrastre si estamos en la parte superior del modal (scrollTop = 0)
+            if (content.scrollTop <= 0) {
+                startY = e.touches[0].clientY;
+                isDragging = true;
+                content.style.transition = 'none'; // Quitamos animaciones para que siga al dedo
+            }
+        }, { passive: true });
+        
+        content.addEventListener('touchmove', e => {
+            if (!isDragging) return;
+            currentY = e.touches[0].clientY;
+            let deltaY = currentY - startY;
+            
+            // Si arrastra hacia abajo, movemos el modal
+            if (deltaY > 0) {
+                content.style.transform = `translateY(${deltaY}px)`;
+            }
+        }, { passive: true });
+        
+        content.addEventListener('touchend', () => {
+            if (!isDragging) return;
+            isDragging = false;
+            
+            let deltaY = currentY - startY;
+            content.style.transition = 'transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)';
+            
+            // Si lo ha arrastrado más de 120px hacia abajo, lo cerramos
+            if (deltaY > 120) {
+                modal.style.display = 'none';
+                // Reseteamos la posición para la próxima vez que se abra
+                setTimeout(() => { content.style.transform = ''; }, 300);
+            } else {
+                // Si no ha llegado al umbral, vuelve a su sitio
+                content.style.transform = '';
+            }
+            startY = 0;
+        });
+    });
+}
+
 
             // --- CALCULADORA DE MEDIA NACIONAL EN TIEMPO REAL ---
             window.calcularMediaNacional = function () {
