@@ -818,8 +818,10 @@ body.dark-mode .skeleton {
             <h3 id="bitacoraTitle" style="margin-top:0; text-align:center;">📓 Anotar Repostaje</h3>
             <p id="bitacoraGasName"
                 style="text-align:center; font-weight:bold; color:var(--accent); margin-bottom:5px;"></p>
-            <p id="bitacoraGasPrice" style="text-align:center; font-size:12px; color:var(--text-muted); margin-top:0;">
-            </p>
+            <div style="display:flex; justify-content:center; align-items:center; gap:8px; margin-top:0; margin-bottom:10px;">
+                <label style="font-size:12px; color:var(--text-muted); font-weight:bold;">Precio (€/L):</label>
+                <input type="number" id="bitacoraPrecioManual" step="0.001" style="width:90px; padding:8px; border-radius:8px; border:1px solid var(--accent); text-align:center; font-weight:900; background:var(--bg-ahorro); color:var(--accent);">
+            </div>
 
             <select id="bitacoraCarSelect"
                 style="width:100%; padding:12px; margin-top:10px; border-radius:8px; border:1px solid var(--border-color); font-weight:bold; background:var(--bg-input); color:var(--text-main);">
@@ -3795,16 +3797,19 @@ item.id = "tarjeta-" + g.IDEESS; // <-- AÑADIDO
                 return `${parseInt(partes[2])}/${parseInt(partes[1])}/${partes[0]}`;
             }
 
-            function abrirAnotar(nombre, precio) {
-                currentAnotar = { nombre, precio };
+                               function abrirAnotar(nombre, precio, ahorroPorLitro = 0.10) {
+                currentAnotar = { nombre, precio, ahorroPorLitro: parseFloat(ahorroPorLitro) || 0.10 };
                 q('editBitacoraId').value = "";
                 q('bitacoraTitle').innerText = "📓 Anotar Repostaje";
                 q('bitacoraGasName').innerText = nombre;
-                q('bitacoraGasPrice').innerText = "Precio actual: " + precio.toFixed(3) + " €/L";
+                
+                let inputPrecio = q('bitacoraPrecioManual');
+                inputPrecio.value = precio.toFixed(3);
+
                 q('bitacoraLitros').value = "";
                 q('bitacoraEuros').value = "";
                 q('bitacoraKm').value = "";
-                q('bitacoraFecha').value = getHoyYMD(); // Ponemos el día de hoy por defecto
+                q('bitacoraFecha').value = getHoyYMD(); 
 
                 let carSelect = q('bitacoraCarSelect');
                 carSelect.innerHTML = '<option value="">Sin vehículo específico</option>';
@@ -3815,11 +3820,22 @@ item.id = "tarjeta-" + g.IDEESS; // <-- AÑADIDO
 
                 q('bitacoraModal').style.display = 'flex';
 
+                const getP = () => parseFloat(inputPrecio.value) || 0;
+
                 q('bitacoraLitros').oninput = function () {
-                    if (this.value) q('bitacoraEuros').value = (parseFloat(this.value) * currentAnotar.precio).toFixed(2);
+                    let p = getP();
+                    if (this.value && p > 0) q('bitacoraEuros').value = (parseFloat(this.value) * p).toFixed(2);
                 };
                 q('bitacoraEuros').oninput = function () {
-                    if (this.value) q('bitacoraLitros').value = (parseFloat(this.value) / currentAnotar.precio).toFixed(2);
+                    let p = getP();
+                    if (this.value && p > 0) q('bitacoraLitros').value = (parseFloat(this.value) / p).toFixed(2);
+                };
+                inputPrecio.oninput = function () {
+                    let lts = parseFloat(q('bitacoraLitros').value);
+                    let p = getP();
+                    if (!isNaN(lts) && lts > 0 && p > 0) {
+                        q('bitacoraEuros').value = (lts * p).toFixed(2);
+                    }
                 };
             }
 
@@ -3827,26 +3843,41 @@ item.id = "tarjeta-" + g.IDEESS; // <-- AÑADIDO
                 let record = bitacora.find(b => b.id == id);
                 if (record) {
                     q('historialModal').style.display = 'none';
-                    currentAnotar = { nombre: record.nombre, precio: record.precioL };
+                    currentAnotar = { nombre: record.nombre, precio: record.precioL, ahorroPorLitro: record.ahorroL || 0.10 };
+
                     q('editBitacoraId').value = id;
                     q('bitacoraTitle').innerText = "✏️ Editar Repostaje";
                     q('bitacoraGasName').innerText = record.nombre;
-                    q('bitacoraGasPrice').innerText = "Precio guardado: " + record.precioL.toFixed(3) + " €/L";
+                    
+                    let inputPrecio = q('bitacoraPrecioManual');
+                    inputPrecio.value = record.precioL.toFixed(3);
+
                     q('bitacoraLitros').value = record.litros;
                     q('bitacoraEuros').value = record.euros;
                     q('bitacoraKm').value = record.km || "";
-                    q('bitacoraFecha').value = esToYMD(record.fecha); // Cargamos la fecha guardada
+                    q('bitacoraFecha').value = esToYMD(record.fecha); 
 
                     let carSelect = q('bitacoraCarSelect');
                     carSelect.innerHTML = '<option value="">Sin vehículo específico</option>';
                     myCars.forEach(c => { carSelect.innerHTML += `<option value="${c.id}">🚗 ${c.name}</option>`; });
                     if (record.carId) carSelect.value = record.carId;
 
+                    const getP = () => parseFloat(inputPrecio.value) || 0;
+
                     q('bitacoraLitros').oninput = function () {
-                        if (this.value) q('bitacoraEuros').value = (parseFloat(this.value) * record.precioL).toFixed(2);
+                        let p = getP();
+                        if (this.value && p > 0) q('bitacoraEuros').value = (parseFloat(this.value) * p).toFixed(2);
                     };
                     q('bitacoraEuros').oninput = function () {
-                        if (this.value) q('bitacoraLitros').value = (parseFloat(this.value) / record.precioL).toFixed(2);
+                        let p = getP();
+                        if (this.value && p > 0) q('bitacoraLitros').value = (parseFloat(this.value) / p).toFixed(2);
+                    };
+                    inputPrecio.oninput = function () {
+                        let lts = parseFloat(q('bitacoraLitros').value);
+                        let p = getP();
+                        if (!isNaN(lts) && lts > 0 && p > 0) {
+                            q('bitacoraEuros').value = (lts * p).toFixed(2);
+                        }
                     };
 
                     q('bitacoraModal').style.display = 'flex';
@@ -3858,8 +3889,9 @@ item.id = "tarjeta-" + g.IDEESS; // <-- AÑADIDO
 
                 let lts = parseFloat(q('bitacoraLitros').value);
                 let eur = parseFloat(q('bitacoraEuros').value);
+                let precioFinal = parseFloat(q('bitacoraPrecioManual').value); 
                 let kmActuales = parseFloat(q('bitacoraKm').value) || 0;
-                let fechaFinal = ymdToEs(q('bitacoraFecha').value); // Convertimos al formato español
+                let fechaFinal = ymdToEs(q('bitacoraFecha').value); 
                 let idEdit = q('editBitacoraId').value;
 
                 let carId = q('bitacoraCarSelect').value;
@@ -3869,19 +3901,21 @@ item.id = "tarjeta-" + g.IDEESS; // <-- AÑADIDO
                     if (foundCar) carName = foundCar.name;
                 }
 
-                if (!lts || !eur) { alert("⚠️ Rellena los litros o los euros"); return; }
+                if (!lts || !eur || !precioFinal) { alert("⚠️ Rellena los litros, euros y el precio"); return; }
 
                 if (idEdit !== "") {
                     let index = bitacora.findIndex(b => b.id == idEdit);
                     if (index > -1) {
                         bitacora[index].litros = lts;
                         bitacora[index].euros = eur;
+                        bitacora[index].precioL = precioFinal; 
                         bitacora[index].km = kmActuales;
                         bitacora[index].fecha = fechaFinal;
                         bitacora[index].carId = carId;
                         bitacora[index].carName = carName;
+                        bitacora[index].ahorroL = currentAnotar.ahorroPorLitro;
+                        bitacora[index].ahorro = lts * currentAnotar.ahorroPorLitro;
                     }
-                    // Reordenamos la bitácora por fecha tras editar para que siga cronológica
                     bitacora.sort((a, b) => new Date(esToYMD(b.fecha)) - new Date(esToYMD(a.fecha)));
                 } else {
                     bitacora.push({
@@ -3890,16 +3924,18 @@ item.id = "tarjeta-" + g.IDEESS; // <-- AÑADIDO
                         nombre: currentAnotar.nombre,
                         litros: lts,
                         euros: eur,
-                        precioL: currentAnotar.precio,
+                        precioL: precioFinal, 
                         km: kmActuales,
                         carId: carId,
-                        carName: carName
+                        carName: carName,
+                        ahorroL: currentAnotar.ahorroPorLitro,
+                        ahorro: lts * currentAnotar.ahorroPorLitro
                     });
-                    // Ordenar siempre la más reciente arriba
                     bitacora.sort((a, b) => new Date(esToYMD(b.fecha)) - new Date(esToYMD(a.fecha)));
                 }
 
                 localStorage.setItem('gasofa_bitacora', JSON.stringify(bitacora));
+                
                 q('bitacoraModal').style.display = 'none';
 
                 if (q('historialModal').style.display === 'flex') {
@@ -3908,6 +3944,8 @@ item.id = "tarjeta-" + g.IDEESS; // <-- AÑADIDO
                     alert("✅ ¡Repostaje guardado!");
                 }
             }
+    
+
 
             function abrirHistorial() {
                 q('garageModal').style.display = 'none';
