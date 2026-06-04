@@ -89,7 +89,8 @@
         body {
             margin: 0;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            height: 100vh;
+            height: 100vh; /* Respaldo para móviles viejos */
+            height: 100dvh; /* Medida dinámica para móviles modernos */
             display: flex;
             flex-direction: column;
             overflow: hidden;
@@ -237,15 +238,15 @@
             overflow: hidden !important;
         }
 
-        #list-container.hidden-down {
+                #list-container.hidden-down {
             transform: translateY(100%);
-            height: 65px !important;
-            padding-top: 0 !important;
-            padding-bottom: env(safe-area-inset-bottom) !important;
-            margin-top: 0 !important;
+            height: 0 !important;
+            padding: 0 !important;
+            margin: 0 !important;
             opacity: 0;
             pointer-events: none;
         }
+
 
         /* TARJETAS NATIVAS ARREGLADAS */
         .list-item {
@@ -393,6 +394,12 @@
             text-transform: uppercase;
             justify-content: center;
         }
+        
+                /* Evitar que los botones del mapa se escondan tras la barra inferior */
+        .leaflet-bottom {
+            padding-bottom: 90px !important;
+        }
+
 
         .btn-historial {
             background: #9b59b6;
@@ -483,10 +490,10 @@
         body.dark-mode #controls.panel-provincia { border-color: #27ae60; box-shadow: 0 8px 24px rgba(39, 174, 96, 0.18); }
 
 
-        /* BOTÓN GPS Y TRÁFICO MAPA FLOTANTE */
+                    /* BOTÓN GPS Y TRÁFICO MAPA FLOTANTE (Anclados al contenedor) */
         .btn-gps {
             position: absolute;
-            bottom: 20px;
+            bottom: 15px !important;
             right: 15px;
             z-index: 1500;
             width: 48px;
@@ -501,15 +508,14 @@
             justify-content: center;
             font-size: 22px;
             cursor: pointer;
+            transition: bottom 0.4s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
         }
 
-        .btn-gps:active {
-            transform: scale(0.9);
-        }
+        .btn-gps:active { transform: scale(0.9); }
 
         .btn-trafico {
             position: absolute;
-            bottom: 80px;
+            bottom: 75px !important;
             right: 15px;
             z-index: 1500;
             width: 48px;
@@ -524,8 +530,36 @@
             justify-content: center;
             font-size: 22px;
             cursor: pointer;
-            transition: background 0.3s;
+            transition: background 0.3s, bottom 0.4s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
         }
+        
+        .btn-ahorro-float {
+            position: absolute !important;
+            bottom: 135px !important;
+            right: 15px;
+            z-index: 1500;
+            background: var(--bg-panel);
+            color: var(--accent-green);
+            border: 2px solid var(--accent-green);
+            border-radius: 30px;
+            padding: 8px 12px;
+            font-weight: 900;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            cursor: pointer;
+            transition: bottom 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), transform 0.2s !important;
+        }
+
+                        /* MAGIA: Cuando el mapa crece (lista escondida), ajustamos la altura de los botones */
+        body.map-full .btn-gps { bottom: 85px !important; }
+        body.map-full .btn-trafico { bottom: 145px !important; }
+        body.map-full #mapAhorroBadge { bottom: 145px !important; }
+
+
+         
 
         .btn-trafico.active {
             background: #e74c3c;
@@ -732,6 +766,22 @@ body.dark-mode .skeleton {
 .sk-line-1 { height: 24px; width: 60%; }
 .sk-line-2 { height: 14px; width: 40%; }
 .sk-line-3 { height: 35px; width: 100%; border-radius: 12px; margin-top: 5px; }
+
+/* --- EFECTO SKELETON MAPA (TELÓN) --- */
+#map-skeleton-overlay {
+    position: absolute; inset: 0; z-index: 1000;
+    background-color: #e4e6eb; pointer-events: none;
+    background-image: linear-gradient(to right, #e4e6eb 0%, #f0f2f5 20%, #e4e6eb 40%, #e4e6eb 100%);
+    background-repeat: no-repeat; background-size: 200vw 100vh;
+    animation: shimmerMap 1.5s linear infinite forwards;
+    transition: opacity 0.4s ease; opacity: 0; display: none;
+}
+#map-skeleton-overlay.active { display: block; opacity: 1; }
+body.dark-mode #map-skeleton-overlay {
+    background-color: #242526;
+    background-image: linear-gradient(to right, #242526 0%, #3a3b3c 20%, #242526 40%, #242526 100%);
+}
+@keyframes shimmerMap { 0% { background-position: -200vw 0; } 100% { background-position: 200vw 0; } }
     </style>
 </head>
 
@@ -909,7 +959,10 @@ body.dark-mode .skeleton {
                     <span onclick="marcarEstrellas(4)">★</span>
                     <span onclick="marcarEstrellas(5)">★</span>
                 </div>
-                <input type="hidden" id="revStars" value="0">
+                                <input type="hidden" id="revStars" value="0">
+
+                <input type="text" id="revApodo" placeholder="Tu nombre o apodo..." autocomplete="off"
+                    style="width:100%; box-sizing:border-box; padding:12px; border-radius:8px; border:1px solid var(--border-color); margin-bottom:10px; background:var(--bg-panel); color:var(--text-main); font-family:inherit; font-weight:bold;">
 
                 <textarea id="revText" placeholder="¿Qué tal el servicio, limpieza, etc?"
                     style="width:100%; box-sizing:border-box; padding:12px; border-radius:8px; border:1px solid var(--border-color); resize:none; font-family:inherit; height:70px; margin-bottom:10px; background:var(--bg-panel); color:var(--text-main);"></textarea>
@@ -1148,15 +1201,42 @@ body.dark-mode .skeleton {
 
     <div style="flex: 1; position: relative; width: 100%; overflow: hidden;">
         <div id="map"></div>
+        <div id="map-skeleton-overlay"></div>
         <button class="btn-gps" onclick="irAMiUbicacion(false)" title="Mi Ubicación"
             aria-label="Centrar mapa en mi ubicación actual">📍</button>
 
-        <button class="btn-trafico" id="btnToggleCamaras" onclick="toggleCamarasTrafico()"
+                <button class="btn-trafico" id="btnToggleCamaras" onclick="toggleCamarasTrafico()"
             title="Cámaras de Tráfico DGT" aria-label="Mostrar cámaras de tráfico de la DGT">🎥</button>
+                   
+                        <div id="mapAhorroBadge" onclick="openGarage()" style="position: absolute; bottom: 25px; left: 50%; transform: translateX(-50%); z-index: 1500; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(8px); border: 1px solid var(--accent-green); padding: 6px 12px 6px 8px; border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.25); display: flex; align-items: center; gap: 8px; cursor: pointer; transition: bottom 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); white-space: nowrap;">
+            <div style="background: var(--accent-green); width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 8px rgba(16, 185, 129, 0.5);">
+                <span style="font-size: 14px; color: white; transform: translateY(-1px);">💰</span>
+            </div>
+            <div style="display: flex; flex-direction: column; justify-content: center;">
+                <span style="font-size: 9px; color: #94a3b8; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: -2px;">Ahorro Total</span>
+                <span id="mapAhorroText" style="font-size: 14px; color: white; font-weight: 900;">0,00 €</span>
+            </div>
+        </div>
+
+
+
     </div>
 
+
+    <div id="toastBox" style="position:fixed; bottom:-100px; left:50%; transform:translateX(-50%); background:#2c3e50; color:white; padding:12px 24px; border-radius:30px; font-weight:bold; font-size:13px; z-index:9999; transition:bottom 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); box-shadow:0 10px 20px rgba(0,0,0,0.2); white-space:nowrap; pointer-events:none; display:flex; align-items:center; gap:8px;"></div>
+
+    
+        <button id="btnSubir" onclick="document.getElementById('list-container').scrollTo({top:0, behavior:'smooth'})" style="position:fixed; bottom:85px; right:15px; width:45px; height:45px; border-radius:50%; background:var(--accent); color:white; border:none; font-size:20px; box-shadow:0 4px 10px rgba(0,0,0,0.3); z-index:1500; display:none; align-items:center; justify-content:center; cursor:pointer; transition:transform 0.2s;">⬆️</button>
+    
+    <button id="btnVerLista" onclick="restaurarLista()" style="position:fixed; bottom:85px; left:50%; transform:translateX(-50%); padding:12px 20px; border-radius:30px; background:var(--accent-green); color:white; border:none; font-weight:900; box-shadow:0 4px 10px rgba(0,0,0,0.3); z-index:1500; display:none; align-items:center; gap:6px; cursor:pointer; font-size:14px;">📝 MOSTRAR LISTA</button>
+
+
     <div id="list-container">
+        <div style="width: 40px; height: 5px; background: var(--border-color); border-radius: 5px; margin: 0 auto 15px auto;"></div>
+
         <div id="loading-overlay">
+
+
             <div class="spinner" style="margin-bottom:10px;"></div>
             <div id="loading-text"
                 style="color:var(--text-main);font-weight:bold;text-align:center;width:100%;padding:0 20px;box-sizing:border-box;">
@@ -1245,11 +1325,18 @@ body.dark-mode .skeleton {
 
     <div id="garageModal" class="modal-bg">
         <div class="modal-content" style="max-width:400px;">
-            <h3
+                        <h3
                 style="margin-top:0; color:var(--accent); border-bottom:1px solid var(--border-color); padding-bottom:10px; flex-shrink:0; text-align:center;">
                 🚗 Mi Garaje</h3>
 
+            <div style="background:var(--bg-ahorro); border:2px dashed var(--accent-green); padding:15px; border-radius:12px; text-align:center; margin-bottom:15px;">
+                <div style="font-size:11px; color:var(--accent-green); font-weight:bold; text-transform:uppercase; margin-bottom:4px;">Tu Ahorro Total Acumulado</div>
+                <div id="garajeTotalAhorroNum" style="font-size:32px; font-weight:900; color:var(--accent-green); line-height:1;">0,00 €</div>
+                <div style="font-size:10px; color:var(--text-muted); margin-top:6px; font-style:italic;">Calculado en base a tus repostajes</div>
+            </div>
+
             <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:15px; flex-shrink:0;">
+
                 <input type="hidden" id="editCarId">
                 <input type="text" id="carName" placeholder="Nombre (Ej: Mi Golf)"
                     style="padding:12px; border-radius:12px; border:none; background:var(--bg-input); color:var(--text-main); font-weight:bold;">
@@ -1407,6 +1494,57 @@ body.dark-mode .skeleton {
         </div>
     </div>
 
+       <!-- ========================================== -->
+    <!-- MINI-TUTORIAL DE BIENVENIDA (ONBOARDING) -->
+    <!-- ========================================== -->
+    <div id="tutorialModal" class="modal-bg" style="z-index: 9999;">
+        <div class="modal-content" style="max-width: 340px; text-align: center; padding: 30px 20px;">
+            <div id="tut-step-1">
+                <span style="font-size: 55px; display: block; margin-bottom: 10px;">📍</span>
+                <h3 style="color: var(--accent); margin: 0 0 10px 0; font-size: 20px;">Encuentra la más barata</h3>
+                <p style="color: var(--text-muted); font-size: 14px; line-height: 1.5; margin: 0;">Descubre los mejores precios a tu alrededor. <b>¡Añade tus tarjetas de descuento (Waylet, Cepsa...) en los filtros y calcularemos tu precio real!</b></p>
+            </div>
+            
+            <div id="tut-step-2" style="display: none;">
+                <span style="font-size: 55px; display: block; margin-bottom: 10px;">🛣️</span>
+                <h3 style="color: var(--accent-orange); margin: 0 0 10px 0; font-size: 20px;">Rutas Inteligentes</h3>
+                <p style="color: var(--text-muted); font-size: 14px; line-height: 1.5; margin: 0;">¿Viaje largo? Te calculamos <b>dónde parar y cuántos litros echar</b> para ahorrar al máximo, descontando el coste de la gasolina del desvío.</p>
+            </div>
+
+            <div id="tut-step-3" style="display: none;">
+                <span style="font-size: 55px; display: block; margin-bottom: 10px;">🗺️</span>
+                <h3 style="color: var(--accent-green); margin: 0 0 10px 0; font-size: 20px;">Ranking por Provincia</h3>
+                <p style="color: var(--text-muted); font-size: 14px; line-height: 1.5; margin: 0;">Mira el Top Nacional o filtra por provincia para localizar rápidamente los surtidores más económicos de la provincia que quieras.</p>
+            </div>
+            
+            <div id="tut-step-4" style="display: none;">
+                <span style="font-size: 55px; display: block; margin-bottom: 10px;">​💰</span>
+                <h3 style="color: #9b59b6; margin: 0 0 10px 0; font-size: 20px;">Tu Garaje y Ahorros</h3>
+                <p style="color: var(--text-muted); font-size: 14px; line-height: 1.5; margin: 0;">Anota repostajes para ver tus gastos, recibe alertas de ITV/Seguro y <b>guarda la ubicación de tu coche</b> con el localizador de parking.</p>
+            </div>
+
+            <div id="tut-step-5" style="display: none;">
+                <span style="font-size: 55px; display: block; margin-bottom: 10px;">📈</span>
+                <h3 style="color: #e74c3c; margin: 0 0 10px 0; font-size: 20px;">Histórico y Tendencias</h3>
+                <p style="color: var(--text-muted); font-size: 14px; line-height: 1.5; margin: 0;">Revisa la gráfica de precios de los últimos 30 días para saber si la tendencia es de subida o bajada. <b>¡Decide si llenar hoy o esperar!</b></p>
+            </div>
+            
+            <div style="display: flex; gap: 8px; justify-content: center; margin-top: 25px;" id="tut-dots">
+                <div class="tut-dot" style="width: 10px; height: 10px; border-radius: 50%; background: var(--accent); transition: background 0.3s;"></div>
+                <div class="tut-dot" style="width: 10px; height: 10px; border-radius: 50%; background: var(--border-color); transition: background 0.3s;"></div>
+                <div class="tut-dot" style="width: 10px; height: 10px; border-radius: 50%; background: var(--border-color); transition: background 0.3s;"></div>
+                <div class="tut-dot" style="width: 10px; height: 10px; border-radius: 50%; background: var(--border-color); transition: background 0.3s;"></div>
+                <div class="tut-dot" style="width: 10px; height: 10px; border-radius: 50%; background: var(--border-color); transition: background 0.3s;"></div>
+            </div>
+
+            <button id="btnTutNext" onclick="avanzarTutorial()" style="width: 100%; padding: 14px; margin-top: 25px; font-size: 15px; background: var(--accent); color: white; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; transition: background 0.3s;">Siguiente ➡️</button>
+            
+            <button onclick="cerrarTutorial()" style="background: transparent; color: var(--text-muted); border: none; font-weight: bold; margin-top: 15px; font-size: 12px; cursor: pointer;">Saltar tutorial</button>
+        </div>
+    </div>
+
+
+
 
         <nav class="bottom-nav">
         <div class="nav-item active" id="nav-zona"
@@ -1446,7 +1584,7 @@ body.dark-mode .skeleton {
             const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyeIN2o-dHcyXw-ZAhUKboaotrOJcv-VM7ABYxzEkUsU4q19pKLrEFj64PanMyYSt_-/exec";
             const APP_URL = window.location.href;
 
-            let map = L.map("map", { zoomControl: false, maxZoom: 19 }).setView([40.41, -3.70], 6);
+            let map = L.map("map", { zoomControl: false, maxZoom: 19, closePopupOnClick: false }).setView([40.41, -3.70], 6);
 
             let userCoords = null, cacheGasolineras = null, chartInstance = null, currentModalStationId = null, currentTrends = {};
 
@@ -1529,6 +1667,15 @@ body.dark-mode .skeleton {
                 if ('serviceWorker' in navigator) {
                     navigator.serviceWorker.register('./sw.js').catch(console.error);
                 }
+
+                // --- LANZAR TUTORIAL (SOLO LA PRIMERA VEZ) ---
+                if (!localStorage.getItem('gasofa_tutorial_visto')) {
+                    setTimeout(() => {
+                        document.getElementById('tutorialModal').style.display = 'flex';
+                        window.mostrarPasoTutorial(1);
+                    }, 1000); 
+                }
+
 
                 cargarPreferencias();
                 setMode(searchMode, true);
@@ -1723,33 +1870,74 @@ body.dark-mode .skeleton {
                 map.on('click', () => {
                     if (!q("controls").classList.contains("collapsed")) toggleControls();
                 });
+                
+                            // --- NUEVA MEJORA UX: Toque en zona vacía del mapa limpia la pantalla ---
+                        map.on('click', function (e) {
+                if (e.originalEvent && e.originalEvent.target && e.originalEvent.target.id === 'map') {
+                    const listCont = document.getElementById('list-container');
+                    if (!document.getElementById("controls").classList.contains("collapsed")) toggleControls();
+                    
+                    if (!listCont.classList.contains('hidden-down')) {
+                        listCont.classList.add('hidden-down');
+                        document.body.classList.add('map-full');
+                        if (document.getElementById('btnVerLista')) document.getElementById('btnVerLista').style.display = 'flex';
+                        if (document.getElementById('btnSubir')) document.getElementById('btnSubir').style.display = 'none';
+                        if (typeof vibrar === 'function') vibrar(40);
+                        
+                        let mapFix = setInterval(() => { if (map) map.invalidateSize({ panTo: false }); }, 50);
+                        setTimeout(() => clearInterval(mapFix), 400);
+                    } else {
+                        // MAGIA: Si la lista YA estaba escondida, entonces SÍ que queremos cerrar el globo
+                        map.closePopup();
+                    }
+                }
+            });
 
-                // Truco para inyectar los servicios OSM y TENDENCIAS en el PopUp al abrirlo y CENTRAR el mapa
+
+
+                               // Truco para inyectar los servicios OSM y TENDENCIAS en el PopUp al abrirlo y CENTRAR el mapa
                 map.on('popupopen', function (e) {
                     let node = e.popup._contentNode;
                     if (!node) return;
 
-                    // CHIVATO: Abrir Pop-up en el mapa
+                    let necesitaEspera = false;
+
+                    // 1. Si los filtros están abiertos, los cerramos
+                    if (!document.getElementById("controls").classList.contains("collapsed")) {
+                        toggleControls();
+                        necesitaEspera = true;
+                    }
+                    
+                   
+                    // 2. Si la lista está escondida abajo, la hacemos subir suavemente
+                    if (document.getElementById('list-container').classList.contains('hidden-down')) {
+                        document.getElementById('list-container').classList.remove('hidden-down');
+                        document.body.classList.remove('map-full');
+                        if (document.getElementById('btnVerLista')) document.getElementById('btnVerLista').style.display = 'none';
+                        if (typeof vibrar === 'function') vibrar(30);
+                        
+                        // Le vamos avisando al mapa paso a paso que su tamaño está cambiando
+                        let fixMapa = setInterval(() => { if (map) map.invalidateSize({ panTo: false }); }, 50);
+                        setTimeout(() => clearInterval(fixMapa), 400);
+                        
+                        necesitaEspera = true; // Esto obliga al mapa a esperar a que la lista suba antes de moverse
+                    }
+
+                    // CHIVATO Analytics
                     let spanRotulo = node.querySelector('span[style*="white-space:nowrap; overflow:hidden"]');
                     let nombreGas = spanRotulo ? spanRotulo.innerText : "Desconocida";
                     if (typeof gtag !== 'undefined') {
-                        gtag('event', 'abrir_popup_mapa', {
-                            'event_category': 'Interaccion_Usuario',
-                            'nombre_gasolinera': nombreGas
-                        });
+                        gtag('event', 'abrir_popup_mapa', { 'event_category': 'Interaccion_Usuario', 'nombre_gasolinera': nombreGas });
                     }
 
-
-                    // 1. Inyectar servicios OSM si ya han cargado
+                    // 1. Inyectar OSM
                     let placeholder = node.querySelector('.osm-pop-placeholder');
                     if (placeholder) {
                         let id = placeholder.getAttribute('data-id');
-                        if (window.osmCache && window.osmCache[id]) {
-                            placeholder.innerHTML = window.osmCache[id];
-                        }
+                        if (window.osmCache && window.osmCache[id]) placeholder.innerHTML = window.osmCache[id];
                     }
 
-                    // 2. Inyectar Tendencias si ya han cargado (ESTO QUITA EL RELOJ)
+                    // 2. Inyectar Tendencias
                     let trendPlaceholder = node.querySelector('.tr-ind');
                     if (trendPlaceholder && typeof trendsLoaded !== 'undefined' && trendsLoaded) {
                         let id = trendPlaceholder.getAttribute('data-id');
@@ -1757,64 +1945,67 @@ body.dark-mode .skeleton {
                         trendPlaceholder.innerHTML = getTrendHTML(currentTrends[id], type);
                     }
 
-                                      // Movemos el mapa hacia abajo 150px para compensar la altura de la lista blanca
-            map.panTo(e.popup.getLatLng(), { animate: true, duration: 0.3 });
-            setTimeout(() => { map.panBy([0,-100], { animate: true, duration: 0.3 }); }, 300);
-     
-                    
-                            // --- 3. AUTO-SCROLL EN LA LISTA INFERIOR ---
-        if (trendPlaceholder) {
-            let idGasolinera = trendPlaceholder.getAttribute('data-id');
-            let tarjetaDOM = document.getElementById('tarjeta-' + idGasolinera);
-            
-            if (tarjetaDOM) {
-                // Scrolleamos suavemente hasta la tarjeta
-                tarjetaDOM.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                
-                // Le damos un efecto visual de parpadeo (iluminar la tarjeta)
-                let colorOriginal = tarjetaDOM.style.background;
-                tarjetaDOM.style.transition = 'background 0.5s ease';
-                tarjetaDOM.style.background = 'var(--bg-ahorro)'; // La iluminamos con el color de ahorro
-                
-                // Se lo quitamos al cabo de 1.5 segundos
-                setTimeout(() => {
-                    tarjetaDOM.style.background = colorOriginal;
-                }, 1500);
-            }
-        }
+                    // --- NUEVA LÓGICA DE TIEMPOS PARA ANIMACIONES SUAVES ---
+                    let tiempoEspera = necesitaEspera ? 450 : 50;
 
+                    // A) Movimiento suave de la cámara del mapa
+                    setTimeout(() => {
+                        let targetPoint = map.project(e.popup.getLatLng(), map.getZoom());
+                        targetPoint.y -= 120; // Compensamos el globo
+                        let targetLatLng = map.unproject(targetPoint, map.getZoom());
+                        // duration: 0.5 hace un barrido súper elegante y natural
+                        map.panTo(targetLatLng, { animate: true, duration: 0.5 }); 
+                    }, tiempoEspera);
+
+                    // B) Scroll sincronizado de la lista
+                    if (trendPlaceholder) {
+                        let idGasolinera = trendPlaceholder.getAttribute('data-id');
+                        let tarjetaDOM = document.getElementById('tarjeta-' + idGasolinera);
+                        
+                        if (tarjetaDOM) {
+                            setTimeout(() => {
+                                let listCont = document.getElementById('list-container');
+                                let targetTop = tarjetaDOM.offsetTop - 15; 
+                                listCont.scrollTo({ top: targetTop, behavior: 'smooth' });
+                                
+                                // Seguro anti-saltos del móvil
+                                setTimeout(() => window.scrollTo(0, 0), 50);
+                                
+                                // Iluminamos la tarjeta
+                                let colorOriginal = tarjetaDOM.style.background;
+                                tarjetaDOM.style.transition = 'background 0.5s ease';
+                                tarjetaDOM.style.background = 'var(--bg-ahorro)'; 
+                                
+                                setTimeout(() => { tarjetaDOM.style.background = colorOriginal; }, 1500);
+                            }, tiempoEspera);
+                        }
+                    }
                 });
+
+
 
 activarSwipeModales();
 
             };
 
-            function toggleControls() {
+                        function toggleControls() {
                 const c = q("controls");
-                const list = q("list-container");
-
                 c.classList.toggle("collapsed");
                 
-                // 🔥 LÓGICA INFALIBLE: Si el panel se cierra, apaga el botón. Si se abre, enciéndelo.
-    if (q("nav-filtros")) {
-        if (c.classList.contains("collapsed")) {
-            q("nav-filtros").classList.remove("active");
-        } else {
-            q("nav-filtros").classList.add("active");
-        }
-    }
-
-                if (c.classList.contains("collapsed")) {
-                    if (list) list.classList.remove("hidden-down");
-                } else {
-                    if (list) list.classList.add("hidden-down");
+                // Solo encendemos/apagamos el botón inferior, NO tocamos la lista
+                if (q("nav-filtros")) {
+                    if (c.classList.contains("collapsed")) {
+                        q("nav-filtros").classList.remove("active");
+                    } else {
+                        q("nav-filtros").classList.add("active");
+                    }
                 }
 
-                // 🗺️ MAGIA: Le decimos al mapa que recalcule su tamaño súper rápido 
-                // durante medio segundo para que rellene el hueco fluidamente sin parpadear
+                // Le decimos al mapa que se reajuste fluidamente
                 let stretchInterval = setInterval(() => { if (map) map.invalidateSize(); }, 50);
                 setTimeout(() => clearInterval(stretchInterval), 450);
             }
+
 
 
 
@@ -1835,23 +2026,37 @@ activarSwipeModales();
                 }
             }
 
+                        // IDEA 2: MOTOR DE VIBRACIÓN NATIVO
+            window.vibrar = function (ms = 50) { if (navigator.vibrate) try { navigator.vibrate(ms); } catch(e){} };
+
             function setMode(mode, isInit = false) {
-            
-            // 🔥 Asegurar que el botón Filtros siga encendido si el panel está abierto
-    if (q("nav-filtros") && q("controls")) {
-        if (!q("controls").classList.contains("collapsed")) {
-            q("nav-filtros").classList.add("active");
-        }
-    }
-    
+                vibrar(30); // Micro-vibración al cambiar de pestaña
+
+                // ARREGLO 1: Memoria de los botones inferiores
+                document.querySelectorAll('.nav-item').forEach(e => e.classList.remove('active'));
+                if (q("nav-" + mode)) q("nav-" + mode).classList.add('active');
+
+                // 🔥 Asegurar que el botón Filtros siga encendido si el panel está abierto
+                if (q("nav-filtros") && q("controls") && !q("controls").classList.contains("collapsed")) {
+                    q("nav-filtros").classList.add("active");
+                }
+                
                 searchMode = mode;
                 
-                    // Aplicamos el color al borde del panel flotante
-    const controles = q("controls");
-    if (controles) {
-        controles.classList.remove("panel-zona", "panel-ruta", "panel-provincia");
-        controles.classList.add("panel-" + mode);
-    }
+                // IDEA 4: Color dinámico para la barra de estado del móvil
+                let metaTheme = document.querySelector('meta[name="theme-color"]');
+                let isDark = document.body.classList.contains('dark-mode');
+                if (mode === 'zona') metaTheme.setAttribute("content", isDark ? "#2d88ff" : "#0056b3");
+                else if (mode === 'ruta') metaTheme.setAttribute("content", isDark ? "#f39c12" : "#c85a17");
+                else if (mode === 'provincia') metaTheme.setAttribute("content", isDark ? "#27ae60" : "#1e7a44");
+
+                // Aplicamos el color al borde del panel flotante
+                const controles = q("controls");
+                if (controles) {
+                    controles.classList.remove("panel-zona", "panel-ruta", "panel-provincia");
+                    controles.classList.add("panel-" + mode);
+                }
+
 
                 const optInteligente = q("ordenarPor").querySelector('option[value="inteligente"]');
                 const optDistancia = q("ordenarPor").querySelector('option[value="distancia"]');
@@ -1948,6 +2153,7 @@ activarSwipeModales();
                 q("list-container").scrollTop = 0;
                 q("loading-overlay").style.display = "flex";
                 q("loading-text").innerText = "Trazando ruta...";
+                if (q("map-skeleton-overlay")) q("map-skeleton-overlay").classList.add("active");
 
                 try {
                     let coordOrig = userCoords;
@@ -2043,6 +2249,7 @@ activarSwipeModales();
                 } catch (e) {
                     alert(e);
                     q("loading-overlay").style.display = "none";
+                    if (q("map-skeleton-overlay")) q("map-skeleton-overlay").classList.remove("active");
                 }
             }
 
@@ -2161,26 +2368,38 @@ activarSwipeModales();
                 }
             }
 
-                        window.centrarMapa = function (lat, lon) {
-                if (!q("controls").classList.contains("collapsed")) toggleControls();
+                             window.centrarMapa = function (lat, lon) {
+                if (!document.getElementById("controls").classList.contains("collapsed")) toggleControls();
                 
-                // Calculamos el centro desplazado para que no quede tapado por la lista
-                let targetPoint = map.project([lat, lon], 16);
-                targetPoint.y += 180; // Sumamos a Y para que el marcador suba a la vista
-                let targetLatLng = map.unproject(targetPoint, 16);
-                
-                map.setView(targetLatLng, 16);
-                
-                setTimeout(() => {
-
-                    markersLayer.eachLayer(l => {
-                        if (l.getLatLng) {
-                            const pos = l.getLatLng();
-                            if (Math.abs(pos.lat - lat) < 0.0001 && Math.abs(pos.lng - lon) < 0.0001) { l.openPopup(); }
+                let markerTarget = null;
+                markersLayer.eachLayer(l => {
+                    if (l.getLatLng) {
+                        const pos = l.getLatLng();
+                        if (Math.abs(pos.lat - lat) < 0.0001 && Math.abs(pos.lng - lon) < 0.0001) { 
+                            markerTarget = l;
                         }
-                    });
-                }, 300);
+                    }
+                });
+
+                if (markerTarget) {
+                    if (!markerTarget.isPopupOpen()) {
+                        // Movimiento inicial, el evento 'popupopen' hará el ajuste fino de la cámara
+                        map.setView([lat, lon], 16);
+                        setTimeout(() => { markerTarget.openPopup(); }, 250);
+                    } else {
+                        // ESCUDO: Si ya está abierto y haces doble clic, aplicamos el mismo cálculo 
+                        // exacto que hace el popup para no empujarlo fuera de la pantalla.
+                        let targetPoint = map.project([lat, lon], 16);
+                        targetPoint.y -= 120; 
+                        let targetLatLng = map.unproject(targetPoint, 16);
+                        map.setView(targetLatLng, 16);
+                    }
+                } else {
+                    map.setView([lat, lon], 16);
+                }
             };
+                  
+
 
             window.openDiscounts = function () {
                 q('editDescId').value = ''; // Limpiamos el modo edición al abrir
@@ -2261,11 +2480,20 @@ activarSwipeModales();
             };
 
 
-            function toggleTheme() {
+                        function toggleTheme() {
                 const body = document.body; body.classList.toggle('dark-mode'); const isDark = body.classList.contains('dark-mode');
                 localStorage.setItem('gasofaDark', isDark); q('btnDarkMode').innerText = isDark ? '☀️ Claro' : '🌙 Oscuro';
+                
+                // --- ARREGLO: Cambiar color de la barra también al usar el botón ---
+                let metaTheme = document.querySelector('meta[name="theme-color"]');
+                if (searchMode === 'zona') metaTheme.setAttribute("content", isDark ? "#2d88ff" : "#0056b3");
+                else if (searchMode === 'ruta') metaTheme.setAttribute("content", isDark ? "#f39c12" : "#c85a17");
+                else if (searchMode === 'provincia') metaTheme.setAttribute("content", isDark ? "#27ae60" : "#1e7a44");
+                // ------------------------------------------------------------------
+
                 if (chartInstance) {
                     const tColor = isDark ? '#e0e0e0' : '#333'; const gColor = isDark ? '#333' : '#ddd';
+
                     chartInstance.options.scales.x.ticks.color = tColor; chartInstance.options.scales.x.grid.color = gColor;
                     chartInstance.options.scales.y.ticks.color = tColor; chartInstance.options.scales.y.grid.color = gColor;
                     chartInstance.options.plugins.legend.labels.color = tColor; chartInstance.update();
@@ -2429,6 +2657,7 @@ activarSwipeModales();
                     isFetching = false;
                     const listContainer = q("list-container");
                     if (listContainer) listContainer.classList.remove("bloqueado");
+                    if (q("map-skeleton-overlay")) q("map-skeleton-overlay").classList.remove("active");
 
                     // Si la lista tiene el esqueleto, lo cambiamos por un mensaje amigable
                     const lD = q("gas-list");
@@ -2560,6 +2789,10 @@ function mostrarSkeleton() {
     // Ocultamos el spinner central si estaba visible
     const overlay = document.getElementById("loading-overlay");
     if (overlay) overlay.style.display = "none";
+    
+    // Encendemos el telón gris sobre el mapa
+    const mapSkel = document.getElementById("map-skeleton-overlay");
+    if (mapSkel) mapSkel.classList.add("active");
     
     let html = "";
     for (let i = 0; i < 5; i++) {
@@ -2751,6 +2984,102 @@ function mostrarSkeleton() {
                 }
                 return results;
             }
+
+            // ==========================================================
+            // MOTOR DE LOGOS DE GASOLINERAS (HÍBRIDO ANTI-GLOBOS)
+            // ==========================================================
+            function getLogoGasolinera(nombre, isMapa = false) {
+                let n = nombre.toUpperCase();
+                let src = ""; 
+
+                // 1. REBELDES (Marcas que dan el globo terráqueo. Usamos enlace directo)
+                if (n.includes("Q8") || n.includes("KUWAIT")) src = "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Q8_logo.svg/120px-Q8_logo.svg.png";
+                else if (n.includes("TAMOIL")) src = "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Tamoil_logo.svg/120px-Tamoil_logo.svg.png";
+                else if (n.includes("ENI") || n.includes("AGIP")) src = "https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Eni_SpA_logo.svg/120px-Eni_SpA_logo.svg.png";
+                else if (n.includes("GMOIL") || n.includes("GM OIL") || n.includes("GROS MERCAT")) src = "https://gmoil.es/favicon.ico"; 
+
+                // 2. Marcas Principales y Tradicionales (Con dominio)
+                else if (n.includes("REPSOL") || n.includes("CAMPSA") || n.includes("PETRONOR")) src = "repsol.es";
+                else if (n.includes("CEPSA") || n.includes("MOEVE")) src = "cepsa.es"; 
+                else if (n.includes("BP") || n.includes("B.P.")) src = "bp.com";
+                else if (n.includes("SHELL")) src = "shell.es";
+                else if (n.includes("GALP")) src = "galp.com";
+                else if (n.includes("SARAS")) src = "sarasenergia.com";
+                else if (n.includes("DISA")) src = "disa.es";
+                else if (n.includes("AVIA")) src = "aviaenergias.es"; // <-- ¡AVIA vuelve a su sitio con Google!
+                
+                // 3. Supermercados e Hipermercados
+                else if (n.includes("CARREFOUR")) src = "carrefour.es";
+                else if (n.includes("ALCAMPO")) src = "alcampo.es";
+                else if (n.includes("EROSKI")) src = "eroski.es";
+                else if (n.includes("E.LECLERC") || n.includes("LECLERC")) src = "e-leclerc.es";
+                else if (n.includes("BONAREA") || n.includes("BON AREA")) src = "bonarea.com";
+                else if (n.includes("MERCADONA")) src = "mercadona.es";
+                else if (n.includes("CAPRABO")) src = "caprabo.com";
+                else if (n.includes("FAMILY ENERGY") || n.includes("FAMILY CASH")) src = "familycash.es";
+                else if (n.includes("CONDIS")) src = "condis.es";
+                else if (n.includes("ALDI")) src = "aldi.es";
+                else if (n.includes("SUPECO")) src = "supeco.es";
+                else if (n.includes("ESCLATOIL") || n.includes("ESCLAT")) src = "bonpreuesclat.cat";
+
+                // 4. Low Cost e Independientes
+                else if (n.includes("PLENERGY")) src = "plenergy.es";
+                else if (n.includes("PLENOIL")) src = "plenoil.es";
+                else if (n.includes("PETROPRIX")) src = "petroprix.com";
+                else if (n.includes("BALLENOIL")) src = "ballenoil.es";
+                else if (n.includes("EASYGAS") || n.includes("EASY GAS")) src = "easygasgroup.com";
+                else if (n.includes("FAST FUEL")) src = "fastfuel.es";
+                else if (n.includes("BEROIL")) src = "beroil.es";
+                else if (n.includes("VALCARCE")) src = "grupovalcarce.com";
+                else if (n.includes("MEROIL")) src = "meroil.es";
+                else if (n.includes("PCAN")) src = "pcan.es";
+                else if (n.includes("GASEXPRESS") || n.includes("GAS EXPRESS")) src = "gasexpress.es";
+                else if (n.includes("PETROMIRALLES")) src = "petromiralles.com";
+                else if (n.includes("ENERPLUS")) src = "enerplus.es";
+                else if (n.includes("AUTONET")) src = "autonet-oil.es";
+                else if (n.includes("BDMED")) src = "bdmed.es";
+                else if (n.includes("ON TURTLE") || n.includes("RED TORTUGA")) src = "onturtle.eu";
+                else if (n.includes("ANENERGETICOS") || n.includes("AN ENERGETICOS")) src = "anenergeticos.com";
+                else if (n.includes("FARRUCO")) src = "farruco.es";
+                else if (n.includes("BTP")) src = "btp.es";
+                else if (n.includes("GASENER")) src = "gasener.com";
+                else if (n.includes("IBERDOA")) src = "iberdoa.es";
+                else if (n.includes("NIEVES")) src = "grupnieves.com";
+                else if (n.includes("OCTANO")) src = "octano.es";
+                else if (n.includes("ORTEGAL")) src = "ortegal.es";
+                else if (n.includes("PETROCAT")) src = "petrocat.cat";
+                else if (n.includes("SINESTAR")) src = "sinestar.es";
+                else if (n.includes("STAR PETROLEUM")) src = "starpetroleum.com";
+                else if (n.includes("TGAS")) src = "tgas.es";
+                else if (n.includes("VILALTA")) src = "vilalta.es";
+                else if (n.includes("GASCENTRO")) src = "gascentro.es";
+
+                let size = isMapa ? 18 : 24;
+                let margin = isMapa ? "margin-right: 6px;" : "";
+
+                let fallbackHTML = `<div style="width:${size}px; height:${size}px; border-radius:4px; background:var(--bg-ahorro); border:1px solid var(--accent-green); display:flex; align-items:center; justify-content:center; font-size:${isMapa ? 10 : 14}px; flex-shrink:0; box-shadow:0 1px 3px rgba(0,0,0,0.15); ${margin}">⛽</div>`;
+
+                if (src) {
+                    let finalUrl = "";
+                    
+                    // Si el texto empieza por HTTP, es una imagen directa. Si no, es un dominio y usamos Google.
+                    if (src.startsWith("http")) {
+                        finalUrl = src;
+                    } else {
+                        finalUrl = "https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://" + src + "&size=64";
+                    }
+                    
+                    return `
+                    <div style="display:flex; align-items:center; justify-content:center; flex-shrink:0; ${margin}">
+                        <img src="${finalUrl}" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" style="width:${size}px; height:${size}px; object-fit:contain; border-radius:4px; background:white; padding:2px; box-shadow:0 1px 3px rgba(0,0,0,0.15);">
+                        <div style="display:none; width:${size}px; height:${size}px; border-radius:4px; background:var(--bg-ahorro); border:1px solid var(--accent-green); align-items:center; justify-content:center; font-size:${isMapa ? 10 : 14}px; box-shadow:0 1px 3px rgba(0,0,0,0.15);">⛽</div>
+                    </div>`;
+                } else {
+                    return fallbackHTML;
+                }
+            }
+
+
 
             async function fetchGasolineras() {
                 if (!cacheGasolineras || isFetching) return;
@@ -3074,20 +3403,29 @@ function mostrarSkeleton() {
                         gasolinerasParaPintar = [];
                     }
 
-                    // DIBUJADO DE LAS TARJETAS (ESTILO NATIVO NUEVO)
+                                       // DIBUJADO DE LAS TARJETAS (ESTILO NATIVO NUEVO)
                     gasolinerasParaPintar.forEach((g) => {
                         const lat = parseFloat(g.Latitud.replace(",", ".")), ln = parseFloat(g["Longitud (WGS84)"].replace(",", "."));
                         const pN = g.pN;
                         const isF = favoritos.includes(g.IDEESS), hIc = isF ? '❤️' : '🤍', isR = g["Tipo Venta"] === "R";
 
+                        // --- CÁLCULO DE ESTRELLAS (UNA VEZ PARA MAPA Y LISTA) ---
+                        // --- ESTRELLAS EN CERO HASTA QUE SE LANCE LA FUNCIÓN ---
+                        let htmlEstrellas = typeof generarEstrellasAmazon === 'function' ? generarEstrellasAmazon(0, 0) : '';
+                        // --------------------------------------------------------
+
                         let pStrVisualMap = pN.toFixed(3);
+
                         let pStrVisualPop = pN.toFixed(3) + " €/L";
-                        let iconSz = [65, 24], iconAnc = [32, 35];
+                        
+                        // Aumentamos la anchura de 65 a 95 para que quepa el logo, el precio y la tendencia
+                        let iconSz = [95, 28], iconAnc = [47, 35];
 
                         if (g.descAplicado !== "") {
                             let tachado = '<div style="text-decoration:line-through; font-size:0.75em; color:var(--text-muted); line-height:1;">' + g.precioOficial.toFixed(3) + '</div>';
                             pStrVisualMap = '<div style="display:flex; flex-direction:column; align-items:center; justify-content:center;">' + tachado + '<div style="line-height:1;">' + pN.toFixed(3) + '</div></div>';
-                            iconSz = [75, 36]; iconAnc = [37, 41];
+                            // Aumentamos también la anchura si tiene un descuento aplicado
+                            iconSz = [105, 42]; iconAnc = [52, 45];
                             pStrVisualPop = '<div style="display:flex; flex-direction:column; align-items:center;">' + tachado + '<div style="line-height:1;">' + pN.toFixed(3) + ' €/L</div></div>';
                         }
 
@@ -3121,26 +3459,30 @@ function mostrarSkeleton() {
                             htmlAhorroPop = `<div style="background:${cS};color:#fff;padding:4px 6px;border-radius:6px;font-weight:bold;font-size:10px;">AHORRA ${g.aBruto.toFixed(2)}€</div>`;
                         }
 
-                        // --- 2. Insignia Socios Compacta ---
+                                                // --- 2. Insignia Socios Compacta ---
                         const bSMPop = isR ? '<span style="background:#c0392b;color:#fff;font-size:8px;padding:2px 4px;border-radius:4px;margin-left:4px;vertical-align:middle;">🔒 SOCIOS</span>' : '';
+
 
                         // --- 3. Diseño del Pop-Up ---
                         let osmCacheHtml = window.osmCache && window.osmCache[g.IDEESS] ? window.osmCache[g.IDEESS] : '<span style="font-size:10px;color:var(--text-muted);">🔄 Buscando extras...</span>';
-
 
                         const pop = `
                     <div style="min-width: 200px; text-align: left; padding: 2px 0; font-family: -apple-system, sans-serif;">
                         
                         <div style="display:flex; flex-direction:column; align-items:center; margin-bottom:6px;">
                             <div style="display:flex; justify-content:center; align-items:center; gap:8px; text-align:center;">
-                                <div style="font-size:14px; font-weight:900; color:var(--text-main); display:flex; align-items:center; gap:4px; max-width: 170px;">
+                                <div style="font-size:14px; font-weight:900; color:var(--text-main); display:flex; align-items:center; gap:6px; max-width: 180px;">
                                     ${m} 
+                                    ${getLogoGasolinera(g.Rótulo)}
                                     <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex:1;">${g.Rótulo}</span> 
                                     ${bSMPop}
                                 </div>
                                 <span id="${iM}" class="fav-btn fav-btn-id-${g.IDEESS}" onclick="toggleFav('${g.IDEESS}',event,'${iM}')" style="font-size:16px; margin-top:-2px;">${hIc}</span>
                             </div>
+                            <div style="margin-top:2px;">
+                                ${htmlEstrellas}
                             </div>
+                        </div>
 
                         <div style="background:var(--bg-input); border-radius:8px; padding:6px 10px; margin-bottom:8px; border:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;">
                             <div style="color:${cS}; font-size:16px; font-weight:900; display:flex; align-items:center; gap:4px;">
@@ -3160,17 +3502,18 @@ function mostrarSkeleton() {
 
                         <div style="display:flex; flex-wrap:wrap; justify-content:center; gap:5px; margin-top:4px;">
                             <button class="btn-action btn-historial" onclick="mostrarHistorico('${sN}','${g.IDEESS}','${g.Horario || ''}')" style="margin:0; padding:0 6px; height:34px; box-sizing:border-box;">📈 HISTÓRICO</button>
-                            <button class="btn-action" style="background:#7f8c8d; opacity:0.6; cursor:not-allowed; margin:0; padding:0 6px; height:34px; box-sizing:border-box;" onclick="alert('Próximamente: Valoraciones de la comunidad')">⭐ OPINIONES</button>
-                            <button class="btn-action" style="background:#f39c12; margin:0; padding:0 6px; height:34px; box-sizing:border-box;" onclick="abrirAnotar('${sN}', ${g.pN})">📓 ANOTAR</button>
-                            <a class="btn-action btn-wa" href="https://api.whatsapp.com/send?text=${waM}" target="_blank" style="margin:0; padding:0 6px; height:34px; box-sizing:border-box;">💬 WA</a>
+                            <button class="btn-action" style="background:#f1c40f; color:#000 !important; margin:0; padding:0 6px; height:34px; box-sizing:border-box;" onclick="alert('🚧 ¡Próximamente! Estamos ultimando la sección de opiniones.')"><span style="font-size:14px; margin-right:4px;">★</span> OPINIONES</button>
+
+                            <button class="btn-action" style="background:#f39c12; margin:0; padding:0 6px; height:34px; box-sizing:border-box;" onclick="abrirAnotar('${sN}', ${g.pN}, ${(globalMaxP - g.pN).toFixed(3)})">📓 ANOTAR</button>
+                                                       <button class="btn-action" style="background:#27ae60; border:none; margin:0; padding:0 6px; height:34px; box-sizing:border-box;" onclick="compartirNativo('${sN}', '${waM}')"><span style="font-size:14px; margin-right:4px;">📤</span> COMPARTIR</button>
+
                             <a class="btn-action btn-directo" href="${mU}" target="_blank" style="flex:1; margin:0; padding:0 6px; height:34px; box-sizing:border-box;">IR ↗</a>
                         </div>
                     </div>`;
 
 
 
-
-                        let htmlMapa = '<div style="background:' + cS + '; color:#fff; padding:4px 8px; border-radius:12px; font-weight:900; font-size:14px; box-shadow:0 3px 8px rgba(0,0,0,0.3); display:flex; align-items:center; justify-content:center; border: 1px solid rgba(255,255,255,0.5); text-shadow: 0 1px 2px rgba(0,0,0,0.3);">' + pStrVisualMap + '<span class="tr-ind" style="margin-left:4px; filter: brightness(0) invert(1);" data-type="map" data-id="' + g.IDEESS + '">' + tH_m + '</span></div>';
+                        let htmlMapa = '<div style="background:' + cS + '; color:#fff; padding:4px 6px; border-radius:12px; font-weight:900; font-size:14px; box-shadow:0 3px 8px rgba(0,0,0,0.3); display:flex; align-items:center; justify-content:center; border: 1px solid rgba(255,255,255,0.5); text-shadow: 0 1px 2px rgba(0,0,0,0.3); white-space:nowrap; box-sizing:border-box;">' + getLogoGasolinera(g.Rótulo, true) + pStrVisualMap + '<span class="tr-ind" style="margin-left:4px; filter: brightness(0) invert(1);" data-type="map" data-id="' + g.IDEESS + '">' + tH_m + '</span></div>';
 
 
                         // Solo dibujamos la etiqueta del precio para que el cluster cuente 1 solo marcador por gasolinera
@@ -3199,7 +3542,7 @@ function mostrarSkeleton() {
                         }
                     } else {
                         q("header-ahorro").style.display = "block";
-                        q("resumenAhorro").innerHTML = "💰 AHORRO MÁXIMO (" + searchMode.toUpperCase() + "): " + ((globalMaxP - globalMinP) * litrosEfectivos).toFixed(2) + "€";
+                        q("resumenAhorro").innerHTML = "💰 AHORRO MÁXIMO POSIBLE (" + searchMode.toUpperCase() + "): " + ((globalMaxP - globalMinP) * litrosEfectivos).toFixed(2) + "€";
                     }
 
                     if (necesitaPlanInteligente && window.planesUnicosGlobal.length > 0) {
@@ -3242,7 +3585,9 @@ function mostrarSkeleton() {
                                 <button onclick="event.preventDefault(); event.stopPropagation(); window.descartarGasolinera('${mejor.IDEESS}'); return false;" style="background:#e74c3c; color:#fff; border:none; padding:5px 10px; border-radius:6px; font-size:10px; font-weight:bold; cursor:pointer; box-shadow:0 2px 4px rgba(0,0,0,0.2); white-space:nowrap;">❌ IGNORAR</button>
                             </div>
                             
-                            <div style="font-size:15px; font-weight:800; color:var(--text-main); line-height:1.2;">🏆 ${mejor.Rótulo}</div>
+                            <div style="font-size:15px; font-weight:800; color:var(--text-main); line-height:1.2; display:flex; align-items:center; gap:6px;">
+                                🏆 ${getLogoGasolinera(mejor.Rótulo)} ${mejor.Rótulo}
+                            </div>
                                                         <div style="margin-top:8px; margin-bottom:8px; display:flex; align-items:center; flex-wrap:wrap; gap:6px;">
                                 <span style="background:var(--accent); color:#fff; font-weight:900; font-size:10px; padding:3px 8px; border-radius:6px; text-transform:uppercase; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                                     ${mejor.Municipio || ''}
@@ -3300,10 +3645,18 @@ function mostrarSkeleton() {
                             let cS = pN <= (globalMinP + 0.03) ? "var(--accent-green)" : pN < (globalMinP + globalMaxP) / 2 ? "var(--accent-orange)" : "#e74c3c";
                             let m = g.rP === 1 && o !== "favoritas" ? "🥇" : g.rP === 2 && o !== "favoritas" ? "🥈" : g.rP === 3 && o !== "favoritas" ? "🥉" : "", cM = m === "🥇" ? "oro" : m === "🥈" ? "plata" : m === "🥉" ? "bronce" : "";
 
-                            const bSL = isR ? '<span style="background:#c0392b;color:#fff;font-size:9px;padding:2px 4px;border-radius:3px;vertical-align:middle;margin-left:5px;">🔒 SOCIOS</span>' : '';
+                                       
+                                            const bSL = isR ? '<span style="background:#c0392b;color:#fff;font-size:9px;padding:2px 4px;border-radius:3px;vertical-align:middle;margin-left:5px;">🔒 SOCIOS</span>' : '';
                             const mU = "https://www.google.com/maps/dir/?api=1&destination=" + lat + "," + ln, sN = g.Rótulo.replace(/'/g, ""), iL = 'heart_list_' + g.IDEESS;
 
+
                             let htmlAhorroList = "";
+
+                            
+                                                    // --- ESTRELLAS EN CERO HASTA QUE SE LANCE LA FUNCIÓN ---
+                        let htmlEstrellas = typeof generarEstrellasAmazon === 'function' ? generarEstrellasAmazon(0, 0) : '';
+
+
                             if (consumo > 0 && searchMode !== 'provincia') {
                                 if (g.aNeto > 0) htmlAhorroList = '<span class="badge-ahorro pulse-ahorro" style="background:' + cS + '">AHORRO NETO: +' + g.aNeto.toFixed(2) + '€</span><div style="font-size:12px;color:var(--text-muted);font-weight:bold;text-align:right;margin-top:2px;">' + (searchMode === 'zona' ? 'Viaje' : 'Desvío') + ': -' + g.cViaje.toFixed(2) + '€</div>';
                                 else htmlAhorroList = '<span class="badge-ahorro" style="background:#e74c3c">PIERDES ' + Math.abs(g.aNeto).toFixed(2) + '€</span><div style="font-size:12px;color:var(--text-muted);font-weight:bold;text-align:right;margin-top:2px;">' + (searchMode === 'zona' ? 'Viaje' : 'Desvío') + ': -' + g.cViaje.toFixed(2) + '€</div>';
@@ -3346,12 +3699,18 @@ item.id = "tarjeta-" + g.IDEESS; // <-- AÑADIDO
                                     <span class="top-badge ${cM}" style="margin:0;">${o === "favoritas" ? '❤️ FAVORITA' : 'TOP ' + g.rP + ' ' + m}</span>${bSL}
                                 </div>
                                 
-                                <div style="font-size:15px; font-weight:900; color:var(--text-main); line-height:1.1; display:flex; align-items:flex-start; justify-content:space-between; gap:4px;">
-                                    <span style="word-break:break-word; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">${g.Rótulo}</span>
-                                    <span id="${iL}" class="fav-btn fav-btn-id-${g.IDEESS}" onclick="toggleFav('${g.IDEESS}',event,'${iL}')" style="font-size:18px; line-height:1; margin-top:-2px;">${hIc}</span>
+                                <div style="font-size:15px; font-weight:900; color:var(--text-main); line-height:1.1; display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:4px;">
+                                    <div style="display:flex; align-items:center; gap:8px; flex:1; min-width:0;">
+                                        ${getLogoGasolinera(g.Rótulo)}
+                                        <span style="word-break:break-word; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">${g.Rótulo}</span>
+                                    </div>
+                                    <span id="${iL}" class="fav-btn fav-btn-id-${g.IDEESS}" onclick="toggleFav('${g.IDEESS}',event,'${iL}')" style="font-size:18px; line-height:1; margin-top:-2px; flex-shrink:0;">${hIc}</span>
                                 </div>
                                 
+                                ${htmlEstrellas}
+                                
                                 <div style="display:flex; align-items:center; flex-wrap:wrap; gap:6px;">
+     
                                     <span style="background:var(--accent); color:#fff; font-weight:900; font-size:10px; padding:2px 6px; border-radius:6px; text-transform:uppercase;">${g.Municipio || ''}</span>
                                     <span class="distancia-badge" style="font-size:10px; padding:2px 6px;">${msgDist}</span>
                                 </div>
@@ -3378,17 +3737,20 @@ item.id = "tarjeta-" + g.IDEESS; // <-- AÑADIDO
                                         <span style="font-size:13px; line-height:1;">📈</span><span>HISTÓRICO</span>
                                     </button>
                                     
-                                    <button class="btn-action" style="background:#7f8c8d; opacity:0.6; cursor:not-allowed; margin:0; padding:6px 2px; font-size:8px; border-radius:6px; width:100%; box-sizing:border-box; flex-direction:column; gap:2px;" onclick="alert('Próximamente: Valoraciones de la comunidad')">
-                                        <span style="font-size:13px; line-height:1;">⭐</span><span>OPINIONES</span>
+                                    <button class="btn-action" style="background:#f1c40f; color:#000 !important; margin:0; padding:6px 2px; font-size:8px; border-radius:6px; width:100%; box-sizing:border-box; flex-direction:column; gap:2px;" onclick="alert('🚧 ¡Próximamente! Estamos ultimando la sección de opiniones.')">
+                                        <span style="font-size:15px; line-height:1;">★</span><span>OPINIONES</span>
                                     </button>
+                                             
+                 
                                     
-                                    <button class="btn-action" style="background:#f39c12; margin:0; padding:6px 2px; font-size:8px; border-radius:6px; width:100%; box-sizing:border-box; flex-direction:column; gap:2px;" onclick="abrirAnotar('${sN}', ${g.pN})">
+                                    <button class="btn-action" style="background:#f39c12; margin:0; padding:6px 2px; font-size:8px; border-radius:6px; width:100%; box-sizing:border-box; flex-direction:column; gap:2px;"                             onclick="abrirAnotar('${sN}', ${g.pN}, ${(globalMaxP - g.pN).toFixed(3)})"
+  >
                                         <span style="font-size:13px; line-height:1;">📓</span><span>ANOTAR</span>
                                     </button>
                                     
-                                    <a class="btn-action btn-wa" href="https://api.whatsapp.com/send?text=${waM}" target="_blank" style="margin:0; padding:6px 2px; font-size:8px; border-radius:6px; width:100%; box-sizing:border-box; flex-direction:column; gap:2px;">
-                                        <span style="font-size:13px; line-height:1;">💬</span><span>WA</span>
-                                    </a>
+                                                            <button class="btn-action" style="background:#27ae60; border:none; margin:0; padding:6px 2px; font-size:8px; border-radius:6px; width:100%; box-sizing:border-box; flex-direction:column; gap:2px;" onclick="compartirNativo('${sN}', '${waM}')">
+                                        <span style="font-size:15px; line-height:1;">📤</span><span>COMPARTIR</span>
+                                    </button>
 
                                     <a class="btn-action btn-directo" href="${mU}" target="_blank" style="margin:0; padding:6px 2px; font-size:9px; border-radius:6px; width:100%; box-sizing:border-box; flex-direction:column; gap:2px; grid-column: span 2;">
                                         <span style="font-size:14px; line-height:1;">↗️</span><span>IR A MAPS</span>
@@ -3420,6 +3782,7 @@ item.id = "tarjeta-" + g.IDEESS; // <-- AÑADIDO
                     q("loading-overlay").style.display = "none";
                     isFetching = false;
                     q("list-container").classList.remove("bloqueado");
+                    if (q("map-skeleton-overlay")) q("map-skeleton-overlay").classList.remove("active");
                 }
             }
 
@@ -3565,11 +3928,15 @@ item.id = "tarjeta-" + g.IDEESS; // <-- AÑADIDO
             }
 
 
-            function renderCars() {
+                        function renderCars() {
                 const list = document.getElementById('carList');
                 list.innerHTML = '';
+                
+                // Pedimos los datos del motor de ahorro
+                let ahorrosG = typeof actualizarAhorroGlobal === 'function' ? actualizarAhorroGlobal() : {};
 
                 myCars.forEach(car => {
+
                     let alertasHTML = '';
                     const hoy = new Date();
 
@@ -3593,12 +3960,17 @@ item.id = "tarjeta-" + g.IDEESS; // <-- AÑADIDO
                         alertasHTML += `<span style="color:${color}; font-size:10px; font-weight:900; background:var(--bg-body); padding:3px 6px; border-radius:6px;">${icono} Seguro: ${mes}</span> `;
                     }
 
-                    // Comprobar Aceite (Solo muestra el texto)
+                                        // Comprobar Aceite (Solo muestra el texto)
                     if (car.aceite) {
                         alertasHTML += `<span style="color:var(--text-muted); font-size:10px; font-weight:900; background:var(--bg-body); padding:3px 6px; border-radius:6px;">🛢️ Aceite: ${car.aceite} km</span>`;
                     }
 
+                    // AHORRO POR COCHE
+                    let ahorroEsteCoche = ahorrosG[car.id] ? ahorrosG[car.id].toFixed(2) : "0.00";
+                    alertasHTML += `<span style="color:var(--accent-green); font-size:10px; font-weight:900; background:var(--bg-ahorro); border:1px solid var(--accent-green); padding:2px 6px; border-radius:6px;">​💰 Ahorro: +${ahorroEsteCoche}€</span>`;
+
                     let alertasBloque = alertasHTML ? `<div style="margin-top:8px; display:flex; flex-wrap:wrap; gap:5px;">${alertasHTML}</div>` : '';
+
 
                     list.innerHTML += `<div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-input); padding:12px; border-radius:12px; border:1px solid var(--border-color);">
             <div style="flex:1;">
@@ -3772,13 +4144,62 @@ item.id = "tarjeta-" + g.IDEESS; // <-- AÑADIDO
             }
 
 
-            // --- 1 Y 3: DIVIDIR GASTOS Y BITÁCORA ---
+                       // --- 1 Y 3: DIVIDIR GASTOS Y BITÁCORA ---
             let bitacora = JSON.parse(localStorage.getItem('gasofa_bitacora')) || [];
             let currentAnotar = {};
 
-            // --- FUNCIONES DE GASTOS / BITÁCORA ACTUALIZADAS ---
+                                   // ==========================================================
+            // MOTOR CALCULADOR DE AHORROS GLOBALES (CORREGIDO PARA EVITAR ERRORES)
+            // ==========================================================
+            function actualizarAhorroGlobal() {
+                let total = 0;
+                let ahorroPorCoche = {};
+                
+                bitacora.forEach(b => {
+                    let lts = parseFloat(b.litros) || 0;
+                    let ahL = parseFloat(b.ahorroL) || 0.10; 
+                    let ahorroEste = parseFloat(b.ahorro);
+                    
+                    // MAGIA ANTI-NaN: Si está corrupto, lo reescribimos y lo saneamos
+                    if (isNaN(ahorroEste)) {
+                        ahorroEste = lts * ahL;
+                        if (isNaN(ahorroEste)) ahorroEste = 0;
+                        b.ahorro = ahorroEste; 
+                    }
+                    
+                    total += ahorroEste;
+                    
+                    if (b.carId) {
+                        if (!ahorroPorCoche[b.carId]) ahorroPorCoche[b.carId] = 0;
+                        ahorroPorCoche[b.carId] += ahorroEste;
+                    }
+                });
+                
+                // Limpiamos y guardamos la memoria local
+                localStorage.setItem('gasofa_bitacora', JSON.stringify(bitacora));
 
-            // Funciones de ayuda para formatear las fechas (El input date requiere YYYY-MM-DD)
+                // Actualizamos las pantallas
+                let badgeText = q('mapAhorroText');
+                if (badgeText) badgeText.innerText = total.toFixed(2) + ' €';
+                
+                let garajeTotal = q('garajeTotalAhorroNum');
+                if (garajeTotal) garajeTotal.innerText = total.toFixed(2) + ' €';
+                
+                return ahorroPorCoche;
+            }
+            
+            // Blindaje para asegurar que el navegador siempre encuentre la función
+            window.actualizarAhorroGlobal = actualizarAhorroGlobal;
+
+            // Arrancamos el motor al cargar la página
+            document.addEventListener('DOMContentLoaded', actualizarAhorroGlobal);
+
+
+            // ==========================================================
+            // FUNCIONES DE GASTOS / BITÁCORA ACTUALIZADAS (CON PRECIO EDITABLE)
+            // ==========================================================
+
+            // Funciones de ayuda para formatear las fechas
             function getHoyYMD() {
                 const d = new Date();
                 let mes = '' + (d.getMonth() + 1), dia = '' + d.getDate(), anio = d.getFullYear();
@@ -3797,14 +4218,14 @@ item.id = "tarjeta-" + g.IDEESS; // <-- AÑADIDO
                 return `${parseInt(partes[2])}/${parseInt(partes[1])}/${partes[0]}`;
             }
 
-                               function abrirAnotar(nombre, precio, ahorroPorLitro = 0.10) {
+                        function abrirAnotar(nombre, precio, ahorroPorLitro = 0.10) {
                 currentAnotar = { nombre, precio, ahorroPorLitro: parseFloat(ahorroPorLitro) || 0.10 };
                 q('editBitacoraId').value = "";
                 q('bitacoraTitle').innerText = "📓 Anotar Repostaje";
                 q('bitacoraGasName').innerText = nombre;
                 
                 let inputPrecio = q('bitacoraPrecioManual');
-                inputPrecio.value = precio.toFixed(3);
+                if(inputPrecio) inputPrecio.value = precio.toFixed(3);
 
                 q('bitacoraLitros').value = "";
                 q('bitacoraEuros').value = "";
@@ -3843,6 +4264,7 @@ item.id = "tarjeta-" + g.IDEESS; // <-- AÑADIDO
                 let record = bitacora.find(b => b.id == id);
                 if (record) {
                     q('historialModal').style.display = 'none';
+                    // Al editar, rescatamos el ahorro por litro original de ese día
                     currentAnotar = { nombre: record.nombre, precio: record.precioL, ahorroPorLitro: record.ahorroL || 0.10 };
 
                     q('editBitacoraId').value = id;
@@ -3850,7 +4272,7 @@ item.id = "tarjeta-" + g.IDEESS; // <-- AÑADIDO
                     q('bitacoraGasName').innerText = record.nombre;
                     
                     let inputPrecio = q('bitacoraPrecioManual');
-                    inputPrecio.value = record.precioL.toFixed(3);
+                    if(inputPrecio) inputPrecio.value = record.precioL.toFixed(3);
 
                     q('bitacoraLitros').value = record.litros;
                     q('bitacoraEuros').value = record.euros;
@@ -3889,7 +4311,10 @@ item.id = "tarjeta-" + g.IDEESS; // <-- AÑADIDO
 
                 let lts = parseFloat(q('bitacoraLitros').value);
                 let eur = parseFloat(q('bitacoraEuros').value);
-                let precioFinal = parseFloat(q('bitacoraPrecioManual').value); 
+                
+                let inputPrecio = q('bitacoraPrecioManual');
+                let precioFinal = inputPrecio ? parseFloat(inputPrecio.value) : currentAnotar.precio; 
+                
                 let kmActuales = parseFloat(q('bitacoraKm').value) || 0;
                 let fechaFinal = ymdToEs(q('bitacoraFecha').value); 
                 let idEdit = q('editBitacoraId').value;
@@ -3901,7 +4326,18 @@ item.id = "tarjeta-" + g.IDEESS; // <-- AÑADIDO
                     if (foundCar) carName = foundCar.name;
                 }
 
-                if (!lts || !eur || !precioFinal) { alert("⚠️ Rellena los litros, euros y el precio"); return; }
+                if (!lts || !eur || isNaN(precioFinal)) { alert("⚠️ Rellena los litros, euros y el precio"); return; }
+
+                // --- MAGIA MATEMÁTICA INVISIBLE ---
+                // 1. Deducimos el Precio Máximo de la zona sumando el precio y el ahorro guardados.
+                let precioMaximoZona = currentAnotar.precio + currentAnotar.ahorroPorLitro;
+                
+                // 2. Restamos a ese techo máximo el precio real que el usuario ha tecleado.
+                let nuevoAhorroPorLitro = precioMaximoZona - precioFinal;
+                
+                // 3. Calculamos los euros totales de ahorro para la hucha.
+                let nuevoAhorroTotal = nuevoAhorroPorLitro * lts;
+                // ---------------------------------
 
                 if (idEdit !== "") {
                     let index = bitacora.findIndex(b => b.id == idEdit);
@@ -3913,8 +4349,8 @@ item.id = "tarjeta-" + g.IDEESS; // <-- AÑADIDO
                         bitacora[index].fecha = fechaFinal;
                         bitacora[index].carId = carId;
                         bitacora[index].carName = carName;
-                        bitacora[index].ahorroL = currentAnotar.ahorroPorLitro;
-                        bitacora[index].ahorro = lts * currentAnotar.ahorroPorLitro;
+                        bitacora[index].ahorroL = nuevoAhorroPorLitro; // <-- Ahorro actualizado
+                        bitacora[index].ahorro = nuevoAhorroTotal;     // <-- Ahorro actualizado
                     }
                     bitacora.sort((a, b) => new Date(esToYMD(b.fecha)) - new Date(esToYMD(a.fecha)));
                 } else {
@@ -3928,13 +4364,17 @@ item.id = "tarjeta-" + g.IDEESS; // <-- AÑADIDO
                         km: kmActuales,
                         carId: carId,
                         carName: carName,
-                        ahorroL: currentAnotar.ahorroPorLitro,
-                        ahorro: lts * currentAnotar.ahorroPorLitro
+                        ahorroL: nuevoAhorroPorLitro, // <-- Ahorro actualizado
+                        ahorro: nuevoAhorroTotal      // <-- Ahorro actualizado
                     });
                     bitacora.sort((a, b) => new Date(esToYMD(b.fecha)) - new Date(esToYMD(a.fecha)));
                 }
 
                 localStorage.setItem('gasofa_bitacora', JSON.stringify(bitacora));
+                
+                if (typeof window.actualizarAhorroGlobal === 'function') {
+                    window.actualizarAhorroGlobal(); 
+                }
                 
                 q('bitacoraModal').style.display = 'none';
 
@@ -3944,7 +4384,6 @@ item.id = "tarjeta-" + g.IDEESS; // <-- AÑADIDO
                     alert("✅ ¡Repostaje guardado!");
                 }
             }
-    
 
 
             function abrirHistorial() {
@@ -4067,6 +4506,7 @@ item.id = "tarjeta-" + g.IDEESS; // <-- AÑADIDO
                     <strong style="font-size:13px; color:var(--text-main); display:block;">${b.nombre}</strong>
                     ${carBadge}
                     <div style="font-size:11px; color:var(--text-muted); margin-top:4px;">${b.fecha} • ${b.litros.toFixed(1)} L a ${b.precioL.toFixed(3)}€</div>
+                    <div style="font-size:11px; color:var(--accent-green); font-weight:bold; margin-top:4px;">​💰 Ahorro: +${(b.ahorro || (b.litros * (b.ahorroL || 0.10))).toFixed(2)}€</div>
                 </div>
 
                 <div style="display:flex; align-items:center; gap:8px;">
@@ -4359,19 +4799,128 @@ item.id = "tarjeta-" + g.IDEESS; // <-- AÑADIDO
                 q('garageModal').style.display = 'flex';
             }
 
+            // Generador de Estrellas estilo Amazon (Visual)
+            function generarEstrellasAmazon(media, totalValoraciones) {
+                if (totalValoraciones === 0 || !media) {
+                    return `<div style="font-size:10px; color:var(--text-muted); margin-bottom:4px;">
+                                <span style="color:#bdc3c7; font-size:12px;">☆☆☆☆☆</span> <span style="vertical-align:top;">Aún sin valoraciones</span>
+                            </div>`;
+                }
+
+                let estrellasHTML = '';
+                let mediaRedondeada = Math.round(media * 2) / 2; // Redondea al 0.5 más cercano
+
+                for (let i = 1; i <= 5; i++) {
+                    if (i <= mediaRedondeada) {
+                        estrellasHTML += '★'; // Llena
+                    } else {
+                        estrellasHTML += '☆'; // Vacía
+                    }
+                }
+
+                return `<div style="display:flex; align-items:center; gap:4px; margin-bottom:4px; font-size:12px;">
+                            <span style="color:#f1c40f; font-size:14px; letter-spacing:1px; margin-top:-2px;">${estrellasHTML}</span>
+                            <span style="font-weight:900; color:var(--text-main);">${media.toFixed(1)}</span>
+                            <span style="color:var(--text-muted); font-size:10px;">(${totalValoraciones})</span>
+                        </div>`;
+            }
+
+
             // --- SISTEMA DE VALORACIONES Y COMENTARIOS ---
+
+            // Generamos un "DNI" secreto e invisible para cada móvil
+            let miUsuarioID = localStorage.getItem('gasofa_uid');
+            if (!miUsuarioID) {
+                miUsuarioID = 'user_' + Math.random().toString(36).substr(2, 9);
+                localStorage.setItem('gasofa_uid', miUsuarioID);
+            }
 
             function abrirValoraciones(id, nombre) {
                 q('revGasId').value = id;
                 q('revGasName').innerText = nombre;
-                q('revText').value = ""; // Limpiamos texto anterior
-                marcarEstrellas(0); // Reiniciamos estrellas
+                q('revText').value = ""; 
+                marcarEstrellas(0); 
 
-                // Aquí en el futuro haremos un fetch() al servidor para pedir los comentarios de este 'id'
-                q('revList').innerHTML = "<div style='text-align:center; color:var(--text-muted); font-size:12px; padding:10px;'>Conectando con la nube...</div>";
+                // Recuperamos el apodo si el usuario ya comentó alguna vez
+                let apodoGuardado = localStorage.getItem('gasofa_apodo');
+                if (apodoGuardado) {
+                    q('revApodo').value = apodoGuardado;
+                } else {
+                    q('revApodo').value = "";
+                }
 
+                const list = q('revList');
+                list.innerHTML = "<div style='text-align:center; color:var(--text-muted); font-size:12px; padding:20px;'>Conectando con la nube... ⏳</div>";
                 q('reviewsModal').style.display = 'flex';
+
+                // Pedimos los comentarios reales a la nube
+                fetch(WEB_APP_URL + "?accion=obtenerValoraciones&idGas=" + id + "&t=" + Date.now())
+                    .then(res => res.json())
+                    .then(data => {
+                        list.innerHTML = "";
+                        if (data.length === 0) {
+                            list.innerHTML = "<div style='text-align:center; color:var(--text-muted); font-size:12px; padding:20px;'>Aún no hay opiniones. ¡Sé el primero en valorar!</div>";
+                            return;
+                        }
+
+                        // Pintamos cada comentario
+                        data.forEach(rev => {
+                            let nombreMostrar = rev.apodo ? rev.apodo : "Anónimo";
+                            list.innerHTML += `
+                            <div style="background:var(--bg-panel); padding:12px; border-radius:12px; border:1px solid var(--border-color); margin-bottom:8px;">
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                                    <div style="display:flex; align-items:center; gap:8px;">
+                                        <span style="color:#f1c40f; font-size:14px; letter-spacing:2px;">${'★'.repeat(rev.estrellas)}${'☆'.repeat(5 - rev.estrellas)}</span>
+                                        <span style="font-size:11px; font-weight:bold; color:var(--text-main);">👤 ${nombreMostrar}</span>
+                                    </div>
+                                    <span style="font-size:10px; color:var(--text-muted); font-weight:bold;">${rev.fecha}</span>
+                                </div>
+                                <div style="font-size:13px; color:var(--text-main); line-height:1.4;">${rev.texto}</div>
+                            </div>`;
+                        });
+                    })
+                    .catch(err => {
+                        list.innerHTML = "<div style='text-align:center; color:#e74c3c; font-size:12px; padding:20px;'>❌ Error de conexión al cargar los comentarios.</div>";
+                    });
             }
+
+            function enviarValoracion() {
+                let id = q('revGasId').value;
+                let estrellas = parseInt(q('revStars').value);
+                let texto = q('revText').value.trim();
+                let apodo = q('revApodo').value.trim();
+
+                if (estrellas === 0) { alert("⚠️ Por favor, selecciona al menos 1 estrella."); return; }
+                if (apodo.length < 2) { alert("⚠️ Por favor, escribe tu nombre o apodo."); return; }
+                if (texto.length < 4) { alert("⚠️ Escribe un comentario un poquito más largo."); return; }
+
+                // Guardamos el apodo en el móvil para que no tenga que teclearlo la próxima vez
+                localStorage.setItem('gasofa_apodo', apodo);
+
+                q('revList').innerHTML = `<div style='text-align:center; color:var(--accent-green); font-size:13px; font-weight:bold; padding:20px;'>⏳ Guardando tu opinión para toda España...</div>`;
+
+                // Enviamos el comentario a tu Google Apps Script
+                let url = WEB_APP_URL + "?accion=guardarValoracion" +
+                          "&idGas=" + encodeURIComponent(id) +
+                          "&estrellas=" + estrellas +
+                          "&apodo=" + encodeURIComponent(apodo) +
+                          "&texto=" + encodeURIComponent(texto) +
+                          "&userId=" + miUsuarioID;
+
+                fetch(url)
+                    .then(res => res.json())
+                    .then(data => {
+                        q('revText').value = "";
+                        marcarEstrellas(0);
+                        // Recargamos la lista
+                        abrirValoraciones(id, q('revGasName').innerText);
+                    })
+                    .catch(err => {
+                        alert("❌ Hubo un error al guardar. Revisa tu conexión a internet.");
+                        abrirValoraciones(id, q('revGasName').innerText);
+                    });
+            }
+
 
             function marcarEstrellas(num) {
                 q('revStars').value = num;
@@ -4385,35 +4934,6 @@ item.id = "tarjeta-" + g.IDEESS; // <-- AÑADIDO
                         estrella.style.transform = 'scale(1)';
                     }
                 });
-            }
-
-            function enviarValoracion() {
-                let id = q('revGasId').value;
-                let estrellas = parseInt(q('revStars').value);
-                let texto = q('revText').value.trim();
-
-                if (estrellas === 0) { alert("⚠️ Por favor, selecciona al menos 1 estrella."); return; }
-                if (texto.length < 5) { alert("⚠️ Escribe un comentario un poquito más largo."); return; }
-
-                q('revList').innerHTML = `<div style='text-align:center; color:var(--accent-green); font-size:13px; font-weight:bold; padding:10px;'>⏳ Enviando a la nube...</div>`;
-
-                // [AQUÍ IRÁ LA CONEXIÓN REAL CON GOOGLE APPS SCRIPT]
-
-                // Simulamos que se envía para que veas cómo queda
-                setTimeout(() => {
-                    q('revList').innerHTML = `
-            <div style="background:var(--bg-panel); padding:10px; border-radius:8px; border:1px solid var(--border-color);">
-                <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
-                    <span style="color:#f1c40f; font-size:14px;">${'★'.repeat(estrellas)}${'☆'.repeat(5 - estrellas)}</span>
-                    <span style="font-size:10px; color:var(--text-muted);">Justo ahora</span>
-                </div>
-                <div style="font-size:12px; color:var(--text-main);">${texto}</div>
-            </div>
-        `;
-                    q('revText').value = "";
-                    marcarEstrellas(0);
-                    alert("✅ ¡Comentario publicado para toda la comunidad!");
-                }, 1000);
             }
 
             // --- FUNCIONES DEL PARKING ---
@@ -4774,14 +5294,22 @@ function activarSwipeModales() {
         let startY = 0;
         let currentY = 0;
         let isDragging = false;
+        let haHabidoMovimiento = false; // Nueva marca para saber si el usuario ha arrastrado de verdad
         
         content.addEventListener('touchstart', e => {
-            // Solo activamos el arrastre si estamos en la parte superior del modal (scrollTop = 0)
-            if (content.scrollTop <= 0) {
-                startY = e.touches[0].clientY;
-                isDragging = true;
-                content.style.transition = 'none'; // Quitamos animaciones para que siga al dedo
+            let listaInterior = e.target.closest('[style*="overflow-y:auto"], [style*="overflow-y: auto"]');
+            if (listaInterior && listaInterior.scrollTop > 5) return;
+
+            if (content.scrollTop > 5) {
+                isDragging = false;
+                return;
             }
+
+            startY = e.touches[0].clientY;
+            currentY = startY; // Sincronizamos para limpiar cualquier memoria antigua
+            isDragging = true;
+            haHabidoMovimiento = false; // Al empezar el toque, asumimos que aún no se mueve
+            content.style.transition = 'none';
         }, { passive: true });
         
         content.addEventListener('touchmove', e => {
@@ -4789,8 +5317,8 @@ function activarSwipeModales() {
             currentY = e.touches[0].clientY;
             let deltaY = currentY - startY;
             
-            // Si arrastra hacia abajo, movemos el modal
             if (deltaY > 0) {
+                haHabidoMovimiento = true; // Confirmamos que el dedo se está desplazando hacia abajo
                 content.style.transform = `translateY(${deltaY}px)`;
             }
         }, { passive: true });
@@ -4799,23 +5327,157 @@ function activarSwipeModales() {
             if (!isDragging) return;
             isDragging = false;
             
+            // Si solo ha sido un toque rápido (clic sin arrastrar), cancelamos el cierre automático
+            if (!haHabidoMovimiento) {
+                content.style.transform = '';
+                return;
+            }
+            
             let deltaY = currentY - startY;
             content.style.transition = 'transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)';
             
-            // Si lo ha arrastrado más de 120px hacia abajo, lo cerramos
             if (deltaY > 120) {
                 modal.style.display = 'none';
-                // Reseteamos la posición para la próxima vez que se abra
                 setTimeout(() => { content.style.transform = ''; }, 300);
             } else {
-                // Si no ha llegado al umbral, vuelve a su sitio
                 content.style.transform = '';
             }
             startY = 0;
+            currentY = 0;
         });
     });
 }
 
+            // --- NUEVO: BOTÓN SUBIR Y OCULTAR LISTA ---
+            const listCont = q('list-container');
+            
+            // Botón flotante de subir
+            listCont.addEventListener('scroll', function() {
+                const btnSubir = q('btnSubir');
+                if(this.scrollTop > 350) btnSubir.style.display = 'flex';
+                else btnSubir.style.display = 'none';
+            });
+
+            // Arrastrar lista hacia abajo para ver el mapa
+            let startYList = 0, currentYList = 0, isDraggingList = false;
+
+            listCont.addEventListener('touchstart', e => {
+                if (listCont.scrollTop <= 5) { // Solo si la lista está arriba del todo
+                    startYList = e.touches[0].clientY;
+                    isDraggingList = true;
+                    listCont.style.transition = 'none';
+                }
+            }, { passive: true });
+
+                        // Evento 2: Arrastrar el dedo
+            listCont.addEventListener('touchmove', e => {
+                if (!isDraggingList) return;
+                currentYList = e.touches[0].clientY;
+                let delta = currentYList - startYList;
+                if (delta > 0) {
+                    listCont.style.transform = `translateY(${delta}px)`;
+                    // ESCUDO: Evitamos que el navegador tire de la página entera hacia arriba
+                    if (e.cancelable) e.preventDefault(); 
+                }
+            }, { passive: false });
+
+            // Evento 3: Soltar el dedo
+            listCont.addEventListener('touchend', () => {
+                if (!isDraggingList) return;
+                isDraggingList = false;
+                let delta = currentYList - startYList;
+                listCont.style.transition = 'transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1)';
+                
+                               if (delta > 120) { 
+                    listCont.classList.add('hidden-down');
+                    document.body.classList.add('map-full')
+                    q('btnVerLista').style.display = 'flex';
+                    q('btnSubir').style.display = 'none'; // ¡Escondemos la flecha!
+                    vibrar(60);
+
+                    
+                    // MAGIA ANTI HUECO GRIS: Obligamos al mapa a pintar las calles
+                    let mapFix = setInterval(() => { if(map) map.invalidateSize(); }, 50);
+                    setTimeout(() => clearInterval(mapFix), 450);
+                }
+                listCont.style.transform = ''; 
+            });
+            
+                        // --- NUEVA IDEA: SISTEMA DE COMPARTIR NATIVO ---
+            window.compartirNativo = function(nombre, textoCodificado) {
+                // El texto nos llega codificado para URLs, lo decodificamos a texto normal
+                let textoReal = decodeURIComponent(textoCodificado);
+                
+                if (navigator.share) {
+                    // Si el móvil lo soporta, abrimos el menú nativo de Android/iOS
+                    navigator.share({
+                        title: 'Precio en ' + nombre,
+                        text: textoReal
+                    }).catch(console.error); // Ignoramos el error si el usuario le da a "Cancelar"
+                } else {
+                    // Plan B (Para PCs o navegadores antiguos): Copiamos el texto y mostramos un Toast
+                    navigator.clipboard.writeText(textoReal).then(() => {
+                        if (typeof mostrarToast === 'function') {
+                            mostrarToast("📋 ¡Copiado para compartir!");
+                        } else {
+                            alert("¡Texto copiado al portapapeles!");
+                        }
+                    });
+                }
+            };
+
+
+                        // Función para el nuevo botón verde de Mostrar Lista
+            window.restaurarLista = function() {
+                listCont.classList.remove('hidden-down');
+                document.body.classList.remove('map-full')
+                q('btnVerLista').style.display = 'none';
+                // Si la lista ya estaba escroleada hacia abajo, recuperamos la flecha
+                if (listCont.scrollTop > 350) q('btnSubir').style.display = 'flex';
+                vibrar(30);
+
+                
+                // MAGIA ANTI HUECO GRIS
+                let mapFix = setInterval(() => { if(map) map.invalidateSize(); }, 50);
+                setTimeout(() => clearInterval(mapFix), 450);
+            };
+
+
+            // --- IDEA 1: SISTEMA DE TOASTS (Avisos Premium) ---
+            window.mostrarToast = function(msg) {
+                const t = q('toastBox');
+                if(!t) return;
+                
+                t.innerText = msg;
+                let bg = 'var(--accent-green)';
+                if(msg.includes('❌') || msg.includes('⚠️')) bg = '#e74c3c';
+                
+                t.style.background = bg;
+                t.style.bottom = "85px"; // Por encima de la barra inferior
+                vibrar(50);
+                
+                clearTimeout(window.toastTimer);
+                window.toastTimer = setTimeout(() => { t.style.bottom = "-100px"; }, 3500);
+            };
+
+            // TRUCAZO: Sobrescribimos el `alert` antiguo para que TODA la app use el Toast sin tener que cambiar el código línea por línea
+            window.alert = function(msg) {
+                mostrarToast(msg);
+            };
+
+            // --- ESCUDO ANTI CLICKS FANTASMA EN MODALES ---
+            document.querySelectorAll('.modal-bg').forEach(modal => {
+                modal.addEventListener('click', function(e) {
+                    // Si el usuario toca exactamente el fondo oscuro, cerramos la ventana
+                    if (e.target === modal) {
+                        modal.style.display = 'none';
+                    }
+                    e.stopPropagation(); // Evitamos que el click llegue al mapa que hay debajo
+                });
+                modal.addEventListener('touchstart', function(e) {
+                    e.stopPropagation();
+                }, {passive: true});
+            });
 
             // --- CALCULADORA DE MEDIA NACIONAL EN TIEMPO REAL ---
             window.calcularMediaNacional = function () {
@@ -4848,6 +5510,56 @@ function activarSwipeModales() {
                     }
                 }
             };
+
+            // ==========================================================
+            // SISTEMA DE MINI-TUTORIAL (ONBOARDING)
+            // ==========================================================
+            let pasoTutorialActivo = 1;
+
+            window.mostrarPasoTutorial = function(paso) {
+                document.getElementById('tut-step-1').style.display = paso === 1 ? 'block' : 'none';
+                document.getElementById('tut-step-2').style.display = paso === 2 ? 'block' : 'none';
+                document.getElementById('tut-step-3').style.display = paso === 3 ? 'block' : 'none';
+                document.getElementById('tut-step-4').style.display = paso === 4 ? 'block' : 'none';
+                document.getElementById('tut-step-5').style.display = paso === 5 ? 'block' : 'none';
+                
+                const dots = document.querySelectorAll('.tut-dot');
+                dots.forEach((dot, index) => {
+                    if (paso === 1) dot.style.background = (index === 0) ? 'var(--accent)' : 'var(--border-color)';
+                    if (paso === 2) dot.style.background = (index === 1) ? 'var(--accent-orange)' : 'var(--border-color)';
+                    if (paso === 3) dot.style.background = (index === 2) ? 'var(--accent-green)' : 'var(--border-color)';
+                    if (paso === 4) dot.style.background = (index === 3) ? '#9b59b6' : 'var(--border-color)';
+                    if (paso === 5) dot.style.background = (index === 4) ? '#e74c3c' : 'var(--border-color)';
+                });
+
+                const btn = document.getElementById('btnTutNext');
+                if (paso === 5) {
+                    btn.innerText = "¡Empezar a ahorrar! 🚀";
+                    btn.style.background = "#e74c3c"; // Rojo para finalizar
+                } else {
+                    btn.innerText = "Siguiente ➡️";
+                    if (paso === 1) btn.style.background = "var(--accent)"; // Azul
+                    if (paso === 2) btn.style.background = "var(--accent-orange)"; // Naranja
+                    if (paso === 3) btn.style.background = "var(--accent-green)"; // Verde
+                    if (paso === 4) btn.style.background = "#9b59b6"; // Morado Garaje
+                }
+            };
+
+            window.avanzarTutorial = function() {
+                if (typeof vibrar === 'function') vibrar(30);
+                if (pasoTutorialActivo < 5) {
+                    pasoTutorialActivo++;
+                    mostrarPasoTutorial(pasoTutorialActivo);
+                } else {
+                    cerrarTutorial();
+                }
+            };
+
+            window.cerrarTutorial = function() {
+                document.getElementById('tutorialModal').style.display = 'none';
+                localStorage.setItem('gasofa_tutorial_visto', 'true');
+            };
+
 
 
         </script>
