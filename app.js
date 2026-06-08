@@ -140,16 +140,18 @@ import { getFirestore, doc, setDoc, getDoc, deleteDoc, onSnapshot } from "https:
                   miTaller: tallerAct
               }, { merge: true });
 
-                                             // ==========================================================
-                  // 📡 RADAR EN TIEMPO REAL (Sincronización Total)
-                  // ==========================================================
-                  if (typeof window.iniciarRadaresCompartidos === 'function') {
-                      window.iniciarRadaresCompartidos();
-                  }
-              }); // <--- 1. FALTABA ESTA (Cierra la descarga de datos de Firebase)
-          } // <--- 2. FALTABA ESTA (Cierra la comprobación del usuario)
+                             // ==========================================================
+              // 📡 RADAR EN TIEMPO REAL (Sincronización Total)
+              // ==========================================================
+              if (typeof window.iniciarRadaresCompartidos === 'function') {
+                  window.iniciarRadaresCompartidos();
+              }
+          }); // <-- 1. Cierra la descarga de datos de Firebase
+      } // <-- 2. Cierra la comprobación de si hay usuario
+  }); // <-- 3. Cierra el vigilante de sesión de Firebase
 
-            const D = document, q = i => D.getElementById(i);
+  const D = document, q = i => D.getElementById(i);
+                             
 
 
             const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyeIN2o-dHcyXw-ZAhUKboaotrOJcv-VM7ABYxzEkUsU4q19pKLrEFj64PanMyYSt_-/exec";
@@ -5237,5 +5239,3 @@ window.updateChartRange = updateChartRange;
 window.cerrarTutorial = cerrarTutorial;
 window.avanzarTutorial = avanzarTutorial;
 window.toggleZoomCamara = toggleZoomCamara;
-
-});
