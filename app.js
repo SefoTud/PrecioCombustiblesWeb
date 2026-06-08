@@ -140,18 +140,59 @@ import { getFirestore, doc, setDoc, getDoc, deleteDoc, onSnapshot } from "https:
                   miTaller: tallerAct
               }, { merge: true });
 
-                             // ==========================================================
-              // 📡 RADAR EN TIEMPO REAL (Sincronización Total)
               // ==========================================================
-              if (typeof window.iniciarRadaresCompartidos === 'function') {
-                  window.iniciarRadaresCompartidos();
+              // 📡 RADAR EN TIEMPO REAL (AHORA PROTEGIDO ANTI-ECO)
+              // ==========================================================
+              // 1. Apagamos radares viejos si existían
+              if (window.radaresActivos) {
+                  window.radaresActivos.forEach(apagar => apagar());
               }
-          }); // <-- 1. Cierra la descarga de datos de Firebase
-      } // <-- 2. Cierra la comprobación de si hay usuario
-  }); // <-- 3. Cierra el vigilante de sesión de Firebase
+              window.radaresActivos = [];
 
-  const D = document, q = i => D.getElementById(i);
-                             
+              // 2. Encendemos el radar solo con la lista de coches ya actualizada
+              if (myCars && myCars.length > 0) {
+                  myCars.forEach(car => {
+                      let apagarRadar = window.onSnapshot(window.doc(window.db, "gastos_compartidos", String(car.id)), (docSnapCompartido) => {
+                          if (docSnapCompartido.exists()) {
+                              let dataCompartida = docSnapCompartido.data();
+                              if (dataCompartida.repostajes) {
+                                  
+                                  let nuevaBitacora = [...bitacora];
+                                  let huboCambios = false;
+
+                                  dataCompartida.repostajes.forEach(gNube => {
+                                      if (!nuevaBitacora.find(bLocal => String(bLocal.id) === String(gNube.id))) {
+                                          nuevaBitacora.push(gNube);
+                                          huboCambios = true;
+                                      }
+                                  });
+                                  
+                                  // Solo repintamos todo si de verdad ha entrado un gasto nuevo
+                                  if (huboCambios) {
+                                      bitacora = nuevaBitacora;
+                                      bitacora.sort((a, b) => new Date(esToYMD(b.fecha)) - new Date(esToYMD(a.date || a.fecha)) - new Date(esToYMD(b.date || b.fecha)));
+                                      
+                                      localStorage.setItem('gasofa_bitacora', JSON.stringify(bitacora));
+                                      if (typeof actualizarAhorroGlobal === 'function') actualizarAhorroGlobal();
+                                      if (typeof actualizarListaHistorial === 'function') actualizarListaHistorial();
+                                  }
+                              }
+                          }
+                      });
+                      // Guardamos el interruptor en la lista para poder apagarlo si hace falta
+                      window.radaresActivos.push(apagarRadar);
+                  });
+              }
+          });
+
+      } else {
+          if(vistaNoLogueado) vistaNoLogueado.style.display = 'block';
+          if(vistaLogueado) vistaLogueado.style.display = 'none';
+          if(document.getElementById('mapAhorroBadge')) document.getElementById('mapAhorroBadge').style.display = 'none';
+      }
+  });
+
+            const D = document, q = i => D.getElementById(i);
 
 
             const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyeIN2o-dHcyXw-ZAhUKboaotrOJcv-VM7ABYxzEkUsU4q19pKLrEFj64PanMyYSt_-/exec";
@@ -3418,26 +3459,13 @@ try { bitacora = JSON.parse(localStorage.getItem('gasofa_bitacora')) || []; } ca
                     bitacora = bitacora.filter(b => b.id !== id);
                     localStorage.setItem('gasofa_bitacora', JSON.stringify(bitacora));
                     
-                                       // ☁️ BORRAR DE LA NUBE
+                    // ☁️ BORRAR DE LA NUBE
                     if (window.auth && window.auth.currentUser) {
-                        // Antes de borrarlo localmente, averiguamos de qué coche era
-                        let carIdDelGasto = bitacora.find(b => String(b.id) === String(id))?.carId;
-                        
-                        bitacora = bitacora.filter(b => String(b.id) !== String(id));
-                        localStorage.setItem('gasofa_bitacora', JSON.stringify(bitacora));
-
-                        window.setDoc(window.doc(window.db, "usuarios", window.auth.currentUser.uid), { miBitacora: bitacora }, { merge: true });
-                        
-                        // ACTUALIZAR EL BUZÓN COMPARTIDO SI HACE FALTA
-                        if (carIdDelGasto) {
-                            let cocheActual = myCars.find(c => String(c.id) === String(carIdDelGasto));
-                            if (cocheActual && cocheActual.compartido) {
-                                let gastosEsteCoche = bitacora.filter(b => String(b.carId) === String(carIdDelGasto));
-                                window.setDoc(window.doc(window.db, "gastos_compartidos", String(carIdDelGasto)), { repostajes: gastosEsteCoche }, { merge: true });
-                            }
-                        }
+                        const uid = window.auth.currentUser.uid;
+                        window.setDoc(window.doc(window.db, "usuarios", uid), {
+                            miBitacora: bitacora
+                        }, { merge: true });
                     }
-
 
                     if (typeof window.actualizarAhorroGlobal === 'function') window.actualizarAhorroGlobal();
                     actualizarListaHistorial();
@@ -4700,26 +4728,14 @@ function activarSwipeModales() {
                 mantLocal.sort((a, b) => new Date(esToYMD(b.fecha)) - new Date(esToYMD(a.fecha)));
                 localStorage.setItem('gasofa_taller', JSON.stringify(mantLocal));
 
-                               // ☁️ SUBIDA A LA NUBE
+                // ☁️ SUBIDA A LA NUBE
                 if (window.auth && window.auth.currentUser) {
                     let sizeStr = JSON.stringify(mantLocal).length;
                     if (sizeStr > 800000) alert("⚠️ Tienes muchas fotos guardadas. Pronto llegarás al límite de espacio de tu historial. Considera borrar facturas muy antiguas.");
                     window.setDoc(window.doc(window.db, "usuarios", window.auth.currentUser.uid), {
                         miTaller: mantLocal
                     }, { merge: true }).catch(e => console.error("Error nube Taller:", e));
-
-                    // NUEVO: SI EL COCHE ES COMPARTIDO, ENVIAMOS EL TALLER AL BUZÓN COMÚN
-                    if (carId) {
-                        let cocheActual = myCars.find(c => String(c.id) === String(carId));
-                        if (cocheActual && cocheActual.compartido) {
-                            let tallerEsteCoche = mantLocal.filter(m => String(m.carId) === String(carId));
-                            window.setDoc(window.doc(window.db, "gastos_compartidos", String(carId)), {
-                                taller: tallerEsteCoche
-                            }, { merge: true });
-                        }
-                    }
                 }
-
 
                 q('editTallerId').value = ""; q('tallerCoste').value = ""; q('tallerNotas').value = "";
                 if(q('tallerFactura')) q('tallerFactura').value = "";
@@ -4758,42 +4774,23 @@ function activarSwipeModales() {
 
             
 
-                        window.borrarTaller = function(id, desdeHistorial = false) {
+            window.borrarTaller = function(id, desdeHistorial = false) {
                 if (confirm("¿Borrar este gasto de taller?")) {
                     let mantLocal = JSON.parse(localStorage.getItem('gasofa_taller')) || [];
-                    
-                    // 1. Averiguamos de qué coche era este gasto ANTES de borrarlo
-                    let carIdDelGasto = mantLocal.find(m => String(m.id) === String(id))?.carId;
-
-                    // 2. Lo borramos localmente
                     mantLocal = mantLocal.filter(m => String(m.id) !== String(id));
                     localStorage.setItem('gasofa_taller', JSON.stringify(mantLocal));
                     
-                    // 3. Lo borramos de la nube
                     if (window.auth && window.auth.currentUser) {
                         window.setDoc(window.doc(window.db, "usuarios", window.auth.currentUser.uid), { miTaller: mantLocal }, { merge: true });
-                        
-                        // 4. Si el coche era compartido, actualizamos el buzón común
-                        if (carIdDelGasto) {
-                            let cocheActual = myCars.find(c => String(c.id) === String(carIdDelGasto));
-                            if (cocheActual && cocheActual.compartido) {
-                                let tallerEsteCoche = mantLocal.filter(m => String(m.carId) === String(carIdDelGasto));
-                                window.setDoc(window.doc(window.db, "gastos_compartidos", String(carIdDelGasto)), { 
-                                    taller: tallerEsteCoche 
-                                }, { merge: true });
-                            }
-                        }
                     }
-                    
                     if(typeof renderTaller === 'function') renderTaller();
                     if(desdeHistorial && typeof actualizarListaHistorial === 'function') actualizarListaHistorial();
                 }
-            }; // <--- REVISA BIEN ESTA LÍNEA. Tiene que tener la llave y el punto y coma.
-
-            window.renderTaller = function() { 
-                // Vaciada porque ahora los gastos del taller se ven en el Historial 
             };
 
+                         window.renderTaller = function() { 
+                // Vaciada porque ahora los gastos del taller se ven en el Historial 
+            };
                 
 
             // ==========================================================
@@ -4867,21 +4864,13 @@ function activarSwipeModales() {
                 localStorage.setItem('gasofa_cars', JSON.stringify(myCars));
                 await window.setDoc(window.doc(window.db, "usuarios", window.auth.currentUser.uid), { misCoches: myCars }, { merge: true });
 
-                                // VOLCAMOS EL HISTORIAL PREVIO AL BUZÓN COMPARTIDO
+                // VOLCAMOS EL HISTORIAL PREVIO AL BUZÓN COMPARTIDO
                 let gastosPrevios = bitacora.filter(b => String(b.carId) === String(idCoche));
-                let mantLocal = JSON.parse(localStorage.getItem('gasofa_taller')) || [];
-                let tallerPrevio = mantLocal.filter(t => String(t.carId) === String(idCoche));
-                
-                if (gastosPrevios.length > 0 || tallerPrevio.length > 0) {
+                if (gastosPrevios.length > 0) {
                     await window.setDoc(window.doc(window.db, "gastos_compartidos", String(idCoche)), {
-                        repostajes: gastosPrevios,
-                        taller: tallerPrevio
+                        repostajes: gastosPrevios
                     }, { merge: true }).catch(e => console.error("Error volcando historial previo:", e));
                 }
-
-                // ENCENDEMOS EL RADAR DE ESTE COCHE AL INSTANTE
-                if(typeof window.iniciarRadaresCompartidos === 'function') window.iniciarRadaresCompartidos();
-
 
                 // Generamos un código aleatorio de 8 caracteres complejos
                 const caracteres = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
@@ -4959,11 +4948,8 @@ function activarSwipeModales() {
                         // ¡SEGURIDAD: DESTRUIR LA INVITACIÓN!
                         await window.deleteDoc(docRef);
 
-                                                // ¡ENCENDEMOS EL RADAR PARA QUE EMPIECE A ESCUCHAR YA MISMO!
-                        if (typeof window.iniciarRadaresCompartidos === 'function') window.iniciarRadaresCompartidos();
-                        
+                        if(loading) loading.style.display = "none";
                         alert(`🚗 ¡Perfecto! Te has unido a: ${cocheInvitacion.name}`);
-
                         
                         input.value = "";
                         if (typeof renderCars === 'function') renderCars();
@@ -5118,70 +5104,6 @@ function activarSwipeModales() {
                 });
             };
 
-      window.iniciarRadaresCompartidos = function() {
-    if (!window.auth || !window.auth.currentUser) return;
-    
-    // 1. Apagamos radares viejos para evitar duplicados
-    if (window.radaresActivos) {
-        window.radaresActivos.forEach(apagar => apagar());
-    }
-    window.radaresActivos = [];
-
-    // 2. Encendemos el radar solo para coches compartidos
-    if (myCars && myCars.length > 0) {
-        myCars.forEach(car => {
-            if (!car.compartido) return;
-
-            let apagarRadar = window.onSnapshot(window.doc(window.db, "gastos_compartidos", String(car.id)), (docSnapCompartido) => {
-                if (docSnapCompartido.exists()) {
-                    let dataCompartida = docSnapCompartido.data();
-                    let huboCambiosUI = false;
-
-                    // --- 1. REPOSTAJES COMBUSTIBLE (Añadir, Editar y Borrar) ---
-                    if (dataCompartida.repostajes) {
-                        let viejaStr = JSON.stringify(bitacora.filter(b => String(b.carId) === String(car.id)));
-                        let nuevaStr = JSON.stringify(dataCompartida.repostajes);
-                        
-                        if (viejaStr !== nuevaStr) {
-                            let nuevaBitacora = bitacora.filter(b => String(b.carId) !== String(car.id));
-                            nuevaBitacora = nuevaBitacora.concat(dataCompartida.repostajes);
-                            bitacora = nuevaBitacora;
-                            bitacora.sort((a, b) => new Date(esToYMD(b.fecha)).getTime() - new Date(esToYMD(a.fecha)).getTime());
-                            localStorage.setItem('gasofa_bitacora', JSON.stringify(bitacora));
-                            huboCambiosUI = true;
-                        }
-                    }
-
-                    // --- 2. GASTOS DE TALLER (Añadir, Editar y Borrar) ---
-                    if (dataCompartida.taller) {
-                        let mantLocal = JSON.parse(localStorage.getItem('gasofa_taller')) || [];
-                        let viejaStr = JSON.stringify(mantLocal.filter(m => String(m.carId) === String(car.id)));
-                        let nuevaStr = JSON.stringify(dataCompartida.taller);
-
-                        if (viejaStr !== nuevaStr) {
-                            let nuevoTaller = mantLocal.filter(m => String(m.carId) !== String(car.id));
-                            nuevoTaller = nuevoTaller.concat(dataCompartida.taller);
-                            nuevoTaller.sort((a, b) => new Date(esToYMD(b.fecha)).getTime() - new Date(esToYMD(a.fecha)).getTime());
-                            localStorage.setItem('gasofa_taller', JSON.stringify(nuevoTaller));
-                            huboCambiosUI = true;
-                        }
-                    }
-
-                    // --- ACTUALIZAMOS LA PANTALLA EN TIEMPO REAL ---
-                    if (huboCambiosUI) {
-                        if (typeof window.actualizarAhorroGlobal === 'function') window.actualizarAhorroGlobal();
-                        let modalHistorial = document.getElementById('historialModal');
-                        if (modalHistorial && modalHistorial.style.display === 'flex') {
-                            if (typeof window.actualizarListaHistorial === 'function') window.actualizarListaHistorial();
-                        }
-                    }
-                }
-            });
-            window.radaresActivos.push(apagarRadar);
-        });
-    }
-};
-    
            
            // ==========================================================
 // 🌉 PUENTE HTML-JS (Hace públicas las funciones para los botones)
