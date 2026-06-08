@@ -1,5 +1,5 @@
 // Cambia este número de versión cada vez que actualices tu index.html, app.js o estilos.css
-const CACHE_NAME = 'gasofa-cache-v9'; // Subimos a v7 por la nueva arquitectura
+const CACHE_NAME = 'gasofa-cache-v10'; // Subimos a v7 por la nueva arquitectura
 
 const urlsToCache = [
     '/',
