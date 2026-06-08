@@ -3186,12 +3186,15 @@ try { bitacora = JSON.parse(localStorage.getItem('gasofa_bitacora')) || []; } ca
                         miBitacora: bitacora
                     }, { merge: true });
 
-                    // 2. SI EL REPOSTAJE TIENE UN COCHE, LO ENVIAMOS AL BUZÓN COMPARTIDO DEL VEHÍCULO
+                    // 2. SI EL REPOSTAJE TIENE UN COCHE Y ESTÁ COMPARTIDO, LO ENVIAMOS AL BUZÓN COMPARTIDO
                     if (carId) {
-                        let gastosEsteCoche = bitacora.filter(b => String(b.carId) === String(carId));
-                        window.setDoc(window.doc(window.db, "gastos_compartidos", String(carId)), {
-                            repostajes: gastosEsteCoche
-                        }, { merge: true }).catch(e => console.error("Error buzón compartido:", e));
+                        let cocheActual = myCars.find(c => String(c.id) === String(carId));
+                        if (cocheActual && cocheActual.compartido) {
+                            let gastosEsteCoche = bitacora.filter(b => String(b.carId) === String(carId));
+                            window.setDoc(window.doc(window.db, "gastos_compartidos", String(carId)), {
+                                repostajes: gastosEsteCoche
+                            }, { merge: true }).catch(e => console.error("Error buzón compartido:", e));
+                        }
                     }
                 }
                 
@@ -4856,6 +4859,19 @@ function activarSwipeModales() {
                 const coche = myCars.find(c => String(c.id) === String(idCoche));
                 if (!coche) return;
 
+                // ACTIVAMOS EL MODO COMPARTIDO PARA ESTE COCHE
+                coche.compartido = true;
+                localStorage.setItem('gasofa_cars', JSON.stringify(myCars));
+                await window.setDoc(window.doc(window.db, "usuarios", window.auth.currentUser.uid), { misCoches: myCars }, { merge: true });
+
+                // VOLCAMOS EL HISTORIAL PREVIO AL BUZÓN COMPARTIDO
+                let gastosPrevios = bitacora.filter(b => String(b.carId) === String(idCoche));
+                if (gastosPrevios.length > 0) {
+                    await window.setDoc(window.doc(window.db, "gastos_compartidos", String(idCoche)), {
+                        repostajes: gastosPrevios
+                    }, { merge: true }).catch(e => console.error("Error volcando historial previo:", e));
+                }
+
                 // Generamos un código aleatorio de 8 caracteres complejos
                 const caracteres = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
                 let codigo = '';
@@ -4919,6 +4935,7 @@ function activarSwipeModales() {
 
                         // Le ponemos una marca para saber que es un coche compartido
                         cocheInvitacion.name = "🤝 " + cocheInvitacion.name; 
+                        cocheInvitacion.compartido = true; // Aseguramos que el invitado tenga permisos de escritura global
 
                         myCars.push(cocheInvitacion);
                         localStorage.setItem('gasofa_cars', JSON.stringify(myCars));
