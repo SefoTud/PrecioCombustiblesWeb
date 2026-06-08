@@ -1,10 +1,13 @@
-// Cambia este número de versión cada vez que actualices tu index.html
-const CACHE_NAME = 'gasofa-cache-v6'; 
+// Cambia este número de versión cada vez que actualices tu index.html, app.js o estilos.css
+const CACHE_NAME = 'gasofa-cache-v7'; // Subimos a v7 por la nueva arquitectura
 
 const urlsToCache = [
     '/',
-    '/index.html'
-    // Si tienes iconos locales, podrías añadirlos aquí, ej: '/favicon.ico'
+    '/index.html',
+    '/estilos.css',   // <-- ¡AÑADIDO!
+    '/app.js',        // <-- ¡AÑADIDO!
+    '/favicon.ico',
+    '/manifest.json'
 ];
 
 // 1. INSTALACIÓN: Guarda los archivos básicos en la caja fuerte
@@ -35,8 +38,13 @@ self.addEventListener('activate', event => {
 
 // 3. INTERCEPTOR (FETCH): "Network First" (Siempre busca lo más nuevo)
 self.addEventListener('fetch', event => {
-    // Si es una petición a la API de Google, no la cacheamos aquí
-    if (event.request.url.includes('script.google.com')) return;
+    // Excluimos las APIs externas y Firebase para no saturar la caché del móvil
+    if (event.request.url.includes('script.google.com') ||
+        event.request.url.includes('firestore.googleapis.com') ||
+        event.request.url.includes('nominatim') ||
+        event.request.url.includes('t3.gstatic.com')) {
+        return; 
+    }
 
     event.respondWith(
         fetch(event.request)
