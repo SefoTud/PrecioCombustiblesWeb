@@ -2612,7 +2612,16 @@ try { myCars = JSON.parse(localStorage.getItem('gasofa_cars')) || []; } catch (e
 
                 if (idToEdit) {
                     const index = myCars.findIndex(c => c.id == idToEdit);
-                    if (index > -1) { myCars[index] = { id: parseInt(idToEdit), name, fuel, consumo, deposito, itv, seguro, aceite }; }
+                    if (index > -1) { 
+                        myCars[index] = { id: parseInt(idToEdit), name, fuel, consumo, deposito, itv, seguro, aceite, compartido: myCars[index].compartido || false }; 
+                        
+                        // SI ESTÁ COMPARTIDO, ENVIAMOS LA ACTUALIZACIÓN DEL COCHE A LA NUBE
+                        if (myCars[index].compartido) {
+                            window.setDoc(window.doc(window.db, "gastos_compartidos", String(idToEdit)), {
+                                cocheData: myCars[index]
+                            }, { merge: true }).catch(e => console.error(e));
+                        }
+                    }
                 } else {
                     myCars.push({ id: Date.now(), name, fuel, consumo, deposito, itv, seguro, aceite });
                 }
@@ -2642,6 +2651,10 @@ try { myCars = JSON.parse(localStorage.getItem('gasofa_cars')) || []; } catch (e
             function editCar(id) {
                 const car = myCars.find(c => String(c.id) === String(id));
                 if (car) {
+                    if (car.name.startsWith("🤝 ")) {
+                        alert("⚠️ No tienes permisos para editar este vehículo compartido.");
+                        return;
+                    }
                     document.getElementById('editCarId').value = car.id;
                     document.getElementById('carName').value = car.name || '';
                     document.getElementById('carFuel').value = car.fuel || 'Precio Gasoleo A';
@@ -2657,7 +2670,13 @@ try { myCars = JSON.parse(localStorage.getItem('gasofa_cars')) || []; } catch (e
             }
 
             function deleteCar(id) {
-                if (confirm("¿Borrar vehículo?")) {
+                let cocheActual = myCars.find(c => String(c.id) === String(id));
+                if (cocheActual && cocheActual.name.startsWith("🤝 ")) {
+                    alert("⚠️ No puedes eliminar un coche compartido.");
+                    return;
+                }
+
+                if (confirm("¿Borrar vehículo? Conllevase eliminarlo también para todos los usuarios invitados.")) {
                     myCars = myCars.filter(car => String(car.id) !== String(id));
                     localStorage.setItem('gasofa_cars', JSON.stringify(myCars));
                     
@@ -2666,6 +2685,13 @@ try { myCars = JSON.parse(localStorage.getItem('gasofa_cars')) || []; } catch (e
                         window.setDoc(window.doc(window.db, "usuarios", uid), {
                             misCoches: myCars
                         }, { merge: true });
+
+                        // AVISAMOS A LOS INVITADOS DE QUE EL COCHE YA NO EXISTE
+                        if (cocheActual && cocheActual.compartido) {
+                            window.setDoc(window.doc(window.db, "gastos_compartidos", String(id)), {
+                                cocheEliminado: true
+                            }, { merge: true }).catch(e => console.error(e));
+                        }
                     }
                     renderCars();
                     updateCarSelect();
@@ -2715,6 +2741,16 @@ try { myCars = JSON.parse(localStorage.getItem('gasofa_cars')) || []; } catch (e
         // 2. Escudo de seguridad por si alguien comparte un coche con código malicioso en el nombre
         let nombreSeguro = window.escaparHTML ? window.escaparHTML(car.name) : car.name;
 
+        // DETECTAMOS SI ES INVITADO
+        let esInvitadoCoche = car.name.startsWith("🤝 ");
+        let bloqueBotones = esInvitadoCoche 
+            ? `<span style="font-size:12px; font-weight:800; color:var(--text-muted); padding:10px; white-space:nowrap;">🤝 Compartido</span>`
+            : `<div class="btn-group">
+                <button class="btn-edit" style="background:#2d88ff;" onclick="generarCodigoCompartir(${car.id})" title="Compartir Coche">🔗</button>
+                <button class="btn-edit" onclick="editCar(${car.id})" title="Editar">✏️</button>
+                <button class="btn-delete" onclick="deleteCar(${car.id})" title="Borrar">🗑️</button>
+               </div>`;
+
         // 3. Sumamos la tarjeta a nuestra caja temporal en lugar de inyectarla al DOM directamente
         htmlAcumulado += `
         <div class="card-garaje">
@@ -2723,11 +2759,7 @@ try { myCars = JSON.parse(localStorage.getItem('gasofa_cars')) || []; } catch (e
                 <span class="txt-coche-detalle">⛽ ${car.consumo} L/100km | 🛢️ Max: ${car.deposito} L</span>
                 ${alertasBloque}
             </div>
-            <div class="btn-group">
-                <button class="btn-edit" style="background:#2d88ff;" onclick="generarCodigoCompartir(${car.id})" title="Compartir Coche">🔗</button>
-                <button class="btn-edit" onclick="editCar(${car.id})" title="Editar">✏️</button>
-                <button class="btn-delete" onclick="deleteCar(${car.id})" title="Borrar">🗑️</button>
-            </div>
+            ${bloqueBotones}
         </div>`;
     });
 
@@ -5163,6 +5195,42 @@ function activarSwipeModales() {
                 if (docSnapCompartido.exists()) {
                     let dataCompartida = docSnapCompartido.data();
                     let huboCambiosUI = false;
+
+                    // A) SI EL DUEÑO HA ELIMINADO EL COCHE, SE LE BORRA AL INVITADO AL INSTANTE
+                    if (dataCompartida.cocheEliminado === true) {
+                        apagarRadar(); // Apagamos este radar
+                        myCars = myCars.filter(c => String(c.id) !== String(car.id));
+                        localStorage.setItem('gasofa_cars', JSON.stringify(myCars));
+                        
+                        // Guardamos en la nube del invitado su garaje limpio
+                        if (window.auth && window.auth.currentUser) {
+                            window.setDoc(window.doc(window.db, "usuarios", window.auth.currentUser.uid), { misCoches: myCars }, { merge: true });
+                        }
+                        
+                        alert(`🚨 El administrador ha eliminado el vehículo: ${car.name}`);
+                        if (typeof renderCars === 'function') renderCars();
+                        if (typeof updateCarSelect === 'function') updateCarSelect();
+                        return;
+                    }
+
+                    // B) SI EL DUEÑO HA EDITADO EL COCHE, ACTUALIZAMOS LOS DATOS AL INVITADO
+                    if (dataCompartida.cocheData) {
+                        let idx = myCars.findIndex(c => String(c.id) === String(car.id));
+                        if (idx > -1) {
+                            let nombreConEmoji = dataCompartida.cocheData.name;
+                            if (!nombreConEmoji.startsWith("🤝 ")) nombreConEmoji = "🤝 " + nombreConEmoji;
+                            
+                            let cocheActualizado = { ...dataCompartida.cocheData, name: nombreConEmoji, compartido: true };
+                            
+                            // Comparamos si de verdad ha cambiado algo antes de machacar
+                            if (JSON.stringify(myCars[idx]) !== JSON.stringify(cocheActualizado)) {
+                                myCars[idx] = cocheActualizado;
+                                localStorage.setItem('gasofa_cars', JSON.stringify(myCars));
+                                huboCambiosUI = true;
+                                if (typeof renderCars === 'function') renderCars();
+                            }
+                        }
+                    }
 
                     // --- 1. REPOSTAJES COMBUSTIBLE (Añadir, Editar y Borrar) ---
                     if (dataCompartida.repostajes) {
