@@ -4677,6 +4677,12 @@ function activarSwipeModales() {
                 let carName = foundCar ? foundCar.name : "Vehículo";
                 let fechaEs = ymdToEs(fecha);
 
+                // CAPTURAMOS EL NOMBRE DE QUIEN ANOTA EL GASTO
+                let miNombre = "Conductor";
+                if (window.auth && window.auth.currentUser && window.auth.currentUser.displayName) {
+                    miNombre = window.auth.currentUser.displayName.split(" ")[0];
+                }
+
                 // --- MAGIA: GESTIÓN DE LA FOTO ---
                 let fotoBase64 = "";
                 if (idEdit !== "") { // Rescatar foto antigua si estábamos editando
@@ -4702,9 +4708,9 @@ function activarSwipeModales() {
 
                 if (idEdit !== "") {
                     let index = mantLocal.findIndex(m => String(m.id) === String(idEdit));
-                    if (index > -1) mantLocal[index] = { id: parseInt(idEdit), carId, carName, fecha: fechaEs, km, tipo, coste, notas, factura: fotoBase64 };
+                    if (index > -1) mantLocal[index] = { id: parseInt(idEdit), carId, carName, fecha: fechaEs, km, tipo, coste, notas, factura: fotoBase64, usuario: miNombre };
                 } else {
-                    mantLocal.push({ id: Date.now(), carId, carName, fecha: fechaEs, km, tipo, coste, notas, factura: fotoBase64 });
+                    mantLocal.push({ id: Date.now(), carId, carName, fecha: fechaEs, km, tipo, coste, notas, factura: fotoBase64, usuario: miNombre });
                 }
 
                 mantLocal.sort((a, b) => new Date(esToYMD(b.fecha)) - new Date(esToYMD(a.fecha)));
