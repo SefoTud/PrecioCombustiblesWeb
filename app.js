@@ -2676,14 +2676,26 @@ try { myCars = JSON.parse(localStorage.getItem('gasofa_cars')) || []; } catch (e
                     return;
                 }
 
-                if (confirm("¿Borrar vehículo? Conllevase eliminarlo también para todos los usuarios invitados.")) {
+                if (confirm("¿Borrar vehículo? Conlleva eliminarlo también para todos los usuarios invitados y borrar TODO su historial de gastos (gasolina y taller).")) {
+                    // 1. Borramos el coche
                     myCars = myCars.filter(car => String(car.id) !== String(id));
                     localStorage.setItem('gasofa_cars', JSON.stringify(myCars));
                     
+                    // 2. Borramos los gastos de gasolina de ese coche
+                    bitacora = bitacora.filter(b => String(b.carId) !== String(id));
+                    localStorage.setItem('gasofa_bitacora', JSON.stringify(bitacora));
+
+                    // 3. Borramos los gastos de taller de ese coche
+                    let mantLocal = JSON.parse(localStorage.getItem('gasofa_taller')) || [];
+                    mantLocal = mantLocal.filter(m => String(m.carId) !== String(id));
+                    localStorage.setItem('gasofa_taller', JSON.stringify(mantLocal));
+                    
+                    // 4. Actualizamos la nube del creador
                     if (window.auth && window.auth.currentUser) {
                         const uid = window.auth.currentUser.uid;
                         window.setDoc(window.doc(window.db, "usuarios", uid), {
-                            misCoches: myCars
+                            misCoches: myCars,
+                            miBitacora: bitacora
                         }, { merge: true });
 
                         // AVISAMOS A LOS INVITADOS DE QUE EL COCHE YA NO EXISTE
@@ -2695,6 +2707,8 @@ try { myCars = JSON.parse(localStorage.getItem('gasofa_cars')) || []; } catch (e
                     }
                     renderCars();
                     updateCarSelect();
+                    // Refrescamos el historial abierto por si acaso
+                    if (typeof actualizarListaHistorial === 'function') actualizarListaHistorial();
                 }
             }
 
@@ -5196,22 +5210,38 @@ function activarSwipeModales() {
                     let dataCompartida = docSnapCompartido.data();
                     let huboCambiosUI = false;
 
-                    // A) SI EL DUEÑO HA ELIMINADO EL COCHE, SE LE BORRA AL INVITADO AL INSTANTE
+                                      // A) SI EL DUEÑO HA ELIMINADO EL COCHE, SE LE BORRA AL INVITADO AL INSTANTE
                     if (dataCompartida.cocheEliminado === true) {
                         apagarRadar(); // Apagamos este radar
+                        
+                        // 1. Limpiamos el coche del invitado
                         myCars = myCars.filter(c => String(c.id) !== String(car.id));
                         localStorage.setItem('gasofa_cars', JSON.stringify(myCars));
                         
-                        // Guardamos en la nube del invitado su garaje limpio
+                        // 2. Limpiamos la gasolina del invitado
+                        bitacora = bitacora.filter(b => String(b.carId) !== String(car.id));
+                        localStorage.setItem('gasofa_bitacora', JSON.stringify(bitacora));
+
+                        // 3. Limpiamos el taller del invitado
+                        let mantLocalInvitado = JSON.parse(localStorage.getItem('gasofa_taller')) || [];
+                        mantLocalInvitado = mantLocalInvitado.filter(m => String(m.carId) !== String(car.id));
+                        localStorage.setItem('gasofa_taller', JSON.stringify(mantLocalInvitado));
+                        
+                        // Guardamos en la nube del invitado su garaje y bitácora limpios
                         if (window.auth && window.auth.currentUser) {
-                            window.setDoc(window.doc(window.db, "usuarios", window.auth.currentUser.uid), { misCoches: myCars }, { merge: true });
+                            window.setDoc(window.doc(window.db, "usuarios", window.auth.currentUser.uid), { 
+                                misCoches: myCars,
+                                miBitacora: bitacora 
+                            }, { merge: true });
                         }
                         
-                        alert(`🚨 El administrador ha eliminado el vehículo: ${car.name}`);
+                        alert(`🚨 El administrador ha eliminado el vehículo: ${car.name} y todos sus gastos asociados.`);
                         if (typeof renderCars === 'function') renderCars();
                         if (typeof updateCarSelect === 'function') updateCarSelect();
+                        if (typeof actualizarListaHistorial === 'function') actualizarListaHistorial();
                         return;
                     }
+
 
                     // B) SI EL DUEÑO HA EDITADO EL COCHE, ACTUALIZAMOS LOS DATOS AL INVITADO
                     if (dataCompartida.cocheData) {
