@@ -3387,8 +3387,10 @@ try { bitacora = JSON.parse(localStorage.getItem('gasofa_bitacora')) || []; } ca
             let tipoSeguro = m.tipo ? window.escaparHTML(m.tipo) : "Taller";
             let cocheSeguro = m.carName ? window.escaparHTML(m.carName) : "";
             let notasSeguras = m.notas ? window.escaparHTML(m.notas) : "";
+            let usuarioSeguroTaller = m.usuario ? window.escaparHTML(m.usuario) : "";
 
             let botonFacturaHist = m.factura ? `<button class="btn-factura" onclick="window.abrirCamaraCompleta('${m.factura}', 'Factura: ${tipoSeguro}')">📄 Ver Factura</button>` : '';
+            let userBadgeTaller = usuarioSeguroTaller ? `<span class="badge-base" style="background:#34495e; color:white;">👤 ${usuarioSeguroTaller}</span>` : "";
 
             let cocheGastoTaller = myCars.find(c => String(c.id) === String(m.carId));
             let esInvitadoTaller = (cocheGastoTaller && cocheGastoTaller.compartido && cocheGastoTaller.name.startsWith("🤝 "));
@@ -3403,6 +3405,7 @@ try { bitacora = JSON.parse(localStorage.getItem('gasofa_bitacora')) || []; } ca
                     </div>
                     <div class="flex-col-start">
                         <span class="badge-base badge-coche">🚗 ${cocheSeguro}</span>
+                        ${userBadgeTaller ? `<div style="margin-top:2px;">${userBadgeTaller}</div>` : ''}
                     </div>
                     <div class="txt-hist-detalle">${m.fecha} • 🛣️ ${m.km} km</div>
                     ${notasSeguras ? `<div class="box-notas" style="margin-top:4px;">📝 ${notasSeguras}</div>` : ''}
