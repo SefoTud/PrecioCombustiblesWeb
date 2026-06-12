@@ -16,6 +16,12 @@
     <link rel="apple-touch-icon" href="apple-touch-icon.png">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#27ae60">
+    
+        <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://nominatim.openstreetmap.org">
+    <link rel="preconnect" href="https://router.project-osrm.org">
+    <link rel="preconnect" href="https://a.basemaps.cartocdn.com">
+
 
     <link rel="stylesheet" href="estilos.css">
 
@@ -31,10 +37,10 @@
 
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css" />
-    <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
+    <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js" defer></script>
 </head>
 <body>
 
@@ -145,41 +151,41 @@
 
     <div id="historialModal" class="modal-bg">
         <div class="modal-content" style="max-width:350px;">
-            <h3
-                style="margin-top:0; color:var(--accent); text-align:center; border-bottom:1px solid var(--border-color); padding-bottom:10px;">
-                📊 Mis Gastos</h3>
-
-            <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:12px;">
-    <select id="historialCarFilter" onchange="actualizarListaHistorial()" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-input); color:var(--text-main); font-weight:bold;"></select>
-    
-    <div style="display:flex; gap:8px;">
-        <select id="historialTipoFilter" onchange="actualizarListaHistorial()" style="flex:1; padding:10px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-input); color:var(--text-main); font-size:13px; font-weight:bold;">
-            <option value="all">Todos los gastos</option>
-            <option value="gas">⛽ Combustible</option>
-            <option value="taller">🔧 Taller</option>
-        </select>
-        
-        <select id="historialMesFilter" onchange="actualizarListaHistorial()" style="flex:1; padding:10px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-input); color:var(--text-main); font-size:13px; font-weight:bold;">
-            <option value="all">📅 Histórico Total</option>
-        </select>
-    </div>
-</div>
-
-
-                        <div id="resumenMes" style="background:var(--bg-ahorro); padding:12px; border-radius:8px; margin-bottom:15px; text-align:center; font-weight:900; color:var(--accent-green); border: 1px dashed var(--accent-green);">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-color); padding-bottom:10px; margin-bottom:15px;">
+                <h3 style="margin:0; color:var(--accent);">📊 Mis Gastos</h3>
+                <button onclick="descargarPDFHistorial()" style="background:var(--bg-input); color:var(--text-main); border:1px solid var(--border-color); padding:6px 10px; border-radius:8px; font-size:11px; font-weight:bold; cursor:pointer; display:flex; align-items:center; gap:6px; box-shadow:0 2px 4px rgba(0,0,0,0.05);" title="Descargar Informe PDF">
+                    📄 Bajar PDF
+                </button>
             </div>
 
-            <button onclick="descargarPDFHistorial()" style="width: 100%; background: #2c3e50; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                📄 Descargar Informe PDF (Desglose IVA)
-            </button>
+            <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:12px;">
+                <select id="historialCarFilter" onchange="actualizarListaHistorial()" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-input); color:var(--text-main); font-weight:bold;"></select>
+                
+                <div style="display:flex; gap:8px;">
+                    <select id="historialTipoFilter" onchange="actualizarListaHistorial()" style="flex:1; padding:10px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-input); color:var(--text-main); font-size:13px; font-weight:bold;">
+                        <option value="all">Todos los gastos</option>
+                        <option value="gas">⛽ Combustibles</option>
+                        <option value="taller">🔧 Taller</option>
+                    </select>
+                    
+                    <select id="historialMesFilter" onchange="actualizarListaHistorial()" style="flex:1; padding:10px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-input); color:var(--text-main); font-size:13px; font-weight:bold;">
+                        <option value="all">📅 Histórico Total</option>
+                    </select>
+                </div>
+            </div>
 
+            <div id="resumenMes" style="background:var(--bg-ahorro); padding:12px; border-radius:8px; margin-bottom:15px; text-align:center; font-weight:900; color:var(--accent-green); border: 1px dashed var(--accent-green);">
+            </div>
 
-            <div style="width:100%; height:160px; margin-bottom:15px; position:relative;">
+            <div id="btnToggleGrafica" onclick="toggleGraficaHistorial()" style="text-align:center; color:var(--accent); font-size:12px; font-weight:bold; cursor:pointer; padding:6px 0; margin-bottom:5px; user-select:none; display:flex; justify-content:center; align-items:center; gap:4px;">
+                📉 Ocultar Gráfica <span id="flechaGrafica">▲</span>
+            </div>
+
+            <div id="contenedorGraficaHistorial" style="width:100%; height:160px; margin-bottom:15px; position:relative;">
                 <canvas id="gastosChart"></canvas>
             </div>
 
-            <div id="listaBitacora"
-                style="max-height:35vh; overflow-y:auto; display:flex; flex-direction:column; gap:8px; margin-bottom:15px;">
+            <div id="listaBitacora" style="display:flex; flex-direction:column; gap:8px; margin-bottom:15px;">
             </div>
 
             <button onclick="document.getElementById('historialModal').style.display='none'; abrirPerfil();" style="background:var(--bg-input); color:var(--text-main); border:none; padding:12px; border-radius:12px; font-weight:bold; cursor:pointer; width:100%; flex-shrink:0;">⬅️ Volver al Perfil</button>
@@ -246,7 +252,8 @@
             <div id="vistaNoLogueado" style="text-align: center; padding: 15px 0;">
                 <span style="font-size: 50px; margin-bottom:10px; display:block;">☁️</span>
                 <h4 style="margin: 0 0 10px 0; color:var(--text-main);">Guarda tus datos en la nube</h4>
-                
+               
+
                 <button onclick="loginConGoogleUI()" style="width: 100%; padding: 14px; border-radius: 12px; border: 1px solid var(--border-color); background: var(--bg-panel); color: var(--text-main); font-weight: bold; font-size: 15px; display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 15px;">
                     <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20" alt="Google">
                     Continuar con Google
@@ -285,7 +292,7 @@
                     </div>
                 </div>
 
-                <button onclick="q('perfilModal').style.display='none'; abrirMisVehiculos()" style="background:var(--bg-input); color:var(--text-main); border:2px solid var(--accent); padding:12px; border-radius:12px; font-weight:bold; cursor:pointer; width:100%; text-align:left; display:flex; gap:10px; font-size:14px;">
+                                <button onclick="q('perfilModal').style.display='none'; abrirMisVehiculos()" style="background:var(--bg-input); color:var(--text-main); border:1px solid var(--border-color); padding:12px; border-radius:12px; font-weight:bold; cursor:pointer; width:100%; text-align:left; display:flex; gap:10px; font-size:14px;">
                     <span>🚗</span> Mis Vehículos y Garaje
                 </button>
                 
@@ -301,14 +308,14 @@
                     <span>🔧</span> Mantenimiento y Taller
                 </button>
 
-                <!-- COPIA DE SEGURIDAD (AHORA ESTÁ AQUÍ, PROTEGIDA) -->
-                <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-ahorro); padding:10px 15px; border-radius:12px; border:1px solid var(--accent-green); margin-top:5px;">
-                    <div style="font-size:12px; font-weight:bold; color:var(--accent-green);">💾 Respaldo (Excel)</div>
+                <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-input); padding:10px 15px; border-radius:12px; border:1px solid var(--border-color); margin-top:5px;">
+                    <div style="font-size:12px; font-weight:bold; color:var(--text-main);">💾 Respaldo (Excel)</div>
                     <div style="display:flex; gap:5px;">
                         <button onclick="exportarDatosCSV()" style="background:var(--bg-panel); color:var(--text-main); border:1px solid var(--border-color); padding:6px 10px; border-radius:8px; font-size:11px; font-weight:bold; cursor:pointer; box-shadow:0 2px 4px rgba(0,0,0,0.05);">📥 Bajar</button>
                         <button onclick="document.getElementById('importFile').click()" style="background:var(--bg-panel); color:var(--text-main); border:1px solid var(--border-color); padding:6px 10px; border-radius:8px; font-size:11px; font-weight:bold; cursor:pointer; box-shadow:0 2px 4px rgba(0,0,0,0.05);">📤 Subir</button>
                     </div>
                 </div>
+
                 <input type="file" id="importFile" style="display:none" accept="*" onchange="importarDatosCSV(this)">
 
                 <button onclick="logoutUI()" style="margin-top:10px; background:transparent; color:#e74c3c; border:1px solid #e74c3c; padding:12px; border-radius:12px; font-weight:bold; cursor:pointer; width:100%;">
@@ -348,12 +355,13 @@
                 <select id="tallerCarSelect" style="width:100%; padding:12px; margin-bottom:10px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-panel); color:var(--text-main); font-weight:bold;">
                     </select>
 
-                <div style="display:flex; gap:10px; margin-bottom:10px;">
-                    <input type="date" id="tallerFecha" style="flex:1; padding:12px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-panel); color:var(--text-main); font-weight:bold;">
-                    <input type="number" id="tallerKm" placeholder="Km actuales" style="flex:1; padding:12px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-panel); color:var(--text-main); font-weight:bold;">
+                                <div style="display:flex; gap:10px; margin-bottom:10px; width:100%;">
+                    <input type="date" id="tallerFecha" style="flex:1; min-width:0; box-sizing:border-box; padding:12px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-panel); color:var(--text-main); font-weight:bold;">
+                    <input type="number" id="tallerKm" placeholder="Km actuales" style="flex:1; min-width:0; box-sizing:border-box; padding:12px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-panel); color:var(--text-main); font-weight:bold;">
                 </div>
 
-                                <div style="display:flex; gap:10px; margin-bottom:10px; width:100%;">
+
+                <div style="display:flex; gap:10px; margin-bottom:10px; width:100%;">
                     <select id="tallerTipo" style="flex:2; min-width:0; box-sizing:border-box; padding:12px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-panel); color:var(--text-main); font-weight:bold;">
                         <option value="🛢️ Aceite y Filtros">🛢️ Aceite y Filtros</option>
                         <option value="🛞 Neumáticos">🛞 Neumáticos</option>
@@ -368,10 +376,9 @@
                     <input type="number" id="tallerCoste" placeholder="Coste €" step="0.01" style="flex:1; min-width:0; box-sizing:border-box; padding:12px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-ahorro); color:#e74c3c; font-weight:900; text-align:center;">
                 </div>
 
-
                 <textarea id="tallerNotas" placeholder="Notas (Ej: Taller Paco...)" style="width:100%; padding:12px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-panel); color:var(--text-main); height:60px; resize:none; font-family:inherit; margin-bottom:10px; box-sizing:border-box;"></textarea>
 
-                <div style="background:var(--bg-input); border:1px dashed var(--accent); border-radius:8px; padding:12px 10px; margin-bottom:15px; display:flex; flex-direction:column; gap:10px; width:100%; box-sizing:border-box;">
+                <div style="background:var(--bg-input); border:1px dashed var(--border-color); border-radius:8px; padding:12px 10px; margin-bottom:15px; display:flex; flex-direction:column; gap:10px; width:100%; box-sizing:border-box;">
                     <div style="display:flex; align-items:center; gap:8px;">
                         <span style="font-size:20px;" id="iconoEstadoFoto">📸</span>
                         <div style="display:flex; flex-direction:column;">
@@ -383,10 +390,10 @@
                     <input type="file" id="tallerFactura" accept="image/*" style="display:none;" onchange="if(this.files.length > 0){ document.getElementById('textoEstadoFoto').innerHTML = '<span style=\'color:var(--accent-green);font-weight:bold;\'>✅ Imagen lista</span>'; document.getElementById('iconoEstadoFoto').innerText = '✅'; }">
                     
                     <div style="display:flex; gap:8px; width:100%;">
-                        <button onclick="document.getElementById('tallerFactura').setAttribute('capture', 'environment'); document.getElementById('tallerFactura').click();" style="flex:1; background:#3498db; color:white; border:none; padding:10px; border-radius:8px; font-size:11px; font-weight:bold; cursor:pointer; box-shadow:0 2px 4px rgba(0,0,0,0.1); display:flex; align-items:center; justify-content:center; gap:6px;">
+                        <button onclick="document.getElementById('tallerFactura').setAttribute('capture', 'environment'); document.getElementById('tallerFactura').click();" style="flex:1; background:var(--bg-panel); color:var(--text-main); border:1px solid var(--border-color); padding:10px; border-radius:8px; font-size:11px; font-weight:bold; cursor:pointer; box-shadow:0 2px 4px rgba(0,0,0,0.05); display:flex; align-items:center; justify-content:center; gap:6px;">
                             📷 Cámara
                         </button>
-                        <button onclick="document.getElementById('tallerFactura').removeAttribute('capture'); document.getElementById('tallerFactura').click();" style="flex:1; background:#9b59b6; color:white; border:none; padding:10px; border-radius:8px; font-size:11px; font-weight:bold; cursor:pointer; box-shadow:0 2px 4px rgba(0,0,0,0.1); display:flex; align-items:center; justify-content:center; gap:6px;">
+                        <button onclick="document.getElementById('tallerFactura').removeAttribute('capture'); document.getElementById('tallerFactura').click();" style="flex:1; background:var(--bg-panel); color:var(--text-main); border:1px solid var(--border-color); padding:10px; border-radius:8px; font-size:11px; font-weight:bold; cursor:pointer; box-shadow:0 2px 4px rgba(0,0,0,0.05); display:flex; align-items:center; justify-content:center; gap:6px;">
                             🖼️ Galería
                         </button>
                     </div>
@@ -468,14 +475,21 @@
                         style="display:none; position:absolute; top:100%; left:0; right:0; background:var(--bg-panel); border:1px solid var(--border-color); border-radius:12px; z-index:3000; max-height:200px; overflow-y:auto; box-shadow:0 6px 15px rgba(0,0,0,0.1); margin-top:4px;">
                     </div>
                 </div>
-                <div
-                    style="position:relative; display:flex;align-items:center;background:var(--bg-panel); border-radius:12px;padding:0 5px;overflow:visible;">
+                <div id="btnAñadirParada" onclick="document.getElementById('contenedorParada').style.display='flex'; this.style.display='none'; setTimeout(() => document.getElementById('pasandoPorInput').focus(), 100);" style="display:flex; align-items:center; gap:8px; margin:2px 0 2px 10px; cursor:pointer; color:var(--accent); font-weight:bold; font-size:13px; user-select:none;">
+                    <div style="background:var(--accent); color:white; border-radius:50%; width:20px; height:20px; display:flex; align-items:center; justify-content:center; font-size:14px; line-height:1;">+</div> 
+                    <span>Añadir parada intermedia</span>
+                </div>
+
+                <div id="contenedorParada" style="position:relative; display:none; align-items:center; background:var(--bg-panel); border-radius:12px; padding:0 5px; overflow:visible; border:1px dashed var(--accent);">
                     <span style="font-size:16px; padding:0 5px;">📍</span>
                     <span id="cityNameInter" onclick="this.style.display='none'" title="Toca para borrar"
                         style="font-size:11px;color:#fff;background:#f39c12;font-weight:bold;white-space:nowrap;padding:4px 8px;border-radius:8px;display:none;margin-right:5px;cursor:pointer;"></span>
                     <input type="text" id="pasandoPorInput" autocomplete="off"
-                        placeholder="Pasando por... (Opcional, ej: Burgos)"
+                        placeholder="Pasando por... (Ej: Burgos)"
                         style="border:none;background:transparent;flex:1;outline:none;padding:12px 5px;font-size:14px;color:var(--text-main);min-width:0;">
+                    
+                    <button onclick="document.getElementById('contenedorParada').style.display='none'; document.getElementById('btnAñadirParada').style.display='flex'; document.getElementById('pasandoPorInput').value=''; document.getElementById('cityNameInter').style.display='none';" style="background:transparent; color:var(--text-muted); border:none; font-size:16px; padding:10px; cursor:pointer; display:flex; align-items:center; justify-content:center;" title="Eliminar parada">✖</button>
+
                     <div id="autocomplete-list-inter"
                         style="display:none; position:absolute; top:100%; left:0; right:0; background:var(--bg-panel); border:1px solid var(--border-color); border-radius:12px; z-index:3000; max-height:200px; overflow-y:auto; box-shadow:0 6px 15px rgba(0,0,0,0.1); margin-top:4px;">
                     </div>
@@ -559,30 +573,9 @@
             <option value="">🚘 Selecciona tu vehículo guardado...</option>
         </select>
 
-        <div class="row" style="flex-wrap: wrap;">
-            <input type="text" id="marcaInput" placeholder="Marca (Repsol...)"
-                style="flex:1; min-width:80px; padding:12px 6px; font-size:13px;">
-            <div id="contenedorLitrosManuales" style="display:flex; align-items:center; gap:4px; flex:none;">
-                <input type="number" id="litrosInput" placeholder="Lts"
-                    style="width:45px; padding:12px 2px; text-align:center;">
-                <button id="btnFill" onclick="llenarATope()"
-                    style="display:none; background:var(--accent-green); color:white; border:none; padding:10px 8px; border-radius:8px; cursor:pointer; font-size:11px; font-weight:bold;"
-                    title="Llenar a tope">MAX</button>
-            </div>
-
-            <label id="modoLlenadoInteligente" class="checkbox-container"
-                style="display:none; flex:none; padding:10px 8px; font-size:12px; background:var(--bg-ahorro); border-color:var(--accent-green); color:var(--accent-green);">
-                <input type="checkbox" id="llenarDepositoInput" checked> ⛽ Llenar
-            </label>
-            <input type="number" id="consumoInput" placeholder="L/100" step="0.1"
-                style="width:55px; flex:none; padding:12px 2px; text-align:center; font-size:13px;">
-            <input type="number" id="autonomiaInput" placeholder="Autonomia"
-                style="width:65px; flex:none; padding:12px 2px; text-align:center; font-size:13px;"
-                title="¿Cuántos km te quedan para el primer repostaje?">
-        </div>
-
-        <div class="row">
-            <select id="tipoCombustible" style="flex:1; min-width:80px; padding:12px 5px;">
+       
+        <div class="row" style="flex-wrap: wrap; gap: 8px;">
+            <select id="tipoCombustible" style="flex:2; min-width:110px; padding:12px 5px;">
                 <option value="Precio Gasoleo A">Diesel</option>
                 <option value="Precio Gasolina 95 E5">Gasolina 95</option>
                 <option value="Precio Gasoleo Premium">Diesel Premium</option>
@@ -593,10 +586,43 @@
                 <option value="Precio Gas Natural Licuado">GNL</option>
                 <option value="AdBlue">AdBlue</option>
             </select>
-            <label class="checkbox-container" style="flex:none; padding:12px 8px;"><input type="checkbox"
-                    id="abiertasInput"> Abiertas</label>
-            <label class="checkbox-container" style="flex:none; padding:12px 8px;"
-                title="Calcula el viaje ida y vuelta"><input type="checkbox" id="idaVueltaInput" checked> 🔁 I/V</label>
+            
+            <input type="text" id="marcaInput" placeholder="Marca (Ej: Repsol...)"
+                style="flex:1.5; min-width:90px; padding:12px 8px; font-size:14px; box-sizing: border-box;">
+            
+            <label class="checkbox-container" style="flex:none; padding:12px 10px; border:1px solid var(--border-color);">
+                <input type="checkbox" id="abiertasInput"> Abiertas
+            </label>
+        </div>
+
+        <div id="btnToggleAvanzados" onclick="toggleFiltrosAvanzados()" style="text-align:center; color:var(--accent); font-size:12.5px; font-weight:bold; cursor:pointer; padding:6px 0; display:flex; align-items:center; justify-content:center; gap:4px; margin-top:2px; user-select:none;">
+            ⚙️ Más opciones de ahorro <span id="flechaAvanzados">🔽</span>
+        </div>
+
+        <div id="bloqueFiltrosAvanzados" style="display:none; flex-direction:column; gap:8px; background:var(--bg-input); padding:12px; border-radius:12px; border:1px solid var(--border-color); margin-top:2px;">
+            
+            <div style="display:flex; gap:8px; width:100%;">
+                <div id="contenedorLitrosManuales" style="display:flex; align-items:center; gap:4px; flex:1; min-width:0;">
+                    <input type="number" id="litrosInput" placeholder="Litros" style="flex:1; min-width:0; box-sizing:border-box; padding:12px 4px; background:var(--bg-panel); text-align:center; font-weight:bold; border-radius:8px; border:1px solid var(--border-color);">
+                    <button id="btnFill" onclick="llenarATope()" style="display:none; background:var(--accent-green); color:white; border:none; padding:12px 8px; border-radius:8px; cursor:pointer; font-size:11px; font-weight:bold;" title="Llenar a tope">MAX</button>
+                </div>
+
+                <label id="modoLlenadoInteligente" class="checkbox-container" style="display:none; flex:1; min-width:0; padding:11px 4px; font-size:12px; background:var(--bg-panel); border:1px solid var(--border-color); color:var(--accent-green); justify-content:center; border-radius:8px;">
+                    <input type="checkbox" id="llenarDepositoInput" checked> ⛽ Llenar a Tope
+                </label>
+
+                <input type="number" id="consumoInput" placeholder="Consumo L/100" step="0.1" style="flex:1; min-width:0; box-sizing:border-box; padding:12px 4px; background:var(--bg-panel); text-align:center; font-weight:bold; border-radius:8px; border:1px solid var(--border-color);">
+            </div>
+
+            <div style="display:flex; gap:8px; width:100%;">
+                <input type="number" id="autonomiaInput" placeholder="Autonomía (Km)" style="flex:1; min-width:0; box-sizing:border-box; padding:12px 4px; background:var(--bg-panel); text-align:center; font-weight:bold; border-radius:8px; border:1px solid var(--border-color);" title="¿Cuántos km te quedan para el primer repostaje?">
+                <input type="number" id="depositoManualInput" placeholder="Depósito (L)" style="flex:1; min-width:0; box-sizing:border-box; padding:12px 4px; background:var(--bg-panel); text-align:center; font-weight:bold; border-radius:8px; border:1px solid var(--border-color);" title="Capacidad total del tanque de combustible">
+            </div>
+
+            <label class="checkbox-container" id="contenedorIdaVuelta" style="padding:10px 4px; background:var(--bg-panel); border:1px solid var(--border-color); width:100%; box-sizing:border-box; justify-content:center; border-radius:8px; margin:0; font-size:12.5px;" title="Calcula el viaje ida y vuelta">
+                <input type="checkbox" id="idaVueltaInput" checked> 🔁 Calcular Ida y Vuelta (I/V)
+            </label>
+            
         </div>
 
     </div>
@@ -776,14 +802,19 @@
                 </div>
             </div>
 
-        <div class="modal-content" style="max-width:400px; padding:20px;">
+                <div class="modal-content" style="max-width:400px; padding:20px;">
             <h3 style="margin-top:0; color:var(--accent); text-align:center; border-bottom:1px solid var(--border-color); padding-bottom:10px;">
-                🚗 Mis Vehículos Guardados
+                🚗 Mis Vehículos
             </h3>
 
-            <!-- Formulario de carga compacto directo en la cabecera -->
-            <div style="background:var(--bg-input); padding:15px; border-radius:12px; border:1px solid var(--border-color); margin-bottom:15px; display:flex; flex-direction:column; gap:10px;">
-                <p style="margin:0; font-size:12px; font-weight:bold; color:var(--text-main);">➕ Registrar o editar un vehículo</p>
+            <button id="btnToggleFormCoche" onclick="toggleFormCoche()" style="background:var(--bg-input); color:var(--text-main); border:2px dashed var(--accent); padding:12px; border-radius:12px; font-weight:bold; cursor:pointer; width:100%; margin-bottom:15px; display:flex; align-items:center; justify-content:center; gap:8px;">
+                ➕ Añadir Nuevo Vehículo
+            </button>
+
+            <div id="formNuevoVehiculo" style="display:none; background:var(--bg-input); padding:15px; border-radius:12px; border:1px solid var(--border-color); margin-bottom:15px; flex-direction:column; gap:10px;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <p id="tituloFormCoche" style="margin:0; font-size:13px; font-weight:bold; color:var(--text-main);">Registrar vehículo</p>
+                </div>
                 
                 <input type="hidden" id="editCarId">
                 <input type="text" id="carName" placeholder="Nombre (Ej: Mi Golf, Coche Empresa...)" style="padding:12px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-panel); color:var(--text-main); font-weight:bold; width:100%; box-sizing:border-box;">
@@ -817,12 +848,13 @@
                 <input type="number" id="carAceite" placeholder="Próximo Aceite/Revisión (Km)" style="box-sizing:border-box; padding:12px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-panel); color:var(--text-main); font-weight:bold; width:100%;">
 
                 <button onclick="saveCar()" style="background:var(--accent-green); color:white; padding:12px; border-radius:8px; font-weight:bold; cursor:pointer; font-size:14px; width:100%;">💾 Guardar Vehículo</button>
+                
+                <button onclick="toggleFormCoche(false)" style="background:var(--bg-panel); color:var(--text-main); border:1px solid var(--border-color); padding:12px; border-radius:8px; font-weight:bold; cursor:pointer; font-size:14px; width:100%;">❌ Cancelar</button>
             </div>
 
-            <!-- Lista Dinámica de los vehículos guardados -->
-            <div id="carList" style="max-height:35vh; overflow-y:auto; display:flex; flex-direction:column; gap:10px; margin-bottom:15px;">
-                <!-- Se llena dinámicamente con JS -->
-            </div>
+            <div id="carList" style="flex:1; min-height:150px; overflow-y:auto; display:flex; flex-direction:column; gap:10px; margin-bottom:15px;">
+                </div>
+
 
             <button onclick="document.getElementById('misVehiculosModal').style.display='none'; abrirPerfil();" style="background:var(--bg-input); color:var(--text-main); border:none; padding:13px; border-radius:12px; font-weight:bold; cursor:pointer; width:100%;">⬅️ Volver al Perfil</button>
         </div>
@@ -837,8 +869,11 @@
                 <h3 id="camaraModalTitle"
                     style="color: white; margin: 0; text-shadow: 0 2px 4px rgba(0,0,0,0.8); font-size: 16px;">🎥 Cámara
                 </h3>
-                <span onclick="document.getElementById('camaraModal').style.display='none'"
-                    style="color: white; font-size: 28px; font-weight: bold; cursor: pointer; text-shadow: 0 2px 4px rgba(0,0,0,0.8);">×</span>
+                <div style="display:flex; align-items:center; gap:15px;">
+                    <button onclick="window.descargarFacturaActual(event)" style="background:var(--accent-green); color:white; border:none; padding:6px 12px; border-radius:8px; font-size:12px; font-weight:bold; cursor:pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.5);">⬇️ Descargar</button>
+                    <span onclick="document.getElementById('camaraModal').style.display='none'"
+                        style="color: white; font-size: 28px; font-weight: bold; cursor: pointer; text-shadow: 0 2px 4px rgba(0,0,0,0.8);">×</span>
+                </div>
             </div>
 
             <div id="camaraImgContainer"
