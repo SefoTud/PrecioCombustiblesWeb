@@ -1,11 +1,24 @@
 // Cambia este número de versión cada vez que actualices tu index.html, app.js o estilos.css
-const CACHE_NAME = 'gasofa-cache-v17'; // Subimos a v7 por la nueva arquitectura
+const CACHE_NAME = 'gasofa-cache-v18'; // Subimos a v18 por la nueva arquitectura modular
 
 const urlsToCache = [
     '/',
     '/index.html',
-    '/estilos.css',   // <-- ¡AÑADIDO!
-    '/app.js',        // <-- ¡AÑADIDO!
+    '/estilos.css',
+    '/app.js',
+    
+    // 👇 ¡AÑADIMOS TODOS TUS NUEVOS MÓDULOS! 👇
+    '/interfaz.js',
+    '/firebase-config.js',
+    '/parking.js',
+    '/auth.js',
+    '/taller.js',
+    '/archivos.js',
+    '/vehiculos.js',
+    '/bitacora.js',
+    '/camaras.js',
+    // 👆 FIN DE LOS NUEVOS MÓDULOS 👆
+    
     '/favicon.ico',
     '/manifest.json'
 ];
