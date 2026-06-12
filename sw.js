@@ -1,5 +1,5 @@
 // Cambia este número de versión cada vez que actualices tu index.html, app.js o estilos.css
-const CACHE_NAME = 'gasofa-cache-v18'; // Subimos a v18 por la nueva arquitectura modular
+const CACHE_NAME = 'gasofa-cache-v19'; // Subimos a v18 por la nueva arquitectura modular
 
 const urlsToCache = [
     '/',
