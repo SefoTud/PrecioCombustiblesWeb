@@ -1,5 +1,7 @@
 // Archivo: vehiculos.js
 
+import { STORAGE_KEYS } from './utils.js';
+
 export function abrirMisVehiculos() {
     if (!document.getElementById("controls").classList.contains("collapsed")) window.toggleControls();
     document.getElementById('misVehiculosModal').style.display = 'flex';
@@ -9,10 +11,14 @@ export function abrirMisVehiculos() {
     renderCars();
     
     const btnNoti = document.getElementById('btnNotificaciones');
-    if (btnNoti && "Notification" in window && Notification.permission === "default") {
-        btnNoti.style.display = 'block';
+    if (btnNoti && "Notification" in window) {
+        if (Notification.permission === "granted") {
+            btnNoti.style.display = 'none'; 
+        } else {
+            btnNoti.style.display = 'block'; 
+        }
     } else if (btnNoti) {
-        btnNoti.style.display = 'none';
+        btnNoti.style.display = 'none'; 
     }
 }
 
@@ -21,8 +27,8 @@ export function cerrarMisVehiculos() {
     if(typeof window.abrirPerfil === 'function') window.abrirPerfil(); 
 }
 
-export function saveCar() {
-    let myCars = JSON.parse(localStorage.getItem('gasofa_cars')) || [];
+export async function saveCar() {
+    let myCars = JSON.parse(localStorage.getItem(STORAGE_KEYS.CARS)) || [];
 
     const idToEdit = document.getElementById('editCarId').value;
     const name = document.getElementById('carName').value;
@@ -33,43 +39,64 @@ export function saveCar() {
     const seguro = document.getElementById('carSeguro').value;
     const aceite = document.getElementById('carAceite').value;
 
-    if (!name || !consumo || !deposito) { alert("⚠️ Por favor, rellena al menos el Nombre, Consumo y Depósito."); return; }
+    if (!name || !consumo || !deposito) {
+        alert("⚠️ Rellena al menos el Nombre, el Consumo y el Depósito.");
+        return;
+    }
+
+    let esVehiculoAdmin = idToEdit !== "" && !name.startsWith("🤝 ");
+    let compartidoFlag = false;
+
+    if (idToEdit !== "") {
+        let oldCar = myCars.find(c => String(c.id) === String(idToEdit));
+        if (oldCar && oldCar.compartido) compartidoFlag = true;
+        
+        if (oldCar && oldCar.compartido && (!esVehiculoAdmin || oldCar.name !== name)) {
+            let seguroAccion = await window.appConfirm("Al cambiar de coche, ¿quieres desvincularlo de la red compartida?", "Modificar Vehículo", "⚠️");
+            if(!seguroAccion) return;
+            compartidoFlag = false;
+        }
+    }
+
+    let nuevoCoche = {
+        id: idToEdit ? parseInt(idToEdit) : Date.now(),
+        name, fuel, consumo, deposito, itv, seguro, aceite, compartido: compartidoFlag
+    };
 
     if (idToEdit) {
         const index = myCars.findIndex(c => String(c.id) === String(idToEdit));
-        if (index > -1) { 
-            myCars[index] = { id: parseInt(idToEdit), name, fuel, consumo, deposito, itv, seguro, aceite, compartido: myCars[index].compartido || false }; 
-            
-            if (myCars[index].compartido && window.db) {
-                window.setDoc(window.doc(window.db, "gastos_compartidos", String(idToEdit)), {
-                    cocheData: myCars[index]
-                }, { merge: true }).catch(e => console.error(e));
-            }
+        if (index > -1) {
+            if (myCars[index].rol) nuevoCoche.rol = myCars[index].rol;
+            myCars[index] = nuevoCoche;
         }
     } else {
-        myCars.push({ id: Date.now(), name, fuel, consumo, deposito, itv, seguro, aceite, compartido: false });
+        myCars.push(nuevoCoche);
     }
 
-    localStorage.setItem('gasofa_cars', JSON.stringify(myCars));
+    localStorage.setItem(STORAGE_KEYS.CARS, JSON.stringify(myCars));
 
     if (window.auth && window.auth.currentUser) {
-        const uid = window.auth.currentUser.uid;
-        window.setDoc(window.doc(window.db, "usuarios", uid), {
-            misCoches: myCars
-        }, { merge: true }).catch(e => console.error("Error nube:", e));
+        window.setDoc(window.doc(window.db, "usuarios", window.auth.currentUser.uid), { misCoches: myCars }, { merge: true });
+        
+        if (compartidoFlag) {
+            window.setDoc(window.doc(window.db, "gastos_compartidos", String(idToEdit ? idToEdit : nuevoCoche.id)), { 
+                cocheData: nuevoCoche 
+            }, { merge: true }).catch(e => console.error("Error sincronizando cambios del coche", e));
+        }
     }
 
+    if (typeof window.toggleFormCoche === 'function') window.toggleFormCoche(false);
     renderCars();
-    updateCarSelect();
-    if(typeof window.toggleFormCoche === 'function') window.toggleFormCoche(false);
+    if (typeof window.updateCarSelect === 'function') window.updateCarSelect();
+    if (typeof window.actualizarListaHistorial === 'function') window.actualizarListaHistorial();
 }
 
 export function editCar(id) {
-    let myCars = JSON.parse(localStorage.getItem('gasofa_cars')) || [];
+    let myCars = JSON.parse(localStorage.getItem(STORAGE_KEYS.CARS)) || [];
     const car = myCars.find(c => String(c.id) === String(id));
     if (car) {
         if (car.name.startsWith("🤝 ")) {
-            alert("⚠️ No tienes permisos para editar este vehículo compartido.");
+            alert("⚠️ No tienes permisos para editar la configuración principal de este vehículo compartido.");
             return;
         }
         document.getElementById('editCarId').value = car.id;
@@ -86,47 +113,85 @@ export function editCar(id) {
     }
 }
 
-export function deleteCar(id) {
-    let myCars = JSON.parse(localStorage.getItem('gasofa_cars')) || [];
+export async function deleteCar(id) {
+    let myCars = JSON.parse(localStorage.getItem(STORAGE_KEYS.CARS)) || [];
     let cocheActual = myCars.find(c => String(c.id) === String(id));
     if (cocheActual && cocheActual.name.startsWith("🤝 ")) {
-        alert("⚠️ No puedes eliminar un coche compartido.");
+        alert("⚠️ No puedes eliminar un coche compartido. Usa el botón 'Salir' para abandonar el vehículo.");
         return;
     }
 
-    if (confirm("¿Borrar vehículo? Conlleva eliminarlo también para todos los usuarios invitados y borrar TODO su historial de gastos (gasolina y taller).")) {
+    let seguro = await window.appConfirm("¿Borrar vehículo? Conlleva eliminarlo también para los invitados y borrar TODO su historial de gastos.", "Borrar Vehículo", "🗑️");
+    
+    if (seguro) {
         myCars = myCars.filter(car => String(car.id) !== String(id));
-        localStorage.setItem('gasofa_cars', JSON.stringify(myCars));
+        localStorage.setItem(STORAGE_KEYS.CARS, JSON.stringify(myCars));
         
-        let bitacoraLocal = JSON.parse(localStorage.getItem('gasofa_bitacora')) || [];
+        let bitacoraLocal = JSON.parse(localStorage.getItem(STORAGE_KEYS.BITACORA)) || [];
         bitacoraLocal = bitacoraLocal.filter(b => String(b.carId) !== String(id));
-        localStorage.setItem('gasofa_bitacora', JSON.stringify(bitacoraLocal));
+        localStorage.setItem(STORAGE_KEYS.BITACORA, JSON.stringify(bitacoraLocal));
 
-        let mantLocal = JSON.parse(localStorage.getItem('gasofa_taller')) || [];
+        let mantLocal = JSON.parse(localStorage.getItem(STORAGE_KEYS.TALLER)) || [];
         mantLocal = mantLocal.filter(m => String(m.carId) !== String(id));
-        localStorage.setItem('gasofa_taller', JSON.stringify(mantLocal));
+        localStorage.setItem(STORAGE_KEYS.TALLER, JSON.stringify(mantLocal));
         
         if (window.auth && window.auth.currentUser) {
             const uid = window.auth.currentUser.uid;
-            window.setDoc(window.doc(window.db, "usuarios", uid), {
-                misCoches: myCars,
-                miBitacora: bitacoraLocal
+            
+            window.setDoc(window.doc(window.db, "usuarios", uid), { 
+                misCoches: myCars, 
+                miBitacora: bitacoraLocal,
+                miTaller: mantLocal 
             }, { merge: true });
 
             if (cocheActual && cocheActual.compartido && window.db) {
-                window.setDoc(window.doc(window.db, "gastos_compartidos", String(id)), {
-                    cocheEliminado: true
+                window.setDoc(window.doc(window.db, "gastos_compartidos", String(id)), { 
+                    cocheEliminado: true,
+                    repostajes: [],
+                    taller: []
                 }, { merge: true }).catch(e => console.error(e));
             }
         }
-        renderCars();
-        updateCarSelect();
+        renderCars(); updateCarSelect();
         if (typeof window.actualizarListaHistorial === 'function') window.actualizarListaHistorial();
+        if (typeof window.actualizarAhorroGlobal === 'function') window.actualizarAhorroGlobal(); 
     }
 }
 
+export async function abandonarCocheCompartido(id) {
+    let seguro = await window.appConfirm("¿Seguro que quieres salir de este vehículo compartido? Dejarás de ver sus gastos, pero el dueño original NO lo perderá.", "Salir del coche", "👋");
+    if (!seguro) return;
+    
+    let myCars = JSON.parse(localStorage.getItem(STORAGE_KEYS.CARS)) || [];
+    myCars = myCars.filter(car => String(car.id) !== String(id));
+    localStorage.setItem(STORAGE_KEYS.CARS, JSON.stringify(myCars));
+    
+    let bitacoraLocal = JSON.parse(localStorage.getItem(STORAGE_KEYS.BITACORA)) || [];
+    bitacoraLocal = bitacoraLocal.filter(b => String(b.carId) !== String(id));
+    localStorage.setItem(STORAGE_KEYS.BITACORA, JSON.stringify(bitacoraLocal));
+
+    let mantLocal = JSON.parse(localStorage.getItem(STORAGE_KEYS.TALLER)) || [];
+    mantLocal = mantLocal.filter(m => String(m.carId) !== String(id));
+    localStorage.setItem(STORAGE_KEYS.TALLER, JSON.stringify(mantLocal));
+    
+    if (window.auth && window.auth.currentUser) {
+        const uid = window.auth.currentUser.uid;
+        await window.setDoc(window.doc(window.db, "usuarios", uid), { 
+            misCoches: myCars, 
+            miBitacora: bitacoraLocal,
+            miTaller: mantLocal
+        }, { merge: true });
+    }
+    
+    if (typeof window.mostrarToast === 'function') window.mostrarToast("👋 Has salido del coche", "exito");
+    renderCars(); updateCarSelect();
+    if (typeof window.actualizarListaHistorial === 'function') window.actualizarListaHistorial();
+    if (typeof window.actualizarAhorroGlobal === 'function') window.actualizarAhorroGlobal();
+    if (typeof window.iniciarRadaresCompartidos === 'function') window.iniciarRadaresCompartidos();
+}
+
 export function renderCars() {
-    let myCars = JSON.parse(localStorage.getItem('gasofa_cars')) || [];
+    let myCars = JSON.parse(localStorage.getItem(STORAGE_KEYS.CARS)) || [];
     const list = document.getElementById('carList');
     if(!list) return;
     
@@ -192,8 +257,18 @@ export function renderCars() {
 
         let nombreSeguro = window.escaparHTML ? window.escaparHTML(car.name) : car.name;
         let esInvitadoCoche = car.name.startsWith("🤝 ");
+        
+        let badgeRol = '';
+        if (esInvitadoCoche) {
+            let textoRol = car.rol === 'admin' ? '👑 Admin' : (car.rol === 'lector' ? '👁️ Lector' : '✍️ Conductor');
+            badgeRol = `<span style="font-size:11px; font-weight:bold; background:var(--bg-panel); color:var(--text-main); border:1px solid var(--border-color); border-radius:6px; padding:3px 6px; margin-right:5px;">${textoRol}</span>`;
+        }
+
         let bloqueBotones = esInvitadoCoche 
-            ? `<span style="font-size:12px; font-weight:800; color:var(--text-muted); padding:10px; white-space:nowrap;">🤝 Compartido</span>`
+            ? `<div style="display:flex; gap:6px; align-items:center;">
+                ${badgeRol}
+                <button onclick="abandonarCocheCompartido(${car.id})" style="background:#e74c3c; color:white; border:none; border-radius:8px; padding:8px 12px; cursor:pointer;" title="Salir de este coche">👋 Salir</button>
+               </div>`
             : `<div style="display:flex; gap:6px;">
                 <button onclick="generarCodigoCompartir(${car.id})" style="background:var(--bg-input); color:var(--accent); border:1px solid var(--border-color); border-radius:8px; padding:8px 12px; cursor:pointer;" title="Compartir Coche">🔗</button>
                 <button onclick="editCar(${car.id})" style="background:var(--bg-input); color:var(--text-main); border:1px solid var(--border-color); border-radius:8px; padding:8px 12px; cursor:pointer;" title="Editar">✏️</button>
@@ -219,7 +294,7 @@ export function renderCars() {
 }
 
 export function verificarAlertasGaraje() {
-    let myCars = JSON.parse(localStorage.getItem('gasofa_cars')) || [];
+    let myCars = JSON.parse(localStorage.getItem(STORAGE_KEYS.CARS)) || [];
     let iconosAlerta = "";
     const hoy = new Date();
 
@@ -249,11 +324,11 @@ export function verificarAlertasGaraje() {
 
 export function updateCarSelect() {
     verificarAlertasGaraje(); 
-    let myCars = JSON.parse(localStorage.getItem('gasofa_cars')) || [];
+    let myCars = JSON.parse(localStorage.getItem(STORAGE_KEYS.CARS)) || [];
     const select = document.getElementById('activeCarSelect'); 
     if (!select) return;
     
-    const sMode = localStorage.getItem("gasofaPrefs") ? JSON.parse(localStorage.getItem("gasofaPrefs")).sMode : 'zona';
+    const sMode = localStorage.getItem(STORAGE_KEYS.PREFS) ? JSON.parse(localStorage.getItem(STORAGE_KEYS.PREFS)).sMode : 'zona';
 
     if (myCars.length === 0 || sMode === 'provincia') { select.style.display = 'none'; return; }
 
@@ -267,7 +342,7 @@ export function updateCarSelect() {
 }
 
 export function applyCarSettings() {
-    let myCars = JSON.parse(localStorage.getItem('gasofa_cars')) || [];
+    let myCars = JSON.parse(localStorage.getItem(STORAGE_KEYS.CARS)) || [];
     const select = document.getElementById('activeCarSelect'); 
     const carId = select ? select.value : "";
     const btnFill = document.getElementById('btnFill'); 
@@ -319,17 +394,76 @@ export async function generarCodigoCompartir(idCoche) {
         alert("⚠️ Inicia sesión en 'Mi Perfil' para compartir tu vehículo.");
         return;
     }
-    let myCars = JSON.parse(localStorage.getItem('gasofa_cars')) || [];
+    
+    let myCars = JSON.parse(localStorage.getItem(STORAGE_KEYS.CARS)) || [];
     const coche = myCars.find(c => String(c.id) === String(idCoche));
     if (!coche) return;
 
+    let rolElegido = await new Promise((resolve) => {
+        document.getElementById('customModalTitle').innerText = "Asignar Permisos";
+        document.getElementById('customModalMessage').innerText = "Elige el nivel de acceso que tendrá tu invitado:";
+        document.getElementById('customModalIcon').innerText = "🔑";
+        
+        let wrapper = document.getElementById('customModalInputWrapper');
+        wrapper.style.display = 'block';
+        
+        let input = document.getElementById('customModalInput');
+        input.style.display = 'none'; 
+        
+        let oldSelect = document.getElementById('customModalSelectTemp');
+        if (oldSelect) oldSelect.remove();
+        
+        let select = document.createElement('select');
+        select.id = 'customModalSelectTemp';
+        select.style.cssText = "width: 100%; padding: 14px; border-radius: 10px; border: 1px solid var(--border-color); background: var(--bg-input); color: var(--text-main); font-size: 14px; font-weight: bold; box-sizing: border-box; text-align: center; cursor: pointer; outline: none;";
+        
+        // 🔥 ACTUALIZACIÓN: Textos exactos y claros como los has pedido
+        select.innerHTML = `
+            <option value="admin">👑 Administrador (Anotar, editar y borrar gastos)</option>
+            <option value="editor" selected>✍️ Conductor(Anotar gastos)</option>
+            <option value="lector">👁️ Lector (Leer gastos)</option>
+        `;
+        wrapper.appendChild(select);
+        
+        let btnCopy = document.getElementById('customModalBtnCopy');
+        if (btnCopy) btnCopy.style.display = "none";
+        
+        let btnCancel = document.getElementById('customModalBtnCancel');
+        btnCancel.style.display = 'block';
+        btnCancel.innerText = "Cancelar";
+        btnCancel.onclick = () => { 
+            document.getElementById('customAppModal').style.display = 'none'; 
+            select.remove();
+            input.style.display = 'block';
+            resolve(null); 
+        };
+        
+        let btnOk = document.getElementById('customModalBtnOk');
+        btnOk.innerText = "Generar Código";
+        btnOk.style.background = "var(--accent)";
+        btnOk.onclick = () => { 
+            document.getElementById('customAppModal').style.display = 'none'; 
+            let val = select.value;
+            select.remove();
+            input.style.display = 'block'; 
+            resolve(val); 
+        };
+        
+        document.getElementById('customAppModal').style.display = 'flex';
+    });
+    
+    if (!rolElegido) return; 
+
+    const loading = document.getElementById('loading-overlay');
+    if(loading) { loading.style.display = "flex"; document.getElementById('loading-text').innerText = "Generando invitación..."; }
+
     coche.compartido = true;
-    localStorage.setItem('gasofa_cars', JSON.stringify(myCars));
+    localStorage.setItem(STORAGE_KEYS.CARS, JSON.stringify(myCars));
     await window.setDoc(window.doc(window.db, "usuarios", window.auth.currentUser.uid), { misCoches: myCars }, { merge: true });
 
-    let bitacoraLocal = JSON.parse(localStorage.getItem('gasofa_bitacora')) || [];
+    let bitacoraLocal = JSON.parse(localStorage.getItem(STORAGE_KEYS.BITACORA)) || [];
     let gastosPrevios = bitacoraLocal.filter(b => String(b.carId) === String(idCoche));
-    let mantLocal = JSON.parse(localStorage.getItem('gasofa_taller')) || [];
+    let mantLocal = JSON.parse(localStorage.getItem(STORAGE_KEYS.TALLER)) || [];
     let tallerPrevio = mantLocal.filter(m => String(m.carId) === String(idCoche));
 
     if (gastosPrevios.length > 0 || tallerPrevio.length > 0) {
@@ -346,20 +480,51 @@ export async function generarCodigoCompartir(idCoche) {
     for (let i = 0; i < 8; i++) codigo += caracteres.charAt(Math.floor(Math.random() * caracteres.length));
 
     try {
-        const loading = document.getElementById('loading-overlay');
-        if(loading) { loading.style.display = "flex"; document.getElementById('loading-text').innerText = "Generando invitación..."; }
-
         await window.setDoc(window.doc(window.db, "invitaciones", codigo), {
             cocheData: coche,
             creador: window.auth.currentUser.uid,
+            rolAsignado: rolElegido,
             fecha: Date.now()
         });
 
         if(loading) loading.style.display = "none";
-        prompt(`✅ ¡Vehículo listo para compartir!\n\nPásale este código a tu familiar/empleado. (Solo se puede usar 1 vez):`, codigo);
+        
+                let rolNombre = rolElegido === 'admin' ? 'Administrador' : (rolElegido === 'lector' ? 'Lector' : 'Conductor');
+
+        
+        await new Promise((resolve) => {
+            document.getElementById('customModalTitle').innerText = "Código de invitación";
+            document.getElementById('customModalMessage').innerHTML = `✅ ¡Invitación lista!<br><br>Se unirá como: <b>${rolNombre}</b><br><small style="color:var(--text-muted);">(Este código desaparecerá automáticamente al usarse)</small>`;
+            document.getElementById('customModalIcon').innerText = "🔗";
+            
+            let wrapper = document.getElementById('customModalInputWrapper');
+            wrapper.style.display = 'block';
+            
+            let input = document.getElementById('customModalInput');
+            input.style.display = 'block';
+            input.value = codigo;
+            input.readOnly = true; 
+            
+            let btnCopy = document.getElementById('customModalBtnCopy');
+            if (btnCopy) btnCopy.style.display = "block";
+            
+            let btnCancel = document.getElementById('customModalBtnCancel');
+            btnCancel.style.display = 'none'; 
+            
+            let btnOk = document.getElementById('customModalBtnOk');
+            btnOk.innerText = "Vale";
+            btnOk.style.background = "var(--accent-green)";
+            btnOk.onclick = () => { 
+                document.getElementById('customAppModal').style.display = 'none'; 
+                input.readOnly = false; 
+                resolve(true); 
+            };
+            
+            document.getElementById('customAppModal').style.display = 'flex';
+        });
         
     } catch (error) {
-        if(document.getElementById('loading-overlay')) document.getElementById('loading-overlay').style.display = "none";
+        if(loading) loading.style.display = "none";
         alert("❌ Error al conectar con el servidor. Revisa tu internet.");
     }
 }
@@ -368,63 +533,79 @@ export async function unirseCocheCompartido() {
     if (typeof gtag === 'function') gtag('event', 'compartir_coche_unirse');
 
     if (!window.auth || !window.auth.currentUser) {
-        alert("⚠️ Inicia sesión en 'Mi Perfil' para unirte a un coche.");
+        alert("⚠️ Inicia sesión en 'Mi Perfil' para unirte a un vehículo compartido.");
         return;
     }
 
-    let input = document.getElementById('inputCodigoCoche');
-    let codigo = input.value.trim();
+    let inputCodigo = document.getElementById('inputCodigoCoche');
+    let codigo = inputCodigo ? inputCodigo.value.trim() : "";
+    
+    if (!codigo || codigo === "") {
+        alert("⚠️ Escribe el código de invitación primero.");
+        return;
+    }
 
-    if (codigo.length < 5) { alert("⚠️ Escribe un código válido."); return; }
+    const loading = document.getElementById('loading-overlay');
+    if(loading) { loading.style.display = "flex"; document.getElementById('loading-text').innerText = "Buscando vehículo..."; }
 
     try {
-        const loading = document.getElementById('loading-overlay');
-        if(loading) { loading.style.display = "flex"; document.getElementById('loading-text').innerText = "Buscando vehículo..."; }
+        const invRef = window.doc(window.db, "invitaciones", codigo);
+        const invSnap = await window.getDoc(invRef);
 
-        const docRef = window.doc(window.db, "invitaciones", codigo);
-        const docSnap = await window.getDoc(docRef);
-
-        if (docSnap.exists()) {
-            const data = docSnap.data();
-            const cocheInvitacion = data.cocheData;
-            
-            let myCars = JSON.parse(localStorage.getItem('gasofa_cars')) || [];
-
-            if (myCars.find(c => String(c.id) === String(cocheInvitacion.id))) {
-                if(loading) loading.style.display = "none";
-                alert("⚠️ Ya tienes este coche en tu garaje.");
-                return;
-            }
-
-            cocheInvitacion.name = "🤝 " + cocheInvitacion.name; 
-            cocheInvitacion.compartido = true; 
-
-            myCars.push(cocheInvitacion);
-            localStorage.setItem('gasofa_cars', JSON.stringify(myCars));
-
-            await window.setDoc(window.doc(window.db, "usuarios", window.auth.currentUser.uid), {
-                misCoches: myCars
-            }, { merge: true });
-
-            await window.deleteDoc(docRef);
-
+        if (!invSnap.exists()) {
             if(loading) loading.style.display = "none";
-            if (typeof window.iniciarRadaresCompartidos === 'function') window.iniciarRadaresCompartidos();
-            
-            alert(`🚗 ¡Perfecto! Te has unido a: ${cocheInvitacion.name}`);
-            
-            input.value = "";
-            renderCars();
-            updateCarSelect();
-
-        } else {
-            if(loading) loading.style.display = "none";
-            alert("❌ El código no existe o ya ha sido utilizado por otra persona.");
+            alert("❌ El código no existe, es incorrecto o ya ha sido utilizado por alguien.");
+            return;
         }
 
+        const data = invSnap.data();
+        
+        if (data.creador === window.auth.currentUser.uid) {
+            if(loading) loading.style.display = "none";
+            alert("⚠️ No puedes unirte a un vehículo que tú mismo has creado.");
+            return;
+        }
+
+        const cocheImportado = data.cocheData;
+        cocheImportado.name = "🤝 " + cocheImportado.name;
+        cocheImportado.rol = data.rolAsignado || 'editor';
+
+        let myCars = JSON.parse(localStorage.getItem(STORAGE_KEYS.CARS)) || [];
+        if (myCars.find(c => String(c.id) === String(cocheImportado.id))) {
+            if(loading) loading.style.display = "none";
+            alert("⚠️ Ya tienes este vehículo en tu garaje.");
+            return;
+        }
+
+        myCars.push(cocheImportado);
+        localStorage.setItem(STORAGE_KEYS.CARS, JSON.stringify(myCars));
+        await window.setDoc(window.doc(window.db, "usuarios", window.auth.currentUser.uid), { misCoches: myCars }, { merge: true });
+
+        await window.setDoc(window.doc(window.db, "gastos_compartidos", String(cocheImportado.id)), {
+            miembros: window.arrayUnion ? window.arrayUnion(window.auth.currentUser.uid) : [window.auth.currentUser.uid]
+        }, { merge: true });
+
+        try {
+            await window.deleteDoc(invRef);
+        } catch (errorFirebase) {
+            console.log("Aviso: Falta actualizar las reglas de Firestore para permitir el borrado.");
+        }
+
+        if(loading) loading.style.display = "none";
+        
+                let rolNombre = cocheImportado.rol === 'admin' ? 'Administrador' : (cocheImportado.rol === 'lector' ? 'Lector' : 'Conductor');
+        alert(`✅ ¡Vehículo añadido a tu garaje!\n\nTu nivel de permiso es: ${rolNombre}`);
+        
+        if(inputCodigo) inputCodigo.value = "";
+        
+        renderCars();
+        if(typeof window.updateCarSelect === 'function') window.updateCarSelect();
+        
+        if(typeof window.iniciarRadaresCompartidos === 'function') window.iniciarRadaresCompartidos();
+
     } catch (error) {
-        if(document.getElementById('loading-overlay')) document.getElementById('loading-overlay').style.display = "none";
-        alert("❌ Error al conectar con el servidor.");
+        if(loading) loading.style.display = "none";
+        alert("❌ Error al unirse. Comprueba tu conexión.");
     }
 }
 
@@ -436,7 +617,7 @@ export function iniciarRadaresCompartidos() {
     }
     window.radaresActivos = [];
 
-    let myCars = JSON.parse(localStorage.getItem('gasofa_cars')) || [];
+    let myCars = JSON.parse(localStorage.getItem(STORAGE_KEYS.CARS)) || [];
 
     if (myCars && myCars.length > 0) {
         myCars.forEach(car => {
@@ -446,26 +627,26 @@ export function iniciarRadaresCompartidos() {
                 if (docSnapCompartido.exists()) {
                     let dataCompartida = docSnapCompartido.data();
                     let huboCambiosUI = false;
-                    let bitacoraLocal = JSON.parse(localStorage.getItem('gasofa_bitacora')) || [];
+                    let bitacoraLocal = JSON.parse(localStorage.getItem(STORAGE_KEYS.BITACORA)) || [];
 
-                    // A) Coche eliminado
                     if (dataCompartida.cocheEliminado === true) {
                         apagarRadar(); 
                         
                         let updatedCars = myCars.filter(c => String(c.id) !== String(car.id));
-                        localStorage.setItem('gasofa_cars', JSON.stringify(updatedCars));
+                        localStorage.setItem(STORAGE_KEYS.CARS, JSON.stringify(updatedCars));
                         
                         let updatedBitacora = bitacoraLocal.filter(b => String(b.carId) !== String(car.id));
-                        localStorage.setItem('gasofa_bitacora', JSON.stringify(updatedBitacora));
+                        localStorage.setItem(STORAGE_KEYS.BITACORA, JSON.stringify(updatedBitacora));
 
-                        let mantLocalInvitado = JSON.parse(localStorage.getItem('gasofa_taller')) || [];
+                        let mantLocalInvitado = JSON.parse(localStorage.getItem(STORAGE_KEYS.TALLER)) || [];
                         mantLocalInvitado = mantLocalInvitado.filter(m => String(m.carId) !== String(car.id));
-                        localStorage.setItem('gasofa_taller', JSON.stringify(mantLocalInvitado));
+                        localStorage.setItem(STORAGE_KEYS.TALLER, JSON.stringify(mantLocalInvitado));
                         
                         if (window.auth && window.auth.currentUser) {
                             window.setDoc(window.doc(window.db, "usuarios", window.auth.currentUser.uid), { 
                                 misCoches: updatedCars,
-                                miBitacora: updatedBitacora 
+                                miBitacora: updatedBitacora,
+                                miTaller: mantLocalInvitado
                             }, { merge: true });
                         }
                         
@@ -476,24 +657,34 @@ export function iniciarRadaresCompartidos() {
                         return;
                     }
 
-                    // B) Coche editado
                     if (dataCompartida.cocheData) {
                         let idx = myCars.findIndex(c => String(c.id) === String(car.id));
                         if (idx > -1) {
-                            let nombreConEmoji = dataCompartida.cocheData.name;
-                            if (!nombreConEmoji.startsWith("🤝 ")) nombreConEmoji = "🤝 " + nombreConEmoji;
-                            let cocheActualizado = { ...dataCompartida.cocheData, name: nombreConEmoji, compartido: true };
+                            let cocheLocal = myCars[idx];
+                            let soyInvitado = cocheLocal.name.startsWith("🤝 ");
+                            let nombreFinal = dataCompartida.cocheData.name;
                             
-                            if (JSON.stringify(myCars[idx]) !== JSON.stringify(cocheActualizado)) {
+                            if (soyInvitado && !nombreFinal.startsWith("🤝 ")) {
+                                nombreFinal = "🤝 " + nombreFinal;
+                            }
+                            
+                            let rolExistente = cocheLocal.rol || 'editor';
+                            let cocheActualizado = { ...dataCompartida.cocheData, name: nombreFinal, compartido: true, rol: rolExistente };
+                            
+                            if (JSON.stringify(cocheLocal) !== JSON.stringify(cocheActualizado)) {
                                 myCars[idx] = cocheActualizado;
-                                localStorage.setItem('gasofa_cars', JSON.stringify(myCars));
+                                localStorage.setItem(STORAGE_KEYS.CARS, JSON.stringify(myCars));
+                                
+                                if (window.auth && window.auth.currentUser) {
+                                    window.setDoc(window.doc(window.db, "usuarios", window.auth.currentUser.uid), { misCoches: myCars }, { merge: true });
+                                }
+                                
                                 huboCambiosUI = true;
                                 renderCars();
                             }
                         }
                     }
 
-                    // 1. Repostajes
                     if (dataCompartida.repostajes) {
                         let viejaStr = JSON.stringify(bitacoraLocal.filter(b => String(b.carId) === String(car.id)));
                         let nuevaStr = JSON.stringify(dataCompartida.repostajes);
@@ -506,15 +697,14 @@ export function iniciarRadaresCompartidos() {
                             const esToYMD = (esDate) => { if(!esDate) return getHoyYMD(); let p=esDate.split('/'); if(p.length!==3) return getHoyYMD(); return `${p[2]}-${p[1].padStart(2,'0')}-${p[0].padStart(2,'0')}`; };
                             
                             nuevaBitacora.sort((a, b) => new Date(esToYMD(b.fecha)).getTime() - new Date(esToYMD(a.fecha)).getTime());
-                            localStorage.setItem('gasofa_bitacora', JSON.stringify(nuevaBitacora));
+                            localStorage.setItem(STORAGE_KEYS.BITACORA, JSON.stringify(nuevaBitacora));
                             if(typeof window.bitacora !== 'undefined') window.bitacora = nuevaBitacora; 
                             huboCambiosUI = true;
                         }
                     }
 
-                    // 2. Taller
                     if (dataCompartida.taller) {
-                        let mantLocal = JSON.parse(localStorage.getItem('gasofa_taller')) || [];
+                        let mantLocal = JSON.parse(localStorage.getItem(STORAGE_KEYS.TALLER)) || [];
                         let viejaStr = JSON.stringify(mantLocal.filter(m => String(m.carId) === String(car.id)));
                         let nuevaStr = JSON.stringify(dataCompartida.taller);
 
@@ -526,7 +716,7 @@ export function iniciarRadaresCompartidos() {
                             const esToYMD = (esDate) => { if(!esDate) return getHoyYMD(); let p=esDate.split('/'); if(p.length!==3) return getHoyYMD(); return `${p[2]}-${p[1].padStart(2,'0')}-${p[0].padStart(2,'0')}`; };
 
                             nuevoTaller.sort((a, b) => new Date(esToYMD(b.fecha)).getTime() - new Date(esToYMD(a.fecha)).getTime());
-                            localStorage.setItem('gasofa_taller', JSON.stringify(nuevoTaller));
+                            localStorage.setItem(STORAGE_KEYS.TALLER, JSON.stringify(nuevoTaller));
                             huboCambiosUI = true;
                         }
                     }
@@ -545,8 +735,87 @@ export function iniciarRadaresCompartidos() {
     }
 }
 
+export function lanzarNotificacion(titulo, cuerpo) {
+    const opciones = {
+        body: cuerpo,
+        icon: 'android-chrome-192x192.png',
+        badge: 'favicon-32x32.png',
+        vibrate: [200, 100, 200]
+    };
 
-// Conectamos a la ventana global
+    if ('serviceWorker' in navigator && navigator.serviceWorker.ready) {
+        navigator.serviceWorker.ready.then(function (registration) {
+            registration.showNotification(titulo, opciones);
+        });
+    } else {
+        new Notification(titulo, opciones);
+    }
+}
+
+export function solicitarPermisoNotificaciones() {
+    if (!("Notification" in window)) {
+        alert("Tu dispositivo o navegador no soporta notificaciones.");
+        return;
+    }
+    
+    if (Notification.permission === "denied") {
+        alert("⚠️ Tienes las notificaciones bloqueadas en tu navegador para esta web.\n\nPara activarlas, toca el candado (o icono de ajustes) al lado de la dirección de la web, ve a Permisos, y activa 'Notificaciones'.");
+        return;
+    }
+
+    Notification.requestPermission().then(permission => {
+        if (permission === "granted") {
+            alert("¡Activadas! Te avisaremos cuando caduque tu ITV o Seguro.");
+            const btnNoti = document.getElementById('btnNotificaciones');
+            if(btnNoti) btnNoti.style.display = 'none';
+            lanzarNotificacion("¡Precio Combustibles!", "Las alertas del garaje están listas y funcionando.");
+        }
+    });
+}
+
+export function revisarAlertasAlEntrar() {
+    if (!("Notification" in window) || Notification.permission !== "granted") return;
+
+    const hoy = new Date();
+    const ultimaNoti = localStorage.getItem('gasofa_last_noti');
+    const fechaHoyStr = hoy.toDateString();
+
+    if (ultimaNoti === fechaHoyStr) return; 
+
+    let hayAvisos = false;
+    let myCars = JSON.parse(localStorage.getItem(STORAGE_KEYS.CARS)) || [];
+
+    myCars.forEach(car => {
+        if (car.itv) {
+            let diasItv = (new Date(car.itv) - hoy) / (1000 * 60 * 60 * 24);
+            if (diasItv <= 15 && diasItv >= -365) {
+                let mensaje = diasItv < 0
+                    ? `¡CADUCADA hace ${Math.abs(Math.round(diasItv))} días! Peligro de multa. 🚔`
+                    : `Caduca en ${Math.ceil(diasItv)} días. ¡Pide cita!`;
+                lanzarNotificacion(`⚠️ ITV de ${car.name}`, mensaje);
+                hayAvisos = true;
+            }
+        }
+        if (car.seguro) {
+            let diasSeg = (new Date(car.seguro) - hoy) / (1000 * 60 * 60 * 24);
+            if (diasSeg <= 15 && diasSeg >= -365) {
+                let mensaje = diasSeg < 0
+                    ? `¡VENCIDO hace ${Math.abs(Math.round(diasSeg))} días! Conduces sin seguro. 🚨`
+                    : `Vence en ${Math.ceil(diasSeg)} días. Revisa tu póliza.`;
+                lanzarNotificacion(`🛡️ Seguro de ${car.name}`, mensaje);
+                hayAvisos = true;
+            }
+        }
+    });
+
+    if (hayAvisos) {
+        localStorage.setItem('gasofa_last_noti', fechaHoyStr);
+    }
+}
+
+window.lanzarNotificacion = lanzarNotificacion;
+window.solicitarPermisoNotificaciones = solicitarPermisoNotificaciones;
+window.revisarAlertasAlEntrar = revisarAlertasAlEntrar;
 window.abrirMisVehiculos = abrirMisVehiculos;
 window.cerrarMisVehiculos = cerrarMisVehiculos;
 window.saveCar = saveCar;
@@ -560,3 +829,4 @@ window.llenarATope = llenarATope;
 window.generarCodigoCompartir = generarCodigoCompartir;
 window.unirseCocheCompartido = unirseCocheCompartido;
 window.iniciarRadaresCompartidos = iniciarRadaresCompartidos;
+window.abandonarCocheCompartido = abandonarCocheCompartido;
