@@ -192,54 +192,6 @@
         </div>
     </div>
 
-    <div id="reviewsModal" class="modal-bg">
-        <div class="modal-content" style="max-width:400px; padding: 20px;">
-            <h3
-                style="margin-top:0; color:var(--accent); text-align:center; border-bottom:1px solid var(--border-color); padding-bottom:10px; display:flex; align-items:center; justify-content:center; gap:8px;">
-                ⭐ Valoraciones
-            </h3>
-            <p id="revGasName"
-                style="text-align:center; font-weight:900; color:var(--text-main); margin-bottom:15px; font-size:14px;">
-            </p>
-
-            <input type="hidden" id="revGasId">
-
-            <div id="revList"
-                style="max-height:30vh; overflow-y:auto; display:flex; flex-direction:column; gap:10px; margin-bottom:15px; background:var(--bg-body); padding:10px; border-radius:12px; border:1px solid var(--border-color);">
-                <div style="text-align:center; color:var(--text-muted); font-size:12px; padding:10px;">Cargando
-                    opiniones de otros conductores...</div>
-            </div>
-
-            <div style="background:var(--bg-input); padding:15px; border-radius:12px; border:1px dashed var(--accent);">
-                <p
-                    style="text-align:center; margin:0 0 10px 0; font-size:12px; font-weight:bold; color:var(--text-muted);">
-                    Deja tu opinión</p>
-
-                <div id="starSelector"
-                    style="text-align:center; font-size:35px; cursor:pointer; user-select:none; margin-bottom:10px; color:#bdc3c7; display:flex; justify-content:center; gap:5px;">
-                    <span onclick="marcarEstrellas(1)">★</span>
-                    <span onclick="marcarEstrellas(2)">★</span>
-                    <span onclick="marcarEstrellas(3)">★</span>
-                    <span onclick="marcarEstrellas(4)">★</span>
-                    <span onclick="marcarEstrellas(5)">★</span>
-                </div>
-                                <input type="hidden" id="revStars" value="0">
-
-                <input type="text" id="revApodo" placeholder="Tu nombre o apodo..." autocomplete="off"
-                    style="width:100%; box-sizing:border-box; padding:12px; border-radius:8px; border:1px solid var(--border-color); margin-bottom:10px; background:var(--bg-panel); color:var(--text-main); font-family:inherit; font-weight:bold;">
-
-                <textarea id="revText" placeholder="¿Qué tal el servicio, limpieza, etc?"
-                    style="width:100%; box-sizing:border-box; padding:12px; border-radius:8px; border:1px solid var(--border-color); resize:none; font-family:inherit; height:70px; margin-bottom:10px; background:var(--bg-panel); color:var(--text-main);"></textarea>
-
-                <button onclick="enviarValoracion()"
-                    style="background:var(--accent-green); color:white; padding:12px; border-radius:8px; font-weight:bold; border:none; cursor:pointer; width:100%;">📤
-                    Publicar comentario</button>
-            </div>
-
-            <button onclick="q('reviewsModal').style.display='none'"
-                style="margin-top:15px; background:var(--bg-input); color:var(--text-main); border:none; padding:12px; border-radius:12px; font-weight:bold; cursor:pointer; width:100%;">Cerrar</button>
-        </div>
-    </div>
     
                <!-- MODAL DE PERFIL V2 (REORGANIZADO) -->
         <div id="perfilModal" class="modal-bg">
@@ -283,8 +235,15 @@
                 <div style="background:var(--bg-ahorro); padding:15px; border-radius:12px; border:1px dashed var(--accent-green); display:flex; align-items:center; gap:15px; margin-bottom:10px;">
                     <img id="fotoUsuario" src="" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 2px solid var(--accent-green);">
                     <div style="flex:1; overflow:hidden;">
-                        <h4 id="nombreUsuario" style="margin: 0; color: var(--text-main); font-size: 15px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Cargando...</h4>
-                        <p id="emailUsuario" style="margin: 2px 0 0 0; color: var(--text-muted); font-size: 12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"></p>
+                                 <div style="display:flex; align-items:center; gap:8px; margin-bottom:2px;">
+                            <h4 id="nombreUsuario" style="margin: 0; color: var(--text-main); font-size: 15px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Cargando...</h4>
+                            <span id="medallaPerfil" style="display:none; background:rgba(243, 156, 18, 0.15); color:#d35400; border:1px solid #f39c12; font-size:10px; font-weight:900; padding:2px 6px; border-radius:12px; white-space:nowrap; box-shadow:0 1px 2px rgba(0,0,0,0.05);"></span>
+                            <span id="numOpinionesPerfil" style="display:none; font-size:11px; color:var(--text-muted); font-weight:bold;"></span>
+                        </div>
+                                      
+
+                        <div onclick="cambiarApodo()" style="font-size: 11px; color: var(--accent); cursor: pointer; margin-top: 2px; font-weight: bold; display: inline-block;">✏️ Editar apodo</div>
+                        <p id="emailUsuario" style="margin: 4px 0 0 0; color: var(--text-muted); font-size: 12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"></p>
                         
                         <div style="margin-top: 6px; font-size: 13px; font-weight: bold; color: var(--accent-green); background: rgba(30,122,68,0.1); display: inline-block; padding: 4px 8px; border-radius: 8px;">
                             💰 Has ahorrado: <span id="perfilAhorroTotal">0.00 €</span>
@@ -292,9 +251,10 @@
                     </div>
                 </div>
 
-                                <button onclick="q('perfilModal').style.display='none'; abrirMisVehiculos()" style="background:var(--bg-input); color:var(--text-main); border:1px solid var(--border-color); padding:12px; border-radius:12px; font-weight:bold; cursor:pointer; width:100%; text-align:left; display:flex; gap:10px; font-size:14px;">
+                <button onclick="q('perfilModal').style.display='none'; abrirMisVehiculos()" style="background:var(--bg-input); color:var(--text-main); border:1px solid var(--border-color); padding:12px; border-radius:12px; font-weight:bold; cursor:pointer; width:100%; text-align:left; display:flex; gap:10px; font-size:14px;">
                     <span>🚗</span> Mis Vehículos y Garaje
                 </button>
+
                 
                 <button onclick="q('perfilModal').style.display='none'; abrirHistorial()" style="background:var(--bg-input); color:var(--text-main); border:1px solid var(--border-color); padding:12px; border-radius:12px; font-weight:bold; cursor:pointer; width:100%; text-align:left; display:flex; gap:10px; font-size:14px;">
                     <span>📊</span> Libro de Gastos y Repostajes
@@ -307,6 +267,16 @@
                 <button onclick="q('perfilModal').style.display='none'; abrirTaller()" style="background:var(--bg-input); color:var(--text-main); border:1px solid var(--border-color); padding:12px; border-radius:12px; font-weight:bold; cursor:pointer; width:100%; text-align:left; display:flex; gap:10px; font-size:14px;">
                     <span>🔧</span> Mantenimiento y Taller
                 </button>
+                
+                                <div style="display:flex; gap:10px; margin-bottom:8px;">
+                    <button onclick="q('perfilModal').style.display='none'; abrirMisOpiniones()" style="flex:1; background:var(--bg-input); color:var(--text-main); border:1px solid var(--border-color); padding:12px; border-radius:12px; font-weight:bold; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:6px; font-size:13px; box-shadow:0 2px 4px rgba(0,0,0,0.05);">
+                        <span style="font-size:22px;">⭐</span> Mis Opiniones
+                    </button>
+                    <button onclick="q('perfilModal').style.display='none'; abrirRanking()" style="flex:1; background:var(--bg-input); color:var(--text-main); border:1px solid var(--border-color); padding:12px; border-radius:12px; font-weight:bold; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:6px; font-size:13px; box-shadow:0 2px 4px rgba(0,0,0,0.05);">
+                        <span style="font-size:22px;">🏆</span> Ranking Top
+                    </button>
+                </div>
+
 
                 <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-input); padding:10px 15px; border-radius:12px; border:1px solid var(--border-color); margin-top:5px;">
                     <div style="font-size:12px; font-weight:bold; color:var(--text-main);">💾 Respaldo (Excel)</div>
@@ -807,6 +777,10 @@
                 🚗 Mis Vehículos
             </h3>
 
+<button id="btnNotificaciones" onclick="solicitarPermisoNotificaciones()" style="display:none; background:#f39c12; color:#fff; border:none; padding:12px; border-radius:12px; font-weight:bold; cursor:pointer; width:100%; margin-bottom:15px; box-shadow:0 4px 6px rgba(0,0,0,0.1); animation: pulseAhorro 2s infinite ease-in-out;">
+                🔔 Activar Alertas de ITV y Seguro
+            </button>
+            
             <button id="btnToggleFormCoche" onclick="toggleFormCoche()" style="background:var(--bg-input); color:var(--text-main); border:2px dashed var(--accent); padding:12px; border-radius:12px; font-weight:bold; cursor:pointer; width:100%; margin-bottom:15px; display:flex; align-items:center; justify-content:center; gap:8px;">
                 ➕ Añadir Nuevo Vehículo
             </button>
@@ -852,7 +826,7 @@
                 <button onclick="toggleFormCoche(false)" style="background:var(--bg-panel); color:var(--text-main); border:1px solid var(--border-color); padding:12px; border-radius:8px; font-weight:bold; cursor:pointer; font-size:14px; width:100%;">❌ Cancelar</button>
             </div>
 
-            <div id="carList" style="flex:1; min-height:150px; overflow-y:auto; display:flex; flex-direction:column; gap:10px; margin-bottom:15px;">
+            <div id="carList" ontouchstart="event.stopPropagation()" ontouchmove="event.stopPropagation()" style="flex:1; min-height:150px; overflow-y:auto; display:flex; flex-direction:column; gap:10px; margin-bottom:15px;">
                 </div>
 
 
@@ -870,7 +844,7 @@
                     style="color: white; margin: 0; text-shadow: 0 2px 4px rgba(0,0,0,0.8); font-size: 16px;">🎥 Cámara
                 </h3>
                 <div style="display:flex; align-items:center; gap:15px;">
-                    <button onclick="window.descargarFacturaActual(event)" style="background:var(--accent-green); color:white; border:none; padding:6px 12px; border-radius:8px; font-size:12px; font-weight:bold; cursor:pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.5);">⬇️ Descargar</button>
+                   
                     <span onclick="document.getElementById('camaraModal').style.display='none'"
                         style="color: white; font-size: 28px; font-weight: bold; cursor: pointer; text-shadow: 0 2px 4px rgba(0,0,0,0.8);">×</span>
                 </div>
@@ -931,51 +905,43 @@
 
         
 
-       <!-- ========================================== -->
-    <!-- MINI-TUTORIAL DE BIENVENIDA (ONBOARDING) -->
+          <!-- ========================================== -->
+    <!-- MINI-TUTORIAL DE BIENVENIDA (4 PASOS)      -->
     <!-- ========================================== -->
-    <div id="tutorialModal" class="modal-bg" style="z-index: 9999;">
+    <div id="tutorialModal" class="modal-bg" style="z-index: 99999;">
         <div class="modal-content" style="max-width: 340px; text-align: center; padding: 30px 20px;">
+            
+            <!-- PASO 1 -->
             <div id="tut-step-1">
                 <span style="font-size: 55px; display: block; margin-bottom: 10px;">📍</span>
-                <h3 style="color: var(--accent); margin: 0 0 10px 0; font-size: 20px;">Encuentra la más barata</h3>
-                <p style="color: var(--text-muted); font-size: 14px; line-height: 1.5; margin: 0;">Descubre los mejores precios a tu alrededor. <b>¡Añade tus tarjetas de descuento (Waylet, Cepsa...) en los filtros y calcularemos tu precio real!</b></p>
+                <h3 style="color: var(--accent); margin: 0 0 10px 0; font-size: 20px;">Precios y Descuentos</h3>
+                <p style="color: var(--text-muted); font-size: 14px; line-height: 1.5; margin: 0;">Encuentra las estaciones más baratas a tu alrededor. Configura tus tarjetas de fidelidad (Waylet, Cepsa...) en los filtros y el mapa te mostrará el <b>precio real final</b> con tu descuento ya aplicado.</p>
             </div>
             
+            <!-- PASO 2 -->
             <div id="tut-step-2" style="display: none;">
                 <span style="font-size: 55px; display: block; margin-bottom: 10px;">🛣️</span>
                 <h3 style="color: var(--accent-orange); margin: 0 0 10px 0; font-size: 20px;">Rutas Inteligentes</h3>
-                <p style="color: var(--text-muted); font-size: 14px; line-height: 1.5; margin: 0;">¿Viaje largo? Te calculamos <b>dónde parar y cuántos litros echar</b> para ahorrar al máximo, descontando el coste de la gasolina del desvío.</p>
+                <p style="color: var(--text-muted); font-size: 14px; line-height: 1.5; margin: 0;">¿Viaje largo? No pares a ciegas. Nuestro algoritmo usa tu consumo, la autonomía y el coste del desvío para decirte exactamente <b>dónde parar y cuántos litros echar</b> para ahorrar al máximo.</p>
             </div>
 
+            <!-- PASO 3 -->
             <div id="tut-step-3" style="display: none;">
-                <span style="font-size: 55px; display: block; margin-bottom: 10px;">🗺️</span>
-                <h3 style="color: var(--accent-green); margin: 0 0 10px 0; font-size: 20px;">Ranking por Provincia</h3>
-                <p style="color: var(--text-muted); font-size: 14px; line-height: 1.5; margin: 0;">Mira el Top Nacional o filtra por provincia para localizar rápidamente los surtidores más económicos de la provincia que quieras.</p>
+                <span style="font-size: 55px; display: block; margin-bottom: 10px;">⭐</span>
+                <h3 style="color: #f39c12; margin: 0 0 10px 0; font-size: 20px;">Tendencias y Comunidad</h3>
+                <p style="color: var(--text-muted); font-size: 14px; line-height: 1.5; margin: 0;">Revisa la gráfica y el semáforo predictivo para <b>intuir si la gasolina va a subir o bajar</b>. Además, lee y escribe opiniones para descubrir qué estaciones tienen los mejores servicios.</p>
             </div>
-            
+
+            <!-- PASO 4 -->
             <div id="tut-step-4" style="display: none;">
-                <span style="font-size: 55px; display: block; margin-bottom: 10px;">​💰</span>
-                <h3 style="color: #9b59b6; margin: 0 0 10px 0; font-size: 20px;">Tu Garaje y Ahorros</h3>
-                <p style="color: var(--text-muted); font-size: 14px; line-height: 1.5; margin: 0;">Anota repostajes para ver tus gastos, recibe alertas de ITV/Seguro y <b>guarda la ubicación de tu coche</b> con el localizador de parking.</p>
-            </div>
-
-                        <div id="tut-step-5" style="display: none;">
-                <span style="font-size: 55px; display: block; margin-bottom: 10px;">📈</span>
-                <h3 style="color: #e74c3c; margin: 0 0 10px 0; font-size: 20px;">Histórico y Tendencias</h3>
-                <p style="color: var(--text-muted); font-size: 14px; line-height: 1.5; margin: 0;">Revisa la gráfica de precios de los últimos 30 días para saber si la tendencia es de subida o bajada. <b>¡Decide si llenar hoy o esperar!</b></p>
-            </div>
-
-            <div id="tut-step-6" style="display: none;">
-                <span style="font-size: 55px; display: block; margin-bottom: 10px;">🔧</span>
-                <h3 style="color: #3498db; margin: 0 0 10px 0; font-size: 20px;">Taller y Compartidos</h3>
-                <p style="color: var(--text-muted); font-size: 14px; line-height: 1.5; margin: 0;">Sube fotos de las <b>facturas</b> de tus revisiones. Además, genera un código para <b>compartir el coche</b> con tu familia y sincronizar los gastos en tiempo real.</p>
+                <span style="font-size: 55px; display: block; margin-bottom: 10px;">🚗</span>
+                <h3 style="color: var(--accent-green); margin: 0 0 10px 0; font-size: 20px;">Tu Garaje Familiar</h3>
+                <p style="color: var(--text-muted); font-size: 14px; line-height: 1.5; margin: 0;">Anota repostajes, controla la ITV, adjunta facturas y <b>guarda tu parking</b>. ¡Incluso puedes generar un código para compartir el coche con tu familia y sincronizar los gastos!</p>
             </div>
             
+            <!-- PUNTOS INDICADORES (4 puntos) -->
             <div style="display: flex; gap: 8px; justify-content: center; margin-top: 25px;" id="tut-dots">
                 <div class="tut-dot" style="width: 10px; height: 10px; border-radius: 50%; background: var(--accent); transition: background 0.3s;"></div>
-                <div class="tut-dot" style="width: 10px; height: 10px; border-radius: 50%; background: var(--border-color); transition: background 0.3s;"></div>
-                <div class="tut-dot" style="width: 10px; height: 10px; border-radius: 50%; background: var(--border-color); transition: background 0.3s;"></div>
                 <div class="tut-dot" style="width: 10px; height: 10px; border-radius: 50%; background: var(--border-color); transition: background 0.3s;"></div>
                 <div class="tut-dot" style="width: 10px; height: 10px; border-radius: 50%; background: var(--border-color); transition: background 0.3s;"></div>
                 <div class="tut-dot" style="width: 10px; height: 10px; border-radius: 50%; background: var(--border-color); transition: background 0.3s;"></div>
@@ -986,6 +952,7 @@
             <button onclick="cerrarTutorial()" style="background: transparent; color: var(--text-muted); border: none; font-weight: bold; margin-top: 15px; font-size: 12px; cursor: pointer;">Saltar tutorial</button>
         </div>
     </div>
+
 
 
 
@@ -1053,17 +1020,114 @@
                 Documento de carácter informativo sin validez fiscal ni contable como factura simplificada oficial.<br>
                 Los cálculos asumen un IVA general del 21% aplicable a carburantes y reparaciones mecánicas en territorio peninsular.
             </div>
+        </div>
+    </div>
+
+    <div id="opinionesModal" class="modal-bg" onclick="window.cerrarModalOpiniones()" style="display:none; z-index: 99995;">
+        <div class="modal-content" style="max-width: 400px; padding: 20px;" onclick="event.stopPropagation()">
             
-            <div style="margin-top: 30px; font-size: 10px; color: #999; text-align: center;">
-                Documento de carácter informativo sin validez fiscal ni contable como factura simplificada oficial.<br>
-                Los cálculos asumen un IVA general del 21% aplicable a carburantes y reparaciones mecánicas en territorio peninsular.
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 15px;">
+                <h3 style="margin: 0; color: var(--accent); flex: 1; text-align: center;" id="tituloModalOpiniones">Opinar</h3>
+                <span onclick="window.cerrarModalOpiniones()" style="font-size: 28px; cursor: pointer; color: var(--text-muted); line-height: 1; margin-top: -4px;">&times;</span>
             </div>
+
+            <div style="text-align: center; margin-bottom: 15px;">
+                <p style="margin: 0 0 5px 0; font-size: 14px; color: var(--text-muted);">¿Qué nota le das a esta estación?</p>
+                <div id="estrellasSelector" style="font-size: 38px; cursor: pointer; color: #ccc; user-select: none; display: flex; justify-content: center; gap: 5px;">
+                    <span onclick="window.marcarEstrellas(1)">★</span><span onclick="window.marcarEstrellas(2)">★</span><span onclick="window.marcarEstrellas(3)">★</span><span onclick="window.marcarEstrellas(4)">★</span><span onclick="window.marcarEstrellas(5)">★</span>
+                </div>
+            </div>
+
+            <p style="margin: 0 0 8px 0; font-size: 13px; color: var(--text-muted); text-align: center;">¿Qué servicios tiene?</p>
+            <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-bottom: 20px; font-size: 13px;">
+                <div id="btnAire" onclick="window.toggleServicio('btnAire')" style="flex:1 1 30%; box-sizing:border-box; padding:10px 5px; border-radius:12px; border:1px solid var(--border-color); background:var(--bg-input); color:var(--text-muted); text-align:center; cursor:pointer; font-weight:bold; transition:all 0.2s; user-select:none;">💨 Aire</div>
+                <div id="btnBano" onclick="window.toggleServicio('btnBano')" style="flex:1 1 30%; box-sizing:border-box; padding:10px 5px; border-radius:12px; border:1px solid var(--border-color); background:var(--bg-input); color:var(--text-muted); text-align:center; cursor:pointer; font-weight:bold; transition:all 0.2s; user-select:none;">🚻 Baño</div>
+                <div id="btnTienda" onclick="window.toggleServicio('btnTienda')" style="flex:1 1 30%; box-sizing:border-box; padding:10px 5px; border-radius:12px; border:1px solid var(--border-color); background:var(--bg-input); color:var(--text-muted); text-align:center; cursor:pointer; font-weight:bold; transition:all 0.2s; user-select:none;">☕ Tienda</div>
+                <div id="btnLavado" onclick="window.toggleServicio('btnLavado')" style="flex:1 1 30%; box-sizing:border-box; padding:10px 5px; border-radius:12px; border:1px solid var(--border-color); background:var(--bg-input); color:var(--text-muted); text-align:center; cursor:pointer; font-weight:bold; transition:all 0.2s; user-select:none;">🧼 Lavado</div>
+                <div id="btnRestaurante" onclick="window.toggleServicio('btnRestaurante')" style="flex:1 1 30%; box-sizing:border-box; padding:10px 5px; border-radius:12px; border:1px solid var(--border-color); background:var(--bg-input); color:var(--text-muted); text-align:center; cursor:pointer; font-weight:bold; transition:all 0.2s; user-select:none;">🍔 Comida</div>
+                <div id="btnDuchas" onclick="window.toggleServicio('btnDuchas')" style="flex:1 1 30%; box-sizing:border-box; padding:10px 5px; border-radius:12px; border:1px solid var(--border-color); background:var(--bg-input); color:var(--text-muted); text-align:center; cursor:pointer; font-weight:bold; transition:all 0.2s; user-select:none;">🚿 Duchas</div>
+            </div>
+
+            <textarea id="textoOpinion" ontouchstart="event.stopPropagation()" ontouchmove="event.stopPropagation()" placeholder="¿Qué tal tu experiencia aquí? (Opcional)" style="width: 100%; height: 80px; border-radius: 12px; border: 1px solid var(--border-color); background: var(--bg-input); color: var(--text-main); padding: 10px; margin-bottom: 15px; font-family: inherit; resize: none; box-sizing: border-box;"></textarea>
+
+            <input type="hidden" id="ideessOpinionActual">
+            <input type="hidden" id="nombreGasolineraOpinionActual">
+
+            <div style="display: flex; gap: 10px;">
+                <button id="btnBorrarOpinion" onclick="window.procesarBorradoOpinion()" style="display: none; flex: 1; background: #e74c3c; color: white; border: none; padding: 14px; border-radius: 12px; font-weight: bold; font-size: 14px; cursor: pointer;">
+                    🗑️ Borrar
+                </button>
+                <button onclick="window.procesarEnvioOpinion()" style="flex: 2; background: var(--accent-green); color: white; border: none; padding: 14px; border-radius: 12px; font-weight: bold; font-size: 15px; cursor: pointer;">
+                    🚀 Enviar Opinión
+                </button>
+            </div>
+
+            <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 20px 0;">
+            <h4 style="margin: 0 0 10px 0; color: var(--text-main);">Últimas opiniones</h4>
+            
+            <div id="listaOpiniones" ontouchstart="event.stopPropagation()" ontouchmove="event.stopPropagation()" style="font-size: 13px; color: var(--text-muted); max-height: 250px; overflow-y: auto; padding-right: 5px;">
+                <p style="text-align:center;">Cargando opiniones...</p>
+            </div>
+
+            <button id="btnCargarMasOpiniones" onclick="window.cargarMasOpiniones()" style="display: none; width: 100%; margin-top: 10px; background: var(--bg-input); color: var(--text-main); border: 1px solid var(--border-color); padding: 12px; border-radius: 12px; font-weight: bold; font-size: 13px; cursor: pointer;">
+                👇 Cargar más opiniones
+            </button>
+
         </div>
     </div>
 
 
-<script type="module" src="app.js"></script>
+<div id="customAppModal" class="modal-bg" style="display: none; z-index: 9999999; backdrop-filter: blur(5px);">
+    <div class="modal-content" style="max-width: 320px; padding: 25px 20px; text-align: center; border-radius: 16px;">
+        <div id="customModalIcon" style="font-size: 45px; margin-bottom: 10px; line-height: 1;">⚠️</div>
+        <h3 id="customModalTitle" style="margin: 0 0 10px 0; color: var(--text-main); font-size: 19px;">Atención</h3>
+        <p id="customModalMessage" style="margin: 0 0 20px 0; font-size: 14px; color: var(--text-muted); line-height: 1.5;"></p>
 
+        <div id="customModalInputWrapper" style="display: none; position: relative; width: 100%; margin-bottom: 20px;">
+            <input type="text" id="customModalInput" style="width: 100%; padding: 14px 45px 14px 14px; border-radius: 10px; border: 1px solid var(--border-color); background: var(--bg-input); color: var(--text-main); font-size: 16px; font-weight: bold; box-sizing: border-box; text-align: center; letter-spacing: 1px;">
+            <button id="customModalBtnCopy" onclick="navigator.clipboard.writeText(document.getElementById('customModalInput').value); if(typeof window.mostrarToast === 'function') window.mostrarToast('✅ Copiado', 'exito'); else alert('✅ Copiado al portapapeles');" style="display: none; position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: transparent; border: none; font-size: 22px; cursor: pointer; padding: 5px;" title="Copiar código">📋</button>
+        </div>
+
+        <div style="display: flex; gap: 10px; justify-content: center;">
+            <button id="customModalBtnCancel" style="display: none; flex: 1; padding: 12px; border-radius: 12px; border: 1px solid var(--border-color); background: var(--bg-body); color: var(--text-muted); font-weight: bold; font-size: 14px; cursor: pointer;">Cancelar</button>
+            <button id="customModalBtnOk" style="flex: 1; padding: 12px; border-radius: 12px; border: none; background: var(--accent); color: white; font-weight: bold; font-size: 15px; cursor: pointer;">Aceptar</button>
+        </div>
+    </div>
+</div>
+
+
+        <!-- ⭐ MODAL: MIS OPINIONES -->
+    <div id="misOpinionesModal" class="modal-bg" style="display:none; z-index: 99990;">
+        <div class="modal-content" style="max-width: 400px; padding: 25px; max-height: 85vh; display: flex; flex-direction: column;">
+            <h3 style="margin-top:0; color:var(--accent); text-align:center; border-bottom:1px solid var(--border-color); padding-bottom:10px;">
+                ⭐ Mis Opiniones
+            </h3>
+            
+            <div id="listaMisOpiniones" ontouchstart="event.stopPropagation()" ontouchmove="event.stopPropagation()" style="flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:10px; margin-bottom:15px; padding-right: 5px;">
+                <p style="text-align:center; color:var(--text-muted);">Cargando tus reseñas...</p>
+            </div>
+            
+            <button onclick="document.getElementById('misOpinionesModal').style.display='none'; abrirPerfil();" style="background:var(--bg-input); color:var(--text-main); border:none; padding:13px; border-radius:12px; font-weight:bold; cursor:pointer; width:100%; flex-shrink: 0;">⬅️ Volver al Perfil</button>
+        </div>
+    </div>
+
+
+    <!-- 🏆 MODAL NUEVO: RANKING DE USUARIOS -->
+    
+    <div id="rankingModal" class="modal-bg" style="display:none; z-index: 99990;">
+        <div class="modal-content" style="max-width: 400px; padding: 25px; max-height: 85vh; display: flex; flex-direction: column;">
+            <h3 style="margin-top:0; color:var(--accent); text-align:center; border-bottom:1px solid var(--border-color); padding-bottom:10px;">
+                🏆 Top Conductores
+            </h3>
+            
+            <div id="listaRanking" ontouchstart="event.stopPropagation()" ontouchmove="event.stopPropagation()" style="flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:8px; margin-bottom:15px; padding-right: 5px;">
+                <p style="text-align:center; color:var(--text-muted);">Cargando clasificación...</p>
+            </div>
+            
+            <button onclick="document.getElementById('rankingModal').style.display='none'; abrirPerfil();" style="background:var(--bg-input); color:var(--text-main); border:none; padding:13px; border-radius:12px; font-weight:bold; cursor:pointer; width:100%; flex-shrink: 0;">⬅️ Volver al Perfil</button>
+        </div>
+    </div>
+
+    <script type="module" src="app.js"></script>
 </body>
-
 </html>
