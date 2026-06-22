@@ -1,5 +1,7 @@
 // Archivo: camaras.js
 
+import { q } from './utils.js';
+
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyeIN2o-dHcyXw-ZAhUKboaotrOJcv-VM7ABYxzEkUsU4q19pKLrEFj64PanMyYSt_-/exec";
 
 let layerCamaras = L.markerClusterGroup({
@@ -20,29 +22,29 @@ window.esZoomCamara = false;
 export function abrirCamaraCompleta(src, nombre) {
     if (typeof gtag !== 'undefined') gtag('event', 'ver_camara_especifica', { 'event_category': 'Trafico', 'carretera_camara': nombre });
     
-    const img = document.getElementById('camaraModalImg');
+    const img = q('camaraModalImg');
     if(!img) return;
     
     img.src = src;
-    document.getElementById('camaraModalTitle').innerText = "🎥 " + nombre;
-    document.getElementById('camaraModal').style.display = 'flex';
+    q('camaraModalTitle').innerText = "🎥 " + nombre;
+    q('camaraModal').style.display = 'flex';
 
     window.esZoomCamara = false;
     img.style.width = '100%';
     img.style.cursor = 'zoom-in';
-    const text = document.getElementById('camaraZoomText');
+    const text = q('camaraZoomText');
     if(text) text.innerText = "Toca la foto para hacer zoom • Toca fuera para cerrar";
 }
 
 export function toggleZoomCamara(e, img) {
     e.stopPropagation(); 
-    const container = document.getElementById('camaraImgContainer');
+    const container = q('camaraImgContainer');
     window.esZoomCamara = !window.esZoomCamara;
 
     if (window.esZoomCamara) {
         img.style.width = '250%';
         img.style.cursor = 'zoom-out';
-        const text = document.getElementById('camaraZoomText');
+        const text = q('camaraZoomText');
         if(text) text.innerText = "Desliza para ver los detalles • Toca la foto para alejar";
         setTimeout(() => {
             container.scrollLeft = (container.scrollWidth - container.clientWidth) / 2;
@@ -51,13 +53,13 @@ export function toggleZoomCamara(e, img) {
     } else {
         img.style.width = '100%';
         img.style.cursor = 'zoom-in';
-        const text = document.getElementById('camaraZoomText');
+        const text = q('camaraZoomText');
         if(text) text.innerText = "Toca la foto para hacer zoom • Toca fuera para cerrar";
     }
 }
 
 export async function toggleCamarasTrafico() {
-    const btn = document.getElementById('btnToggleCamaras');
+    const btn = q('btnToggleCamaras');
     if(!btn) return;
     
     camarasActivas = !camarasActivas;
