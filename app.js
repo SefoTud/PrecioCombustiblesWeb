@@ -353,7 +353,8 @@ onAuthStateChanged(auth, (user) => {
 
         // DESCARGA AUTOMÁTICA Y SINCRONIZACIÓN (LA NUBE ES LA JEFA)
         window.getDoc(window.doc(window.db, "usuarios", user.uid)).then(docSnap => {
-            if (docSnap.exists() && (docSnap.data().misCoches || docSnap.data().miBitacora || docSnap.data().miTaller)) {
+            // 👇 CORRECCIÓN 1: 'misDescuentos' está incluido en el radar
+            if (docSnap.exists() && (docSnap.data().misCoches || docSnap.data().miBitacora || docSnap.data().miTaller || docSnap.data().misDescuentos)) {
                 let data = docSnap.data();
                 
                 // LA NUBE MANDA: Sobrescribimos lo local para que los borrados no "resuciten"
@@ -369,6 +370,17 @@ onAuthStateChanged(auth, (user) => {
                     data.miTaller.sort((a, b) => new Date(a.fecha.split('/').reverse().join('-')) - new Date(b.fecha.split('/').reverse().join('-')));
                     localStorage.setItem(STORAGE_KEYS.TALLER, JSON.stringify(data.miTaller));
                 }
+
+                // 👇 CORRECCIÓN 2 (Anticuelgues): Esperamos a que la app nazca del todo para pintar las tarjetas
+                setTimeout(() => {
+                    if (data.misDescuentos) {
+                        try {
+                            descuentosGuardados = data.misDescuentos;
+                            if (typeof window.renderDiscounts === 'function') window.renderDiscounts();
+                        } catch(e) {}
+                    }
+                }, 500);
+
             } else {
                 // Es una cuenta completamente nueva o vacía, así que subimos lo que haya en el móvil
                 let currentCars = JSON.parse(localStorage.getItem(STORAGE_KEYS.CARS)) || [];
@@ -401,6 +413,7 @@ onAuthStateChanged(auth, (user) => {
         if (typeof window.actualizarAhorroGlobal === 'function') window.actualizarAhorroGlobal();
     }
 });
+
 
 
 // ==========================================================
