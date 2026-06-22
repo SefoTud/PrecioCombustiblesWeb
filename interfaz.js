@@ -256,20 +256,6 @@ window.restaurarLista = function() {
 };
 
 
-export function abrirValoraciones() {
-    const modal = document.getElementById('valoracionesModal');
-    if (modal) modal.style.display = 'flex';
-}
-
-export function marcarEstrellas(n) {
-    for (let i = 1; i <= 5; i++) {
-        const estrella = document.getElementById(`star${i}`);
-        if (estrella) {
-            estrella.style.color = i <= n ? '#f1c40f' : '#bdc3c7';
-        }
-    }
-    window.notaValoracion = n;
-}
 
 export function restaurarLista() {
     const listCont = document.getElementById('list-container');
@@ -289,21 +275,26 @@ export function restaurarLista() {
 }
 window.restaurarLista = restaurarLista;
 
-// --- TUTORIAL Y CÁMARAS RECUPERADAS ---
+// =========================================
+// MOTOR DEL TUTORIAL (4 PASOS)
+// =========================================
+let pasoActualTut = 1;
+const totalPasosTut = 4;
 
 export function mostrarPasoTutorial(paso) {
-    window.pasoActualTutorial = paso;
-    for (let i = 1; i <= 6; i++) {
+    for (let i = 1; i <= totalPasosTut; i++) {
         let el = document.getElementById('tut-step-' + i);
         if (el) el.style.display = (i === paso) ? 'block' : 'none';
     }
+    
     let dots = document.querySelectorAll('.tut-dot');
     dots.forEach((dot, index) => {
-        if(dot) dot.style.background = (index + 1 === paso) ? 'var(--accent)' : 'var(--border-color)';
+        if(dot) dot.style.background = (index === paso - 1) ? 'var(--accent)' : 'var(--border-color)';
     });
-    let btnNext = document.getElementById('btnTutNext');
+
+    const btnNext = document.getElementById('btnTutNext');
     if (btnNext) {
-        if (paso === 6) {
+        if (paso === totalPasosTut) {
             btnNext.innerText = "¡Empezar a Ahorrar! 🚀";
             btnNext.style.background = "var(--accent-green)";
         } else {
@@ -314,13 +305,23 @@ export function mostrarPasoTutorial(paso) {
 }
 
 export function avanzarTutorial() {
-    if (!window.pasoActualTutorial) window.pasoActualTutorial = 1;
-    if (window.pasoActualTutorial < 6) {
-        mostrarPasoTutorial(window.pasoActualTutorial + 1);
+    if (!pasoActualTut) pasoActualTut = 1;
+    
+    if (pasoActualTut < totalPasosTut) {
+        pasoActualTut++;
+        mostrarPasoTutorial(pasoActualTut);
     } else {
-        if(typeof window.cerrarTutorial === 'function') window.cerrarTutorial();
+        if (typeof window.cerrarTutorial === 'function') {
+            window.cerrarTutorial();
+        }
     }
 }
+
+// Reseteamos el paso por si se cierra y se vuelve a abrir
+document.addEventListener('DOMContentLoaded', () => {
+    pasoActualTut = 1; 
+});
+
 
 // =========================================================
 // 🍞 SISTEMA DE NOTIFICACIONES INTELIGENTE (TOAST)
@@ -331,6 +332,7 @@ export function mostrarToast(mensaje, tipo = "info") {
 
     // Pintamos la notificación del color adecuado
     if (tipo === "exito") {
+        toast.style.zIndex = "999999"; // Añade esto para que flote por encima de todo
         toast.style.background = "var(--accent-green)"; // Verde éxito
         toast.style.border = "1px solid #145c32";
     } else if (tipo === "error") {
@@ -357,20 +359,108 @@ export function mostrarToast(mensaje, tipo = "info") {
 // Conectamos a la ventana global
 window.mostrarToast = mostrarToast;
 
+// =========================================================
+// ⭐ MOTOR DE VENTANAS PROFESIONALES (SUSTITUYE AL NAVEGADOR)
+// =========================================================
+
+// 1. CONFIRMACIONES (Sustituye al "confirm")
+window.appConfirm = function(mensaje, titulo = "Confirmar", icono = "❓") {
+    return new Promise((resolve) => {
+        document.getElementById('customModalTitle').innerText = titulo;
+        document.getElementById('customModalMessage').innerText = mensaje;
+        document.getElementById('customModalIcon').innerText = icono;
+        
+        // Ocultar caja de texto
+        let wrapper = document.getElementById('customModalInputWrapper');
+        if (wrapper) wrapper.style.display = 'none';
+        else document.getElementById('customModalInput').style.display = 'none';
+        
+        const btnCancel = document.getElementById('customModalBtnCancel');
+        btnCancel.style.display = 'block';
+        btnCancel.innerText = "Cancelar";
+        btnCancel.onclick = () => { document.getElementById('customAppModal').style.display = 'none'; resolve(false); };
+        
+        const btnOk = document.getElementById('customModalBtnOk');
+        btnOk.innerText = "Sí, continuar";
+        btnOk.style.background = "var(--accent)";
+        if(icono === "🗑️" || icono === "🚪" || icono === "👋") btnOk.style.background = "#e74c3c";
+        btnOk.onclick = () => { document.getElementById('customAppModal').style.display = 'none'; resolve(true); };
+        
+        document.getElementById('customAppModal').style.display = 'flex';
+    });
+};
+
+window.appPrompt = function(mensaje, valorDefecto = "", titulo = "Escribe", icono = "✏️") {
+    return new Promise((resolve) => {
+        document.getElementById('customModalTitle').innerText = titulo;
+        document.getElementById('customModalMessage').innerText = mensaje;
+        document.getElementById('customModalIcon').innerText = icono;
+        
+        // Mostrar caja de texto
+        let wrapper = document.getElementById('customModalInputWrapper');
+        if (wrapper) wrapper.style.display = 'block';
+        
+        const input = document.getElementById('customModalInput');
+        input.style.display = 'block';
+        input.value = valorDefecto;
+
+        const btnCopy = document.getElementById('customModalBtnCopy');
+        if (btnCopy) {
+            if (icono === "🔗") btnCopy.style.display = "block";
+            else btnCopy.style.display = "none";
+        }
+        
+        const btnCancel = document.getElementById('customModalBtnCancel');
+        btnCancel.style.display = 'block';
+        btnCancel.innerText = "Cancelar";
+        btnCancel.onclick = () => { document.getElementById('customAppModal').style.display = 'none'; resolve(null); };
+        
+        const btnOk = document.getElementById('customModalBtnOk');
+        btnOk.innerText = "Guardar";
+        btnOk.style.background = "var(--accent-green)";
+        if(icono === "🔗") btnOk.innerText = "Vale";
+        btnOk.onclick = () => { document.getElementById('customAppModal').style.display = 'none'; resolve(input.value); };
+        
+        document.getElementById('customAppModal').style.display = 'flex';
+        setTimeout(() => input.focus(), 100);
+    });
+};
+
+window.alert = function(msg) {
+    let icono = "ℹ️"; let titulo = "Información";
+    if(msg.includes("✅")) { icono = "✅"; titulo = "¡Hecho!"; }
+    if(msg.includes("❌")) { icono = "❌"; titulo = "Error"; }
+    if(msg.includes("⚠️") || msg.includes("🚨")) { icono = "⚠️"; titulo = "Atención"; }
+    if(msg.includes("🚗") || msg.includes("⛽")) { icono = "🚗"; titulo = "Vehículos"; }
+    if(msg.includes("👋") || msg.includes("📄")) { icono = "👋"; titulo = "App"; }
+
+    document.getElementById('customModalTitle').innerText = titulo;
+    document.getElementById('customModalMessage').innerText = msg;
+    document.getElementById('customModalIcon').innerText = icono;
+    
+    // Ocultar caja de texto
+    let wrapper = document.getElementById('customModalInputWrapper');
+    if (wrapper) wrapper.style.display = 'none';
+    else document.getElementById('customModalInput').style.display = 'none';
+    
+    document.getElementById('customModalBtnCancel').style.display = 'none';
+    
+    const btnOk = document.getElementById('customModalBtnOk');
+    btnOk.innerText = "Aceptar";
+    btnOk.style.background = "var(--accent)";
+    btnOk.onclick = () => { document.getElementById('customAppModal').style.display = 'none'; };
+    
+    document.getElementById('customAppModal').style.display = 'flex';
+};
+
 
 
 // Conectamos a la ventana global para que tu HTML las encuentre siempre
 window.mostrarPasoTutorial = mostrarPasoTutorial;
 window.avanzarTutorial = avanzarTutorial;
-
-
-
-// Enchufamos las funciones rescatadas a la ventana global del navegador
 window.abrirPerfil = abrirPerfil;
 window.cerrarPerfil = cerrarPerfil;
 window.activarSwipeModales = activarSwipeModales;
-window.abrirValoraciones = abrirValoraciones;
-window.marcarEstrellas = marcarEstrellas;
 
 // Conectamos los botones de tu HTML para que sigan funcionando mágicamente
 window.closeGarage = closeGarage;
@@ -378,3 +468,5 @@ window.toggleGraficaHistorial = toggleGraficaHistorial;
 window.cerrarTutorial = cerrarTutorial;
 window.abrirInfoPrediccion = abrirInfoPrediccion;
 window.toggleFormCoche = toggleFormCoche;
+window.mostrarToast = mostrarToast;
+window.restaurarLista = restaurarLista;
