@@ -1,26 +1,28 @@
 // Cambia este número de versión cada vez que actualices tu index.html, app.js o estilos.css
-const CACHE_NAME = 'gasofa-cache-v20'; // Subimos a v18 por la nueva arquitectura modular
+const CACHE_NAME = 'gasofa-cache-v21';
 
 const urlsToCache = [
-    '/',
-    '/index.html',
-    '/estilos.css',
-    '/app.js',
-    
-    // 👇 ¡AÑADIMOS TODOS TUS NUEVOS MÓDULOS! 👇
-    '/interfaz.js',
-    '/firebase-config.js',
-    '/parking.js',
-    '/auth.js',
-    '/taller.js',
-    '/archivos.js',
-    '/vehiculos.js',
-    '/bitacora.js',
-    '/camaras.js',
-    // 👆 FIN DE LOS NUEVOS MÓDULOS 👆
-    
-    '/favicon.ico',
-    '/manifest.json'
+    './',
+    './index.html',
+    './estilos.css',
+    './app.js',
+    './interfaz.js',
+    './firebase-config.js',
+    './parking.js',
+    './auth.js',
+    './taller.js',
+    './archivos.js',
+    './vehiculos.js',
+    './bitacora.js',
+    './camaras.js',
+    './valoraciones.js', // 👇 Añadido
+    './utils.js',        // 👇 Añadido y crítico
+    './favicon.ico',
+    './favicon-32x32.png',        // Añadido para interfaz y alertas
+    './favicon-16x16.png',        // Añadido
+    './apple-touch-icon.png',     // Añadido para iOS
+    './android-chrome-192x192.png',// Añadido para notificaciones push
+    './manifest.json'
 ];
 
 // 1. INSTALACIÓN: Guarda los archivos básicos en la caja fuerte
