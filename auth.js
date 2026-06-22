@@ -79,21 +79,43 @@ export async function logoutUI() {
     
     if(seguro){
         try {
-            await signOut(auth);
-            
+            // 1. Limpiamos el localStorage PRIMERO para evitar problemas con los listeners de Firebase
             localStorage.removeItem(STORAGE_KEYS.CARS);
             localStorage.removeItem(STORAGE_KEYS.BITACORA);
             localStorage.removeItem(STORAGE_KEYS.TALLER);
             localStorage.removeItem(STORAGE_KEYS.DESC);
+            localStorage.removeItem(STORAGE_KEYS.TOTAL_OPINIONES); // Aprovechamos para limpiar las reseñas de la sesión
+
+            // 2. 🔥 ¡EL REMEDIO CRÍTICO! Forzamos a la barra a aparecer quitándole el 'collapsed'
+            const barraControles = document.getElementById("controls");
+            if (barraControles) {
+                barraControles.classList.remove("collapsed");
+            }
+            
+            // Cerramos los modales manualmente para que la interfaz responda al instante
+            if (document.getElementById('misVehiculosModal')) {
+                document.getElementById('misVehiculosModal').style.display = 'none';
+            }
+            // Si tienes un modal para el perfil general (ej: 'perfilModal'), ciérralo aquí también:
+            // if (document.getElementById('perfilModal')) document.getElementById('perfilModal').style.display = 'none';
+
+            // 3. Ahora sí, desconectamos al usuario de Firebase de forma segura
+            await signOut(auth);
             
             alert("👋 Sesión cerrada correctamente. Volviendo al inicio...");
-            setTimeout(() => location.reload(), 1500);
+            
+            // 4. Refresco ultra-compatible para entornos móviles y PWAs instaladas
+            setTimeout(() => {
+                // Redireccionar a la misma ruta limpia es infinitamente más fiable que location.reload() en móviles
+                window.location.href = window.location.pathname; 
+            }, 1000);
             
         } catch (error) {
             console.error("Error Logout:", error);
         }
     }
 }
+
 
 window.entrarConCorreo = entrarConCorreo;
 window.registrarConCorreo = registrarConCorreo;
