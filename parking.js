@@ -1,12 +1,14 @@
 // Archivo: parking.js
 
+import { q, STORAGE_KEYS } from './utils.js';
+
 export function openGarage() { 
-    document.getElementById('garageModal').style.display = 'flex';
+    q('garageModal').style.display = 'flex';
     actualizarUIResumenParking();
 }
 
 export function guardarParking() {
-    const btn = document.getElementById('btnGuardarCoche');
+    const btn = q('btnGuardarCoche');
     if(btn) {
         btn.innerText = "⏳ Guardando..."; 
         btn.disabled = true; 
@@ -18,13 +20,14 @@ export function guardarParking() {
             lon: pos.coords.longitude, 
             fecha: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
         };
-        localStorage.setItem('gasofa_parking', JSON.stringify(coords));
+        localStorage.setItem(STORAGE_KEYS.PARKING, JSON.stringify(coords));
 
         if(btn) {
             btn.innerText = "💾 Guardar Sitio"; 
             btn.disabled = false;
         }
         alert("✅ Ubicación guardada. ¡Ya puedes irte tranquilo!");
+        if (typeof gtag === 'function') gtag('event', 'guardar_parking');
         actualizarUIResumenParking();
     }, () => {
         if(btn) {
@@ -37,29 +40,31 @@ export function guardarParking() {
 
 export function irAMiCoche() {
     let coords = null;
-    try { coords = JSON.parse(localStorage.getItem('gasofa_parking')); } catch(e) {}
+    try { coords = JSON.parse(localStorage.getItem(STORAGE_KEYS.PARKING)); } catch(e) {}
 
     if (coords && coords.lat && coords.lon) {
-        // Enlace corregido para forzar navegación a pie
         const url = `http://maps.google.com/maps?daddr=${coords.lat},${coords.lon}&directionsmode=walking`;
+        if (typeof gtag === 'function') gtag('event', 'navegar_al_coche');
         window.open(url, '_blank');
     } else {
         alert("⚠️ No he podido encontrar las coordenadas de tu parking.");
     }
 }
 
-export function borrarParking() {
-    if (confirm("¿Seguro que quieres borrar la ubicación de tu coche?")) {
-        localStorage.removeItem('gasofa_parking');
+export async function borrarParking() {
+    let seguro = await window.appConfirm("¿Seguro que quieres borrar la ubicación de tu coche?", "Borrar Parking", "🗑️");
+    if (seguro) {
+        localStorage.removeItem(STORAGE_KEYS.PARKING);
         actualizarUIResumenParking();
+        if (typeof window.mostrarToast === 'function') window.mostrarToast("❌ Sitio liberado");
     }
 }
 
 export function actualizarUIResumenParking() {
-    const coords = JSON.parse(localStorage.getItem('gasofa_parking'));
-    const btnGuardar = document.getElementById('btnGuardarCoche');
-    const divGuardado = document.getElementById('botonesCocheGuardado');
-    const info = document.getElementById('infoParking');
+    const coords = JSON.parse(localStorage.getItem(STORAGE_KEYS.PARKING));
+    const btnGuardar = q('btnGuardarCoche');
+    const divGuardado = q('botonesCocheGuardado');
+    const info = q('infoParking');
 
     if (coords) {
         if (btnGuardar) btnGuardar.style.display = 'none'; 
@@ -72,7 +77,6 @@ export function actualizarUIResumenParking() {
     }
 }
 
-// Conectamos las funciones a la ventana global para los botones de tu HTML
 window.openGarage = openGarage;
 window.guardarParking = guardarParking;
 window.irAMiCoche = irAMiCoche;
