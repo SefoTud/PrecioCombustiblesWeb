@@ -1,27 +1,10 @@
 // Archivo: taller.js
 
 import { doc, setDoc } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
+import { q, STORAGE_KEYS, getHoyYMD, esToYMD, ymdToEs } from './utils.js';
 
-const q = id => document.getElementById(id);
-
-// Pequeñas herramientas de fecha necesarias para el taller
-function getHoyYMD() {
-    const d = new Date();
-    let mes = '' + (d.getMonth() + 1), dia = '' + d.getDate(), anio = d.getFullYear();
-    if (mes.length < 2) mes = '0' + mes; if (dia.length < 2) dia = '0' + dia;
-    return [anio, mes, dia].join('-');
-}
-function esToYMD(esDate) {
-    if (!esDate) return getHoyYMD();
-    let partes = esDate.split('/'); if (partes.length !== 3) return getHoyYMD();
-    let dia = partes[0].padStart(2, '0'), mes = partes[1].padStart(2, '0'), anio = partes[2];
-    return `${anio}-${mes}-${dia}`;
-}
-function ymdToEs(ymdDate) {
-    if (!ymdDate) return new Date().toLocaleDateString('es-ES');
-    let partes = ymdDate.split('-'); if (partes.length !== 3) return new Date().toLocaleDateString('es-ES');
-    return `${parseInt(partes[2])}/${parseInt(partes[1])}/${partes[0]}`;
-}
+// 🔥 PEGA AQUÍ TU ENLACE DE GOOGLE APPS SCRIPT (EN UNA SOLA LÍNEA)
+const DRIVE_IMAGES_URL = "https://script.google.com/macros/s/AKfycbxQnm6JHq35o0Vpv-7iZeeK2PZupMlDNKglEn7lC504ZuE6HJCJXh_toSMzL6szNfiF5A/exec";
 
 export function comprimirImagenBase64(file) {
     return new Promise((resolve, reject) => {
@@ -49,11 +32,15 @@ export function comprimirImagenBase64(file) {
 }
 
 export function abrirTaller() {
-    // Leemos los coches directamente de la memoria local
-    let myCarsTaller = JSON.parse(localStorage.getItem('gasofa_cars')) || [];
+    let myCarsTaller = JSON.parse(localStorage.getItem(STORAGE_KEYS.CARS)) || [];
     let carSelect = q('tallerCarSelect');
     carSelect.innerHTML = '<option value="">🚘 Selecciona el vehículo...</option>';
-    myCarsTaller.forEach(c => { carSelect.innerHTML += `<option value="${c.id}">🚗 ${c.name}</option>`; });
+    
+    myCarsTaller.forEach(c => { 
+        if (c.rol !== 'lector') {
+            carSelect.innerHTML += `<option value="${c.id}">🚗 ${c.name}</option>`; 
+        }
+    });
     
     let activeCar = q('activeCarSelect') ? q('activeCarSelect').value : "";
     if (activeCar) carSelect.value = activeCar;
@@ -74,8 +61,8 @@ export async function guardarTaller() {
         gtag('event', 'guardar_gasto_taller', { 'tipo_reparacion': tipoParaChivato, 'sube_factura': tieneFoto });
     }
 
-    let mantLocal = JSON.parse(localStorage.getItem('gasofa_taller')) || [];
-    let myCarsTaller = JSON.parse(localStorage.getItem('gasofa_cars')) || [];
+    let mantLocal = JSON.parse(localStorage.getItem(STORAGE_KEYS.TALLER)) || [];
+    let myCarsTaller = JSON.parse(localStorage.getItem(STORAGE_KEYS.CARS)) || [];
 
     let idEdit = q('editTallerId').value;
     let carId = q('tallerCarSelect').value;
@@ -93,46 +80,95 @@ export async function guardarTaller() {
     }
 
     let foundCar = myCarsTaller.find(c => String(c.id) === String(carId));
+    if (foundCar && foundCar.rol === 'lector') {
+        alert("⚠️ Tu rol en este coche es de 'Solo Lectura'.");
+        return;
+    }
+
     let carName = foundCar ? foundCar.name : "Vehículo";
     let fechaEs = ymdToEs(fecha);
 
     let miNombre = "Conductor";
-    if (window.auth && window.auth.currentUser && window.auth.currentUser.displayName) {
-        miNombre = window.auth.currentUser.displayName.split(" ")[0];
+    let miUid = "Anonimo";
+    if (window.auth && window.auth.currentUser) {
+        miUid = window.auth.currentUser.uid;
+        if (window.auth.currentUser.displayName) {
+            miNombre = window.auth.currentUser.displayName.split(" ")[0];
+        }
     }
 
-    let fotoBase64 = "";
+    let fotoUrlFinal = "";
     if (idEdit !== "") { 
         let oldRecord = mantLocal.find(m => String(m.id) === String(idEdit));
-        if (oldRecord && oldRecord.factura) fotoBase64 = oldRecord.factura;
+        if (oldRecord && oldRecord.factura) fotoUrlFinal = oldRecord.factura;
     }
 
     const fileInput = q('tallerFactura');
     if (fileInput && fileInput.files.length > 0) {
+        const loading = document.getElementById('loading-overlay');
         try {
-            const loading = document.getElementById('loading-overlay');
             if(loading) { loading.style.display = "flex"; document.getElementById('loading-text').innerText = "Comprimiendo factura..."; }
-            fotoBase64 = await comprimirImagenBase64(fileInput.files[0]);
+            let base64Comprimido = await comprimirImagenBase64(fileInput.files[0]);
+
+            if(loading) document.getElementById('loading-text').innerText = "Subiendo a Google Drive... ☁️";
+
+            // Limpiamos foto antigua si estamos editando
+            if (idEdit !== "" && fotoUrlFinal && fotoUrlFinal.includes("id=")) {
+                try {
+                    let idDriveViejo = fotoUrlFinal.match(/id=([^&]+)/)[1];
+                    await fetch(DRIVE_IMAGES_URL, {
+                        method: "POST",
+                        headers: { "Content-Type": "text/plain;charset=utf-8" },
+                        body: JSON.stringify({ accion: "borrarFactura", idArchivo: idDriveViejo }),
+                        redirect: "follow"
+                    });
+                } catch(e) { console.log("Aviso: No se pudo limpiar la foto anterior."); }
+            }
+
+            // Subimos enviando también el ID del usuario
+            const resDrive = await fetch(DRIVE_IMAGES_URL, {
+                method: "POST",
+                headers: { "Content-Type": "text/plain;charset=utf-8" },
+                body: JSON.stringify({
+                    accion: "subirFactura",
+                    userId: miUid,
+                    base64: base64Comprimido,
+                    nombreArchivo: `factura_${carId}_${Date.now()}.jpg`
+                }),
+                redirect: "follow"
+            });
+            
+            const resData = await resDrive.json();
+            if (resData.exito) {
+                fotoUrlFinal = resData.url; 
+            } else {
+                throw new Error(resData.error || "Fallo en el servidor de Drive");
+            }
+            
             if(loading) loading.style.display = "none";
         } catch(err) {
-            if(document.getElementById('loading-overlay')) document.getElementById('loading-overlay').style.display = "none";
-            alert("❌ Error al leer la imagen de tu móvil."); return;
+            if(loading) loading.style.display = "none";
+            alert("❌ Error al subir imagen: " + err.message); 
+            return;
         }
     }
 
     if (idEdit !== "") {
         let index = mantLocal.findIndex(m => String(m.id) === String(idEdit));
-        if (index > -1) mantLocal[index] = { id: parseInt(idEdit), carId, carName, fecha: fechaEs, km, tipo, coste, notas, factura: fotoBase64, usuario: miNombre };
+        if (index > -1) mantLocal[index] = { id: parseInt(idEdit), carId, carName, fecha: fechaEs, km, tipo, coste, notas, factura: fotoUrlFinal, usuario: miNombre };
     } else {
-        mantLocal.push({ id: Date.now(), carId, carName, fecha: fechaEs, km, tipo, coste, notas, factura: fotoBase64, usuario: miNombre });
+        mantLocal.push({ id: Date.now(), carId, carName, fecha: fechaEs, km, tipo, coste, notas, factura: fotoUrlFinal, usuario: miNombre });
     }
 
-    mantLocal.sort((a, b) => new Date(esToYMD(b.fecha)) - new Date(esToYMD(a.fecha)));
-    localStorage.setItem('gasofa_taller', JSON.stringify(mantLocal));
+    mantLocal.sort((a, b) => {
+        let diff = new Date(esToYMD(b.fecha)) - new Date(esToYMD(a.fecha));
+        if (diff === 0) return b.id - a.id;
+        return diff;
+    });
+    
+    localStorage.setItem(STORAGE_KEYS.TALLER, JSON.stringify(mantLocal));
 
     if (window.auth && window.auth.currentUser) {
-        let sizeStr = JSON.stringify(mantLocal).length;
-        if (sizeStr > 800000) alert("⚠️ Pronto llegarás al límite de espacio de tu historial. Considera borrar facturas muy antiguas.");
         window.setDoc(window.doc(window.db, "usuarios", window.auth.currentUser.uid), { miTaller: mantLocal }, { merge: true });
 
         if (carId) {
@@ -156,15 +192,22 @@ export async function guardarTaller() {
 }
 
 export function editarTaller(id, desdeHistorial = false) {
-    let mantLocal = JSON.parse(localStorage.getItem('gasofa_taller')) || [];
+    let mantLocal = JSON.parse(localStorage.getItem(STORAGE_KEYS.TALLER)) || [];
+    let myCarsTaller = JSON.parse(localStorage.getItem(STORAGE_KEYS.CARS)) || [];
     let record = mantLocal.find(m => String(m.id) === String(id));
+    
     if (record) {
+        let cocheActual = myCarsTaller.find(c => String(c.id) === String(record.carId));
+        if (cocheActual && cocheActual.compartido && cocheActual.name.startsWith("🤝 ") && cocheActual.rol !== 'admin') {
+            alert("⚠️ No tienes permisos para editar los gastos de este vehículo.");
+            return;
+        }
+
         if (desdeHistorial) q('historialModal').style.display = 'none';
         else q('tallerModal').style.display = 'none';
 
         q('editTallerId').value = id;
         
-        let myCarsTaller = JSON.parse(localStorage.getItem('gasofa_cars')) || [];
         let carSelect = q('tallerCarSelect');
         carSelect.innerHTML = '<option value="">🚘 Selecciona el vehículo...</option>';
         myCarsTaller.forEach(c => { carSelect.innerHTML += `<option value="${c.id}">🚗 ${c.name}</option>`; });
@@ -180,23 +223,41 @@ export function editarTaller(id, desdeHistorial = false) {
     }
 }
 
-export function borrarTaller(id, desdeHistorial = false) {
-    let mantLocal = JSON.parse(localStorage.getItem('gasofa_taller')) || [];
+export async function borrarTaller(id, desdeHistorial = false) {
+    let mantLocal = JSON.parse(localStorage.getItem(STORAGE_KEYS.TALLER)) || [];
     let registro = mantLocal.find(m => String(m.id) === String(id));
-    let myCarsTaller = JSON.parse(localStorage.getItem('gasofa_cars')) || [];
+    let myCarsTaller = JSON.parse(localStorage.getItem(STORAGE_KEYS.CARS)) || [];
     
     if (registro) {
         let cocheGasto = myCarsTaller.find(c => String(c.id) === String(registro.carId));
         if (cocheGasto && cocheGasto.compartido && cocheGasto.name.startsWith("🤝 ")) {
-            alert("⚠️ Solo el administrador (creador) del vehículo puede borrar este gasto de taller.");
-            return;
+            if (cocheGasto.rol !== 'admin') {
+                alert("⚠️ Como 'Conductor' solo puedes anotar gastos nuevos. Para modificarlos o borrarlos, avisa al Administrador del vehículo.");
+                return;
+            }
         }
     }
 
-    if (confirm("¿Borrar este gasto de taller?")) {
+    let seguro = await window.appConfirm("¿Seguro que quieres borrar este mantenimiento y su factura?", "Borrar Mantenimiento", "🗑️");
+    
+    if (seguro) {
         let carIdDelGasto = registro?.carId;
+
+        // Limpiamos la foto usando la nueva fórmula
+        if (registro && registro.factura && registro.factura.includes("id=")) {
+            try {
+                let idDrive = registro.factura.match(/id=([^&]+)/)[1];
+                fetch(DRIVE_IMAGES_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "text/plain;charset=utf-8" },
+                    body: JSON.stringify({ accion: "borrarFactura", idArchivo: idDrive }),
+                    redirect: "follow"
+                });
+            } catch(e) { console.error("Error al limpiar Drive", e); }
+        }
+
         mantLocal = mantLocal.filter(m => String(m.id) !== String(id));
-        localStorage.setItem('gasofa_taller', JSON.stringify(mantLocal));
+        localStorage.setItem(STORAGE_KEYS.TALLER, JSON.stringify(mantLocal));
         
         if (window.auth && window.auth.currentUser) {
             window.setDoc(window.doc(window.db, "usuarios", window.auth.currentUser.uid), { miTaller: mantLocal }, { merge: true });
@@ -214,9 +275,6 @@ export function borrarTaller(id, desdeHistorial = false) {
     }
 }
 
-// ==========================================
-// 🧾 VISOR DE FACTURAS
-// ==========================================
 export function verFacturaTaller(fotoSrc, tipo) {
     const img = document.getElementById('camaraModalImg');
     const modal = document.getElementById('camaraModal');
@@ -236,11 +294,7 @@ export function verFacturaTaller(fotoSrc, tipo) {
     }
 }
 
-// Conectamos a la ventana global para que el botón de bitacora.js la encuentre
 window.verFacturaTaller = verFacturaTaller;
-
-
-// Conexión a los botones de tu HTML
 window.abrirTaller = abrirTaller;
 window.guardarTaller = guardarTaller;
 window.editarTaller = editarTaller;
