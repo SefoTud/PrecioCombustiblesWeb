@@ -380,12 +380,36 @@ export function applyCarSettings() {
 export function llenarATope() { 
     if (window.currentCarCapacity > 0) { 
         const litrosInput = document.getElementById('litrosInput'); 
+        const autonomiaInput = document.getElementById('autonomiaInput');
+        const consumoInput = document.getElementById('consumoInput');
+        
         if (litrosInput) { 
-            litrosInput.value = window.currentCarCapacity; 
+            let litrosAEchar = window.currentCarCapacity;
+            
+            // Si el usuario ha rellenado la autonomía y el consumo, hacemos la magia matemática
+            if (autonomiaInput && consumoInput && autonomiaInput.value !== "" && consumoInput.value !== "") {
+                let autonomia = parseFloat(autonomiaInput.value);
+                let consumo = parseFloat(consumoInput.value);
+                
+                if (!isNaN(autonomia) && !isNaN(consumo) && consumo > 0) {
+                    // Calculamos los litros que todavía quedan en el tanque
+                    let litrosRestantes = (autonomia / 100) * consumo;
+                    
+                    // Se lo restamos a la capacidad total
+                    litrosAEchar = window.currentCarCapacity - litrosRestantes;
+                    
+                    // Escudo por si el usuario pone una autonomía ilógica (mayor al depósito)
+                    if (litrosAEchar < 0) litrosAEchar = 0;
+                }
+            }
+            
+            // Lo ponemos en el input redondeado a 1 decimal (ej: 47.5)
+            litrosInput.value = litrosAEchar.toFixed(1); 
             litrosInput.dispatchEvent(new Event('input')); 
         } 
     } 
 }
+
 
 export async function generarCodigoCompartir(idCoche) {
     if (typeof gtag === 'function') gtag('event', 'compartir_coche_generar');
