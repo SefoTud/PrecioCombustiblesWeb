@@ -2217,7 +2217,7 @@ async function fetchGasolineras() {
             const pN = g.pN;
             const isF = favoritos.includes(g.IDEESS), hIc = isF ? '❤️' : '🤍', isR = g["Tipo Venta"] === "R";
 
-            let htmlEstrellas = window.generarEstrellasHTML ? window.generarEstrellasHTML(g.IDEESS) : '';
+            let htmlEstrellas = window.generarEstrellasHTML ? window.generarEstrellasHTML(g.IDEESS, g.Rótulo) : '';
 
             let calculoPredictivo = window.calcularSemaforoPredictivo ? window.calcularSemaforoPredictivo(g.pN, currentTrends[g.IDEESS]) : {resultado: {color:"#f39c12", icon:"🟡", texto:"ESTABLE"}, detalles: {}};
             let semaforo = calculoPredictivo.resultado;
@@ -2443,7 +2443,7 @@ async function fetchGasolineras() {
                 const mU = "https://www.google.com/maps/dir/?api=1&destination=" + lat + "," + ln, sN = g.Rótulo.replace(/'/g, ""), iL = 'heart_list_' + g.IDEESS;
 
                 let htmlAhorroList = "";
-                let htmlEstrellas = window.generarEstrellasHTML ? window.generarEstrellasHTML(g.IDEESS) : '';
+                let htmlEstrellas = window.generarEstrellasHTML ? window.generarEstrellasHTML(g.IDEESS, g.Rótulo) : '';
 
                 let calculoPredictivo = window.calcularSemaforoPredictivo ? window.calcularSemaforoPredictivo(g.pN, currentTrends[g.IDEESS]) : {resultado: {color:"#f39c12", icon:"🟡", texto:"ESTABLE"}, detalles: {}};
                 let semaforo = calculoPredictivo.resultado;
