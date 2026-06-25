@@ -292,7 +292,7 @@ export async function descargarResumenEstrellas() {
     } catch (e) {}
 }
 
-export function generarEstrellasHTML(ideess) {
+export function generarEstrellasHTML(ideess, nombreGasolinera = "Esta gasolinera") {
     let data = window.resumenOpiniones[String(ideess)];
     let nota = 0; let total = 0;
     
@@ -305,8 +305,13 @@ export function generarEstrellasHTML(ideess) {
         else estrellasHTML += '<span style="color:#e0e0e0;">★</span>';
     }
     let texto = total > 0 ? `<span style="font-size:11px; color:var(--text-muted); font-weight:bold; margin-left:6px;">(${nota.toFixed(1)}) - ${total} op.</span>` : `<span style="font-size:11px; color:var(--text-muted); font-style:italic; margin-left:6px;">Sin opiniones</span>`;
-    return `<div style="display:flex; align-items:center; font-size:17px; line-height:1; margin-bottom:4px; cursor:pointer;" onclick="window.abrirValoraciones('${ideess}', 'Esta gasolinera')">${estrellasHTML} ${texto}</div>`;
+    
+    // 👇 SOLUCIÓN: Limpiamos el nombre y lo inyectamos dinámicamente en el onclick 👇
+    let nombreLimpio = nombreGasolinera.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+    
+    return `<div style="display:flex; align-items:center; font-size:17px; line-height:1; margin-bottom:4px; cursor:pointer;" onclick="window.abrirValoraciones('${ideess}', '${nombreLimpio}')">${estrellasHTML} ${texto}</div>`;
 }
+
 
 export function pintarOpinionesHTML(querySnapshot, limpiarLista) {
     const divLista = q('listaOpiniones');
