@@ -2287,9 +2287,13 @@ async function fetchGasolineras() {
 
                     <div style="background:var(--bg-input); border-radius:8px; padding:6px 10px; margin-bottom:8px; border:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;">
                         <div style="color:${cS}; font-size:16px; font-weight:900; display:flex; align-items:center; gap:4px;">
-                            ${pStrVisualPop} <span class="tr-ind" data-type="list" data-id="${g.IDEESS}">${tH}</span>
-                        </div>
-                        <div>${htmlAhorroPop}</div>
+    ${pStrVisualPop} <span class="tr-ind" data-type="list" data-id="${g.IDEESS}">${tH}</span>
+</div>
+<div style="display:flex; flex-direction:column; align-items:flex-end; gap:4px;">
+    ${htmlAhorroPop}
+    <div style="background:var(--bg-body); border:1px solid var(--border-color); border-radius:6px; padding:2px 6px; font-size:10px; font-weight:bold; color:var(--text-main);">⛽ ${litrosEfectivos % 1 === 0 ? litrosEfectivos : litrosEfectivos.toFixed(1)}L = ${(g.pN * litrosEfectivos).toFixed(2)}€</div>
+</div>
+
                     </div>
 
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; font-size:10px; color:var(--text-muted); font-weight:bold;">
@@ -2510,10 +2514,12 @@ async function fetchGasolineras() {
                         </div>
                         <div style="display:flex; flex-direction:column; align-items:flex-end; width:135px; flex-shrink:0;">
                             <div style="text-align:right; width:100%;">
-                                ${htmlDescuento}
-                                <div class="price-text" style="color:${cS}; justify-content:flex-end; font-size:1.3em;">${pStrVisualList}<span class="tr-ind" data-type="list" data-id="${g.IDEESS}" style="margin-left:4px;">${tH}</span></div>
-                            </div>
-                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; width:100%; margin-top:auto; padding-top:10px;">
+    ${htmlDescuento}
+    <div class="price-text" style="color:${cS}; justify-content:flex-end; font-size:1.3em;">${pStrVisualList}<span class="tr-ind" data-type="list" data-id="${g.IDEESS}" style="margin-left:4px;">${tH}</span></div>
+    <div style="font-size:10px; font-weight:bold; color:var(--text-muted); margin-top:4px;">⛽ ${litrosEfectivos % 1 === 0 ? litrosEfectivos : litrosEfectivos.toFixed(1)}L = <span style="color:var(--text-main);">${(g.pN * litrosEfectivos).toFixed(2)}€</span></div>
+</div>
+<div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; width:100%; margin-top:auto; padding-top:10px;">
+
                                 <button onclick="window.mostrarHistorico('${sN}','${g.IDEESS}','${g.Horario || ''}')" style="background:var(--bg-input); color:var(--text-main); border:1px solid var(--border-color); margin:0; padding:6px 2px; font-size:9px; font-weight:bold; border-radius:8px; width:100%; display:flex; flex-direction:column; align-items:center; gap:3px; cursor:pointer; box-sizing:border-box;"><span style="font-size:14px; line-height:1;">📈</span><span>HISTÓRICO</span></button>
                                 <button onclick="window.abrirValoraciones('${g.IDEESS}', '${sN}')" style="background:var(--bg-input); color:var(--text-main); border:1px solid var(--border-color); margin:0; padding:6px 2px; font-size:9px; font-weight:bold; border-radius:8px; width:100%; display:flex; flex-direction:column; align-items:center; gap:3px; cursor:pointer; box-sizing:border-box;"><span style="font-size:14px; line-height:1;">⭐</span><span>OPINIONES</span></button>
                                 <button onclick="window.abrirAnotar('${sN}', ${g.pN}, ${(globalMaxP - g.pN).toFixed(3)})" style="background:var(--bg-input); color:var(--text-main); border:1px solid var(--border-color); margin:0; padding:6px 2px; font-size:9px; font-weight:bold; border-radius:8px; width:100%; display:flex; flex-direction:column; align-items:center; gap:3px; cursor:pointer; box-sizing:border-box;"><span style="font-size:14px; line-height:1;">📓</span><span>ANOTAR</span></button>
@@ -2558,7 +2564,7 @@ function cargarPreferencias() {
     if (s) {
         try {
             const p = JSON.parse(s);
-            q("marcaInput").value = p.m || ""; q("litrosInput").value = p.l || 50; q("consumoInput").value = p.cons || "";
+            q("marcaInput").value = p.m || ""; q("litrosInput").value = (p.l !== undefined && p.l !== null) ? p.l : 50; q("consumoInput").value = p.cons || "";
             if (q("autonomiaInput")) q("autonomiaInput").value = p.auto || "";
             q("idaVueltaInput").checked = p.idV !== undefined ? p.idV : true; q("tipoCombustible").value = p.c || "Precio Gasoleo A";
             q("radioBusqueda").value = p.r || "1"; q("ordenarPor").value = p.o || "precio"; q("abiertasInput").checked = p.a || false;
