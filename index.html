@@ -1079,8 +1079,6 @@
         <option value="relevancia">🔥 Más útiles</option>
     </select>
 </div>
-
-
                 
                 <div id="listaOpiniones" ontouchstart="event.stopPropagation()" ontouchmove="event.stopPropagation()" style="font-size: 13px; color: var(--text-muted); flex-shrink: 0;">
                     <p style="text-align:center;">Cargando opiniones...</p>
@@ -1088,6 +1086,9 @@
 
                 <button id="btnCargarMasOpiniones" onclick="window.cargarMasOpiniones()" style="display: none; width: 100%; margin-top: 10px; background: var(--bg-input); color: var(--text-main); border: 1px solid var(--border-color); padding: 12px; border-radius: 12px; font-weight: bold; font-size: 13px; cursor: pointer; flex-shrink: 0;">
                     👇 Cargar más opiniones
+                </button>
+                <button onclick="window.cerrarModalOpiniones()" style="margin-top: 15px; background: var(--bg-input); color: var(--text-main); border: none; padding: 13px; border-radius: 12px; font-weight: bold; cursor: pointer; width: 100%; flex-shrink: 0;">
+                    ⬅️ Volver
                 </button>
             </div>
         </div>
