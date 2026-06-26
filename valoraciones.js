@@ -296,7 +296,10 @@ export async function procesarBorradoOpinion() {
 }
 
 export async function votarOpinion(idOpinionDoc, tipo) {
-    if (!window.auth || !window.auth.currentUser) { if (window.mostrarToast) window.mostrarToast("❌ Inicia sesión en 'Mi Perfil' para votar", "error"); return; }
+    if (!window.auth || !window.auth.currentUser) { 
+        if (window.mostrarToast) window.mostrarToast("❌ Inicia sesión en 'Mi Perfil' para votar", "error"); 
+        return; 
+    }
     
     if (typeof gtag === 'function') gtag('event', 'votar_opinion', { 'tipo_voto': tipo });
     
@@ -306,21 +309,45 @@ export async function votarOpinion(idOpinionDoc, tipo) {
     try {
         const docSnap = await window.getDoc(ref);
         if(!docSnap.exists()) return;
-        let data = docSnap.data(); let likes = data.likes || []; let dislikes = data.dislikes || [];
         
-        likes = likes.filter(id => id !== uid); dislikes = dislikes.filter(id => id !== uid);
+        let data = docSnap.data(); 
+        let likes = data.likes || []; 
+        let dislikes = data.dislikes || [];
         
-        if (tipo === 'like' && !(data.likes || []).includes(uid)) likes.push(uid);
-        else if (tipo === 'dislike' && !(data.dislikes || []).includes(uid)) dislikes.push(uid);
+        // 1. Lógica de votación (si ya había votado lo mismo, se lo quitamos)
+        const yaDioLike = likes.includes(uid);
+        const yaDioDislike = dislikes.includes(uid);
         
-        await window.setDoc(ref, { likes: likes, dislikes: dislikes, numLikes: likes.length }, { merge: true });
+        likes = likes.filter(id => id !== uid); 
+        dislikes = dislikes.filter(id => id !== uid);
         
-        const qOpiniones = window.query(window.collection(window.db, "opiniones"), window.where("idGasolinera", "==", String(data.idGasolinera)), window.orderBy("fecha", "desc"), window.limit(15));
-        const querySnapshot = await window.getDocs(qOpiniones);
-        pintarOpinionesHTML(querySnapshot, true);
+        if (tipo === 'like' && !yaDioLike) {
+            likes.push(uid);
+        } else if (tipo === 'dislike' && !yaDioDislike) {
+            dislikes.push(uid);
+        }
+        
+        // 2. ACTUALIZACIÓN QUIRÚRGICA DEL DOM (¡Se acabó el parpadeo!)
+        const btnLike = document.getElementById(`btn-like-${idOpinionDoc}`);
+        const btnDislike = document.getElementById(`btn-dislike-${idOpinionDoc}`);
+        
+        if (btnLike) {
+            btnLike.innerHTML = `👍 Útil (${likes.length})`;
+            btnLike.style.color = likes.includes(uid) ? 'var(--accent-green)' : 'var(--text-muted)';
+        }
+        if (btnDislike) {
+            btnDislike.innerHTML = `👎 Falsa (${dislikes.length})`;
+            btnDislike.style.color = dislikes.includes(uid) ? '#e74c3c' : 'var(--text-muted)';
+        }
 
-    } catch (error) { console.error("Error al votar:", error); }
+        // 3. Guardamos en Firebase silenciosamente (merge)
+        await window.setDoc(ref, { likes: likes, dislikes: dislikes, numLikes: likes.length }, { merge: true });
+
+    } catch (error) { 
+        console.error("Error al votar:", error); 
+    }
 }
+
 
 export async function descargarResumenEstrellas() {
     try {
@@ -399,10 +426,12 @@ export function pintarOpinionesHTML(querySnapshot, limpiarLista) {
             </div>
             ${serviciosHTML ? `<div>${serviciosHTML}</div>` : ''}
             ${d.comentario ? `<div style="font-size:13px; color:var(--text-main); font-style:italic; line-height:1.4; margin-top:4px;">"${d.comentario}"</div>` : ''}
-            <div style="display:flex; justify-content:flex-end; gap:15px; margin-top:10px; border-top:1px dashed var(--border-color); padding-top:8px;">
-                <button onclick="window.votarOpinion('${docSnap.id}', 'like')" style="background:var(--bg-input); border:1px solid var(--border-color); color:${colorLike}; font-size:12px; cursor:pointer; font-weight:bold; display:flex; align-items:center; gap:6px; padding:6px 12px; border-radius:8px; transition:0.2s;">👍 Útil (${likes})</button>
-                <button onclick="window.votarOpinion('${docSnap.id}', 'dislike')" style="background:var(--bg-input); border:1px solid var(--border-color); color:${colorDislike}; font-size:12px; cursor:pointer; font-weight:bold; display:flex; align-items:center; gap:6px; padding:6px 12px; border-radius:8px; transition:0.2s;">👎 Falsa (${dislikes})</button>
-            </div>
+
+<div style="display:flex; justify-content:flex-end; gap:15px; margin-top:10px; border-top:1px dashed var(--border-color); padding-top:8px;">
+    <button id="btn-like-${docSnap.id}" onclick="window.votarOpinion('${docSnap.id}', 'like')" style="background:var(--bg-input); border:1px solid var(--border-color); color:${colorLike}; font-size:12px; cursor:pointer; font-weight:bold; display:flex; align-items:center; gap:6px; padding:6px 12px; border-radius:8px; transition:0.2s;">👍 Útil (${likes})</button>
+    <button id="btn-dislike-${docSnap.id}" onclick="window.votarOpinion('${docSnap.id}', 'dislike')" style="background:var(--bg-input); border:1px solid var(--border-color); color:${colorDislike}; font-size:12px; cursor:pointer; font-weight:bold; display:flex; align-items:center; gap:6px; padding:6px 12px; border-radius:8px; transition:0.2s;">👎 Falsa (${dislikes})</button>
+</div>
+
         </div>`;
     });
 
