@@ -1,5 +1,5 @@
 // Cambia este número de versión cada vez que actualices tu index.html, app.js o estilos.css
-const CACHE_NAME = 'gasofa-cache-v24';
+const CACHE_NAME = 'gasofa-cache-v25';
 
 const urlsToCache = [
     './',
