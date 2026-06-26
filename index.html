@@ -1023,58 +1023,76 @@
         </div>
     </div>
 
-    <div id="opinionesModal" class="modal-bg" onclick="window.cerrarModalOpiniones()" style="display:none; z-index: 99995;">
-        <div class="modal-content" style="max-width: 400px; padding: 20px;" onclick="event.stopPropagation()">
+        <div id="opinionesModal" class="modal-bg" onclick="window.cerrarModalOpiniones()" style="display:none; z-index: 99995;">
+        <div class="modal-content" style="max-width: 400px; padding: 20px; max-height: 90vh; display: flex; flex-direction: column;" onclick="event.stopPropagation()">
             
-            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 15px;">
+            <!-- CABECERA FIJA -->
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 15px; flex-shrink: 0;">
                 <h3 style="margin: 0; color: var(--accent); flex: 1; text-align: center;" id="tituloModalOpiniones">Opinar</h3>
                 <span onclick="window.cerrarModalOpiniones()" style="font-size: 28px; cursor: pointer; color: var(--text-muted); line-height: 1; margin-top: -4px;">&times;</span>
             </div>
 
-            <div style="text-align: center; margin-bottom: 15px;">
-                <p style="margin: 0 0 5px 0; font-size: 14px; color: var(--text-muted);">¿Qué nota le das a esta estación?</p>
-                <div id="estrellasSelector" style="font-size: 38px; cursor: pointer; color: #ccc; user-select: none; display: flex; justify-content: center; gap: 5px;">
-                    <span onclick="window.marcarEstrellas(1)">★</span><span onclick="window.marcarEstrellas(2)">★</span><span onclick="window.marcarEstrellas(3)">★</span><span onclick="window.marcarEstrellas(4)">★</span><span onclick="window.marcarEstrellas(5)">★</span>
+            <!-- CUERPO SCROLLABLE (Todo el formulario y comentarios se mueven juntos) -->
+            <div style="flex: 1; overflow-y: auto; padding-right: 5px; display: flex; flex-direction: column;">
+                
+                <div style="text-align: center; margin-bottom: 12px; flex-shrink: 0;">
+                    <p style="margin: 0 0 5px 0; font-size: 13px; color: var(--text-muted);">¿Qué nota le das a esta estación?</p>
+                    <div id="estrellasSelector" style="font-size: 38px; cursor: pointer; color: #ccc; user-select: none; display: flex; justify-content: center; gap: 5px;">
+                        <span onclick="window.marcarEstrellas(1)">★</span><span onclick="window.marcarEstrellas(2)">★</span><span onclick="window.marcarEstrellas(3)">★</span><span onclick="window.marcarEstrellas(4)">★</span><span onclick="window.marcarEstrellas(5)">★</span>
+                    </div>
                 </div>
-            </div>
 
-            <p style="margin: 0 0 8px 0; font-size: 13px; color: var(--text-muted); text-align: center;">¿Qué servicios tiene?</p>
-            <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-bottom: 20px; font-size: 13px;">
-                <div id="btnAire" onclick="window.toggleServicio('btnAire')" style="flex:1 1 30%; box-sizing:border-box; padding:10px 5px; border-radius:12px; border:1px solid var(--border-color); background:var(--bg-input); color:var(--text-muted); text-align:center; cursor:pointer; font-weight:bold; transition:all 0.2s; user-select:none;">💨 Aire</div>
-                <div id="btnBano" onclick="window.toggleServicio('btnBano')" style="flex:1 1 30%; box-sizing:border-box; padding:10px 5px; border-radius:12px; border:1px solid var(--border-color); background:var(--bg-input); color:var(--text-muted); text-align:center; cursor:pointer; font-weight:bold; transition:all 0.2s; user-select:none;">🚻 Baño</div>
-                <div id="btnTienda" onclick="window.toggleServicio('btnTienda')" style="flex:1 1 30%; box-sizing:border-box; padding:10px 5px; border-radius:12px; border:1px solid var(--border-color); background:var(--bg-input); color:var(--text-muted); text-align:center; cursor:pointer; font-weight:bold; transition:all 0.2s; user-select:none;">☕ Tienda</div>
-                <div id="btnLavado" onclick="window.toggleServicio('btnLavado')" style="flex:1 1 30%; box-sizing:border-box; padding:10px 5px; border-radius:12px; border:1px solid var(--border-color); background:var(--bg-input); color:var(--text-muted); text-align:center; cursor:pointer; font-weight:bold; transition:all 0.2s; user-select:none;">🧼 Lavado</div>
-                <div id="btnRestaurante" onclick="window.toggleServicio('btnRestaurante')" style="flex:1 1 30%; box-sizing:border-box; padding:10px 5px; border-radius:12px; border:1px solid var(--border-color); background:var(--bg-input); color:var(--text-muted); text-align:center; cursor:pointer; font-weight:bold; transition:all 0.2s; user-select:none;">🍔 Comida</div>
-                <div id="btnDuchas" onclick="window.toggleServicio('btnDuchas')" style="flex:1 1 30%; box-sizing:border-box; padding:10px 5px; border-radius:12px; border:1px solid var(--border-color); background:var(--bg-input); color:var(--text-muted); text-align:center; cursor:pointer; font-weight:bold; transition:all 0.2s; user-select:none;">🚿 Duchas</div>
-            </div>
+                <p style="margin: 0 0 6px 0; font-size: 12px; color: var(--text-muted); text-align: center; flex-shrink: 0;">¿Qué servicios tiene?</p>
+                <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-bottom: 15px; font-size: 12px; flex-shrink: 0;">
+                    <div id="btnAire" onclick="window.toggleServicio('btnAire')" style="flex:1 1 30%; box-sizing:border-box; padding:8px 4px; border-radius:10px; border:1px solid var(--border-color); background:var(--bg-input); color:var(--text-muted); text-align:center; cursor:pointer; font-weight:bold; transition:all 0.2s; user-select:none;">💨 Aire</div>
+                    <div id="btnBano" onclick="window.toggleServicio('btnBano')" style="flex:1 1 30%; box-sizing:border-box; padding:8px 4px; border-radius:10px; border:1px solid var(--border-color); background:var(--bg-input); color:var(--text-muted); text-align:center; cursor:pointer; font-weight:bold; transition:all 0.2s; user-select:none;">🚻 Baño</div>
+                    <div id="btnTienda" onclick="window.toggleServicio('btnTienda')" style="flex:1 1 30%; box-sizing:border-box; padding:8px 4px; border-radius:10px; border:1px solid var(--border-color); background:var(--bg-input); color:var(--text-muted); text-align:center; cursor:pointer; font-weight:bold; transition:all 0.2s; user-select:none;">☕ Tienda</div>
+                    <div id="btnLavadero" onclick="window.toggleServicio('btnLavadero')" style="flex:1 1 30%; box-sizing:border-box; padding:8px 4px; border-radius:10px; border:1px solid var(--border-color); background:var(--bg-input); color:var(--text-muted); text-align:center; cursor:pointer; font-weight:bold; transition:all 0.2s; user-select:none;">🧼 Lavadero</div>
+                    <div id="btnRestaurante" onclick="window.toggleServicio('btnRestaurante')" style="flex:1 1 30%; box-sizing:border-box; padding:8px 4px; border-radius:10px; border:1px solid var(--border-color); background:var(--bg-input); color:var(--text-muted); text-align:center; cursor:pointer; font-weight:bold; transition:all 0.2s; user-select:none;">🍔 Comida</div>
+                    <div id="btnDuchas" onclick="window.toggleServicio('btnDuchas')" style="flex:1 1 30%; box-sizing:border-box; padding:8px 4px; border-radius:10px; border:1px solid var(--border-color); background:var(--bg-input); color:var(--text-muted); text-align:center; cursor:pointer; font-weight:bold; transition:all 0.2s; user-select:none;">🚿 Duchas</div>
+                    
+                    <div id="btnAguaPotable" onclick="window.toggleServicio('btnAguaPotable')" style="flex:1 1 45%; box-sizing:border-box; padding:8px 4px; border-radius:10px; border:1px solid var(--border-color); background:var(--bg-input); color:var(--text-muted); text-align:center; cursor:pointer; font-weight:bold; transition:all 0.2s; user-select:none;">🚰 Agua</div>
+                    <div id="btnGrises" onclick="window.toggleServicio('btnGrises')" style="flex:1 1 45%; box-sizing:border-box; padding:8px 4px; border-radius:10px; border:1px solid var(--border-color); background:var(--bg-input); color:var(--text-muted); text-align:center; cursor:pointer; font-weight:bold; transition:all 0.2s; user-select:none;">🕳️ Grises</div>
+                    <div id="btnNegras" onclick="window.toggleServicio('btnNegras')" style="flex:1 1 45%; box-sizing:border-box; padding:8px 4px; border-radius:10px; border:1px solid var(--border-color); background:var(--bg-input); color:var(--text-muted); text-align:center; cursor:pointer; font-weight:bold; transition:all 0.2s; user-select:none;">🚾 Negras</div>
+                    <div id="btnElectricidad" onclick="window.toggleServicio('btnElectricidad')" style="flex:1 1 45%; box-sizing:border-box; padding:8px 4px; border-radius:10px; border:1px solid var(--border-color); background:var(--bg-input); color:var(--text-muted); text-align:center; cursor:pointer; font-weight:bold; transition:all 0.2s; user-select:none;">⚡ Luz</div>
+                </div>
 
-            <textarea id="textoOpinion" ontouchstart="event.stopPropagation()" ontouchmove="event.stopPropagation()" placeholder="¿Qué tal tu experiencia aquí? (Opcional)" style="width: 100%; height: 80px; border-radius: 12px; border: 1px solid var(--border-color); background: var(--bg-input); color: var(--text-main); padding: 10px; margin-bottom: 15px; font-family: inherit; resize: none; box-sizing: border-box;"></textarea>
+                <textarea id="textoOpinion" ontouchstart="event.stopPropagation()" ontouchmove="event.stopPropagation()" placeholder="¿Qué tal tu experiencia aquí? (Opcional)" style="width: 100%; height: 60px; border-radius: 10px; border: 1px solid var(--border-color); background: var(--bg-input); color: var(--text-main); padding: 10px; margin-bottom: 12px; font-family: inherit; resize: none; box-sizing: border-box; flex-shrink: 0;"></textarea>
 
-            <input type="hidden" id="ideessOpinionActual">
-            <input type="hidden" id="nombreGasolineraOpinionActual">
+                <input type="hidden" id="ideessOpinionActual">
+                <input type="hidden" id="nombreGasolineraOpinionActual">
 
-            <div style="display: flex; gap: 10px;">
-                <button id="btnBorrarOpinion" onclick="window.procesarBorradoOpinion()" style="display: none; flex: 1; background: #e74c3c; color: white; border: none; padding: 14px; border-radius: 12px; font-weight: bold; font-size: 14px; cursor: pointer;">
-                    🗑️ Borrar
+                <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-shrink: 0;">
+                    <button id="btnBorrarOpinion" onclick="window.procesarBorradoOpinion()" style="display: none; flex: 1; background: #e74c3c; color: white; border: none; padding: 12px; border-radius: 10px; font-weight: bold; font-size: 14px; cursor: pointer;">
+                        🗑️ Borrar
+                    </button>
+                    <button onclick="window.procesarEnvioOpinion()" style="flex: 2; background: var(--accent-green); color: white; border: none; padding: 12px; border-radius: 10px; font-weight: bold; font-size: 15px; cursor: pointer;">
+                        🚀 Enviar Opinión
+                    </button>
+                </div>
+
+                                <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 0 0 12px 0; flex-shrink: 0;">
+                
+                <div style="display: flex; justify-content: flex-end; align-items: center; margin-bottom: 10px; flex-shrink: 0;">
+    <select id="filtroOrdenOpiniones" onchange="window.cargarListaOpiniones(document.getElementById('ideessOpinionActual').value, this.value)" style="padding: 6px 10px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-input); color: var(--text-main); font-size: 12px; font-weight: bold; cursor: pointer; outline: none;">
+        <option value="fecha">🆕 Más recientes</option>
+        <option value="relevancia">🔥 Más útiles</option>
+    </select>
+</div>
+
+
+                
+                <div id="listaOpiniones" ontouchstart="event.stopPropagation()" ontouchmove="event.stopPropagation()" style="font-size: 13px; color: var(--text-muted); flex-shrink: 0;">
+                    <p style="text-align:center;">Cargando opiniones...</p>
+                </div>
+
+                <button id="btnCargarMasOpiniones" onclick="window.cargarMasOpiniones()" style="display: none; width: 100%; margin-top: 10px; background: var(--bg-input); color: var(--text-main); border: 1px solid var(--border-color); padding: 12px; border-radius: 12px; font-weight: bold; font-size: 13px; cursor: pointer; flex-shrink: 0;">
+                    👇 Cargar más opiniones
                 </button>
-                <button onclick="window.procesarEnvioOpinion()" style="flex: 2; background: var(--accent-green); color: white; border: none; padding: 14px; border-radius: 12px; font-weight: bold; font-size: 15px; cursor: pointer;">
-                    🚀 Enviar Opinión
-                </button>
             </div>
-
-            <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 20px 0;">
-            <h4 style="margin: 0 0 10px 0; color: var(--text-main);">Últimas opiniones</h4>
-            
-            <div id="listaOpiniones" ontouchstart="event.stopPropagation()" ontouchmove="event.stopPropagation()" style="font-size: 13px; color: var(--text-muted); max-height: 250px; overflow-y: auto; padding-right: 5px;">
-                <p style="text-align:center;">Cargando opiniones...</p>
-            </div>
-
-            <button id="btnCargarMasOpiniones" onclick="window.cargarMasOpiniones()" style="display: none; width: 100%; margin-top: 10px; background: var(--bg-input); color: var(--text-main); border: 1px solid var(--border-color); padding: 12px; border-radius: 12px; font-weight: bold; font-size: 13px; cursor: pointer;">
-                👇 Cargar más opiniones
-            </button>
-
         </div>
     </div>
+
 
 
 <div id="customAppModal" class="modal-bg" style="display: none; z-index: 9999999; backdrop-filter: blur(5px);">
