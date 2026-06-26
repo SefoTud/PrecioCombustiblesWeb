@@ -9,6 +9,7 @@ window.estrellasSeleccionadas = 0;
 window.ultimoDocumentoOpinion = null;
 window.gasolineraActualOpiniones = null;
 window.resumenOpiniones = {};
+window.ordenOpinionesActual = 'fecha';
 
 export async function cambiarApodo() {
     if (!window.auth.currentUser) return;
@@ -38,10 +39,11 @@ if (typeof gtag === 'function') gtag('event', 'ver_opiniones_gasolinera');
     
     marcarEstrellas(0);
     q('textoOpinion').value = '';
-    ['btnAire', 'btnBano', 'btnTienda', 'btnLavado', 'btnRestaurante', 'btnDuchas'].forEach(id => {
+        ['btnAire', 'btnBano', 'btnTienda', 'btnLavadero', 'btnRestaurante', 'btnDuchas', 'btnAguaPotable', 'btnGrises', 'btnNegras', 'btnElectricidad'].forEach(id => {
         const btn = q(id);
         if (btn) { btn.classList.remove('activo'); btn.style.background = 'var(--bg-input)'; btn.style.color = 'var(--text-muted)'; btn.style.borderColor = 'var(--border-color)'; }
     });
+
     q('btnBorrarOpinion').style.display = 'none';
 
     modal.style.display = 'flex';
@@ -56,13 +58,17 @@ if (typeof gtag === 'function') gtag('event', 'ver_opiniones_gasolinera');
                 marcarEstrellas(data.estrellas);
                 q('textoOpinion').value = data.comentario || '';
                 
-                if (data.servicios) {
+                                if (data.servicios) {
                     if (data.servicios.aireGratis) toggleServicio('btnAire');
                     if (data.servicios.bano) toggleServicio('btnBano');
                     if (data.servicios.tienda) toggleServicio('btnTienda');
-                    if (data.servicios.lavado) toggleServicio('btnLavado');
+                    if (data.servicios.lavado || data.servicios.lavadero) toggleServicio('btnLavadero');
                     if (data.servicios.restaurante) toggleServicio('btnRestaurante');
                     if (data.servicios.duchas) toggleServicio('btnDuchas');
+                    if (data.servicios.aguaPotable) toggleServicio('btnAguaPotable');
+                    if (data.servicios.grises) toggleServicio('btnGrises');
+                    if (data.servicios.negras) toggleServicio('btnNegras');
+                    if (data.servicios.electricidad) toggleServicio('btnElectricidad');
                 }
                 q('btnBorrarOpinion').style.display = 'block';
             }
@@ -110,21 +116,40 @@ export async function procesarEnvioOpinion() {
     const nombreGasolinera = q('nombreGasolineraOpinionActual').value;
     const comentario = q('textoOpinion').value.trim();
     
-    const serviciosExtras = {
-        aireGratis: q('btnAire').classList.contains('activo'), bano: q('btnBano').classList.contains('activo'),
-        tienda: q('btnTienda').classList.contains('activo'), lavado: q('btnLavado').classList.contains('activo'),
-        restaurante: q('btnRestaurante').classList.contains('activo'), duchas: q('btnDuchas').classList.contains('activo')
+        const serviciosExtras = {
+        aireGratis: q('btnAire').classList.contains('activo'), 
+        bano: q('btnBano').classList.contains('activo'),
+        tienda: q('btnTienda').classList.contains('activo'), 
+        lavadero: q('btnLavadero').classList.contains('activo'),
+        restaurante: q('btnRestaurante').classList.contains('activo'), 
+        duchas: q('btnDuchas').classList.contains('activo'),
+        aguaPotable: q('btnAguaPotable').classList.contains('activo'),
+         grises: q('btnGrises').classList.contains('activo'),
+        negras: q('btnNegras').classList.contains('activo'), 
+        electricidad: q('btnElectricidad').classList.contains('activo')
     };
+
 
     let totalMisOpiniones = parseInt(localStorage.getItem(STORAGE_KEYS.TOTAL_OPINIONES)) || 0;
     totalMisOpiniones++;
     localStorage.setItem(STORAGE_KEYS.TOTAL_OPINIONES, totalMisOpiniones);
 
     let medallaNivel = "";
-    if (totalMisOpiniones >= 750) medallaNivel = "Dios de la Carretera 🏎️🔥"; else if (totalMisOpiniones >= 400) medallaNivel = "Leyenda Viva 👑";
-    else if (totalMisOpiniones >= 200) medallaNivel = "Veterano del Asfalto 🎖️"; else if (totalMisOpiniones >= 100) medallaNivel = "Inspector de Pista 🕵️‍♂️";
-    else if (totalMisOpiniones >= 60) medallaNivel = "As del Volante 🃏"; else if (totalMisOpiniones >= 30) medallaNivel = "Rastreador de Rutas 🗺️";
-    else if (totalMisOpiniones >= 15) medallaNivel = "Viajero Frecuente 🚙"; else if (totalMisOpiniones >= 5) medallaNivel = "Copiloto Atento 🧭";
+    if (totalMisOpiniones >= 5000) medallaNivel = "El Mito Errante 🌌"; 
+    else if (totalMisOpiniones >= 3500) medallaNivel = "Dios de la Carretera 🏎️🔥"; 
+    else if (totalMisOpiniones >= 2500) medallaNivel = "Guardián de la Carretera 🛡️"; 
+    else if (totalMisOpiniones >= 1750) medallaNivel = "Leyenda Viva 👑"; 
+    else if (totalMisOpiniones >= 1200) medallaNivel = "Gurú de la Carretera 🧙‍♂️"; 
+    else if (totalMisOpiniones >= 850) medallaNivel = "As del Volante 🃏"; 
+    else if (totalMisOpiniones >= 600) medallaNivel = "Veterano del Asfalto 🎖️"; 
+    else if (totalMisOpiniones >= 400) medallaNivel = "Nómada Experto 🚐"; 
+    else if (totalMisOpiniones >= 250) medallaNivel = "Devorakilómetros 🛣️"; 
+    else if (totalMisOpiniones >= 150) medallaNivel = "Explorador de Asfalto ⛺"; 
+    else if (totalMisOpiniones >= 100) medallaNivel = "Inspector de Pista 🕵️‍♂️"; 
+    else if (totalMisOpiniones >= 60) medallaNivel = "Trotamundos 🌍"; 
+    else if (totalMisOpiniones >= 30) medallaNivel = "Rastreador de Rutas 🗺️"; 
+    else if (totalMisOpiniones >= 15) medallaNivel = "Viajero Frecuente 🚙"; 
+    else if (totalMisOpiniones >= 5) medallaNivel = "Copiloto Atento 🧭"; 
     else medallaNivel = "Turista de Paso 🎒"; 
 
     const uid = window.auth.currentUser.uid;
@@ -138,7 +163,7 @@ export async function procesarEnvioOpinion() {
     const contadorPerfil = q('numOpinionesPerfil'); if (contadorPerfil) { contadorPerfil.innerText = `(${totalMisOpiniones} reseñas)`; contadorPerfil.style.display = 'inline-block'; }
 
     let haSubidoDeNivel = false;
-    const hitos = [1, 5, 15, 30, 60, 100, 200, 400, 750];
+    const hitos = [1, 5, 15, 30, 60, 100, 150, 250, 400, 600, 850, 1200, 1750, 2500, 3500, 5000];
     if (hitos.includes(totalMisOpiniones)) {
         haSubidoDeNivel = true;
         setTimeout(() => { alert(`🎉 ¡NUEVO LOGRO DESBLOQUEADO!\n\nNivel:\n${medallaNivel}`); }, 1500); 
@@ -164,7 +189,8 @@ export async function procesarEnvioOpinion() {
         await window.setDoc(opinionRef, {
             idGasolinera: ideess, nombreGasolinera: nombreGasolinera || "Estación de Servicio", 
             uidUsuario: uid, nombreUsuario: nombrePub, medallaNivel: medallaNivel || "Turista de Paso 🎒",
-            estrellas: window.estrellasSeleccionadas, comentario: comentario, servicios: serviciosExtras, fecha: new Date().toISOString()
+            estrellas: window.estrellasSeleccionadas, comentario: comentario, servicios: serviciosExtras, fecha: new Date().toISOString(), 
+            numLikes: 0
         });
 
         if (haSubidoDeNivel) {
@@ -201,11 +227,23 @@ export async function procesarBorradoOpinion() {
     localStorage.setItem(STORAGE_KEYS.TOTAL_OPINIONES, totalMisOpiniones);
 
     let medallaNivel = "";
-    if (totalMisOpiniones >= 750) medallaNivel = "Dios de la Carretera 🏎️🔥"; else if (totalMisOpiniones >= 400) medallaNivel = "Leyenda Viva 👑";
-    else if (totalMisOpiniones >= 200) medallaNivel = "Veterano del Asfalto 🎖️"; else if (totalMisOpiniones >= 100) medallaNivel = "Inspector de Pista 🕵️‍♂️";
-    else if (totalMisOpiniones >= 60) medallaNivel = "As del Volante 🃏"; else if (totalMisOpiniones >= 30) medallaNivel = "Rastreador de Rutas 🗺️";
-    else if (totalMisOpiniones >= 15) medallaNivel = "Viajero Frecuente 🚙"; else if (totalMisOpiniones >= 5) medallaNivel = "Copiloto Atento 🧭";
+    if (totalMisOpiniones >= 5000) medallaNivel = "El Mito Errante 🌌"; 
+    else if (totalMisOpiniones >= 3500) medallaNivel = "Dios de la Carretera 🏎️🔥"; 
+    else if (totalMisOpiniones >= 2500) medallaNivel = "Guardián de la Carretera 🛡️"; 
+    else if (totalMisOpiniones >= 1750) medallaNivel = "Leyenda Viva 👑"; 
+    else if (totalMisOpiniones >= 1200) medallaNivel = "Gurú de la Carretera 🧙‍♂️"; 
+    else if (totalMisOpiniones >= 850) medallaNivel = "As del Volante 🃏"; 
+    else if (totalMisOpiniones >= 600) medallaNivel = "Veterano del Asfalto 🎖️"; 
+    else if (totalMisOpiniones >= 400) medallaNivel = "Nómada Experto 🚐"; 
+    else if (totalMisOpiniones >= 250) medallaNivel = "Devorakilómetros 🛣️"; 
+    else if (totalMisOpiniones >= 150) medallaNivel = "Explorador de Asfalto ⛺"; 
+    else if (totalMisOpiniones >= 100) medallaNivel = "Inspector de Pista 🕵️‍♂️"; 
+    else if (totalMisOpiniones >= 60) medallaNivel = "Trotamundos 🌍"; 
+    else if (totalMisOpiniones >= 30) medallaNivel = "Rastreador de Rutas 🗺️"; 
+    else if (totalMisOpiniones >= 15) medallaNivel = "Viajero Frecuente 🚙"; 
+    else if (totalMisOpiniones >= 5) medallaNivel = "Copiloto Atento 🧭"; 
     else medallaNivel = "Turista de Paso 🎒"; 
+
 
     const uid = window.auth.currentUser.uid;
     window.setDoc(window.doc(window.db, "usuarios", uid), { totalOpiniones: totalMisOpiniones, medallaNivel: medallaNivel }, { merge: true });
@@ -215,7 +253,7 @@ export async function procesarBorradoOpinion() {
     const contadorPerfil = q('numOpinionesPerfil'); if (contadorPerfil) { contadorPerfil.innerText = `(${totalMisOpiniones} reseñas)`; contadorPerfil.style.display = 'inline-block'; }
 
     let haBajadoDeNivel = false;
-    const hitosBajada = [4, 14, 29, 59, 99, 199, 399, 749];
+    const hitosBajada = [4, 14, 29, 59, 99, 149, 249, 399, 599, 849, 1199, 1749, 2499, 3499, 4999];
     if (hitosBajada.includes(totalMisOpiniones)) {
         haBajadoDeNivel = true;
         setTimeout(() => { alert(`⚠️ ATENCIÓN: HAS PERDIDO UN NIVEL 📉\n\nTu contador ha bajado a ${totalMisOpiniones}.\nTu nueva insignia es:\n${medallaNivel}`); }, 1000); 
@@ -275,7 +313,7 @@ export async function votarOpinion(idOpinionDoc, tipo) {
         if (tipo === 'like' && !(data.likes || []).includes(uid)) likes.push(uid);
         else if (tipo === 'dislike' && !(data.dislikes || []).includes(uid)) dislikes.push(uid);
         
-        await window.setDoc(ref, { likes: likes, dislikes: dislikes }, { merge: true });
+        await window.setDoc(ref, { likes: likes, dislikes: dislikes, numLikes: likes.length }, { merge: true });
         
         const qOpiniones = window.query(window.collection(window.db, "opiniones"), window.where("idGasolinera", "==", String(data.idGasolinera)), window.orderBy("fecha", "desc"), window.limit(15));
         const querySnapshot = await window.getDocs(qOpiniones);
@@ -327,15 +365,20 @@ export function pintarOpinionesHTML(querySnapshot, limpiarLista) {
         let nombre = d.nombreUsuario || "Anónimo"; let medalla = d.medallaNivel || "Turista de Paso 🎒";
         let estrellas = ""; for(let i=1; i<=5; i++) estrellas += i <= d.estrellas ? '<span style="color:#f1c40f;">★</span>' : '<span style="color:#ccc;">★</span>';
 
-        let serviciosHTML = "";
+                let serviciosHTML = "";
         if (d.servicios) {
             if (d.servicios.aireGratis) serviciosHTML += '<span style="background:var(--accent-green); color:white; font-size:9px; font-weight:bold; padding:2px 6px; border-radius:10px; margin-right:4px; display:inline-block; margin-bottom:4px;">💨 AIRE</span>';
             if (d.servicios.bano) serviciosHTML += '<span style="background:var(--accent-green); color:white; font-size:9px; font-weight:bold; padding:2px 6px; border-radius:10px; margin-right:4px; display:inline-block; margin-bottom:4px;">🚻 BAÑO</span>';
             if (d.servicios.tienda) serviciosHTML += '<span style="background:var(--accent-green); color:white; font-size:9px; font-weight:bold; padding:2px 6px; border-radius:10px; margin-right:4px; display:inline-block; margin-bottom:4px;">☕ TIENDA</span>';
-            if (d.servicios.lavado) serviciosHTML += '<span style="background:var(--accent-green); color:white; font-size:9px; font-weight:bold; padding:2px 6px; border-radius:10px; margin-right:4px; display:inline-block; margin-bottom:4px;">🧼 LAVADO</span>';
+            if (d.servicios.lavado || d.servicios.lavadero) serviciosHTML += '<span style="background:var(--accent-green); color:white; font-size:9px; font-weight:bold; padding:2px 6px; border-radius:10px; margin-right:4px; display:inline-block; margin-bottom:4px;">🧼 LAVADERO</span>';
             if (d.servicios.restaurante) serviciosHTML += '<span style="background:var(--accent-green); color:white; font-size:9px; font-weight:bold; padding:2px 6px; border-radius:10px; margin-right:4px; display:inline-block; margin-bottom:4px;">🍔 COMIDA</span>';
             if (d.servicios.duchas) serviciosHTML += '<span style="background:var(--accent-green); color:white; font-size:9px; font-weight:bold; padding:2px 6px; border-radius:10px; margin-right:4px; display:inline-block; margin-bottom:4px;">🚿 DUCHAS</span>';
+            if (d.servicios.aguaPotable) serviciosHTML += '<span style="background:#3498db; color:white; font-size:9px; font-weight:bold; padding:2px 6px; border-radius:10px; margin-right:4px; display:inline-block; margin-bottom:4px;">🚰 AGUA</span>';
+            if (d.servicios.grises) serviciosHTML += '<span style="background:#7f8c8d; color:white; font-size:9px; font-weight:bold; padding:2px 6px; border-radius:10px; margin-right:4px; display:inline-block; margin-bottom:4px;">🕳️ GRISES</span>';
+            if (d.servicios.negras) serviciosHTML += '<span style="background:#2c3e50; color:white; font-size:9px; font-weight:bold; padding:2px 6px; border-radius:10px; margin-right:4px; display:inline-block; margin-bottom:4px;">🚾 NEGRAS</span>';
+            if (d.servicios.electricidad) serviciosHTML += '<span style="background:#f1c40f; color:black; font-size:9px; font-weight:bold; padding:2px 6px; border-radius:10px; margin-right:4px; display:inline-block; margin-bottom:4px;">⚡ LUZ</span>';
         }
+
 
         let likes = d.likes ? d.likes.length : 0; let dislikes = d.dislikes ? d.dislikes.length : 0;
         let myUid = window.auth && window.auth.currentUser ? window.auth.currentUser.uid : null;
@@ -368,22 +411,72 @@ export function pintarOpinionesHTML(querySnapshot, limpiarLista) {
     if (btnCargarMas) btnCargarMas.style.display = (querySnapshot.docs.length === 15) ? "block" : "none";
 }
 
-export async function cargarListaOpiniones(ideess) {
-    window.gasolineraActualOpiniones = ideess; window.ultimoDocumentoOpinion = null;
-    const divLista = q('listaOpiniones'); if (divLista) divLista.innerHTML = "<p style='text-align:center;'>Cargando datos...</p>";
+export async function cargarListaOpiniones(ideess, orden = 'fecha') {
+    window.gasolineraActualOpiniones = ideess; 
+    window.ultimoDocumentoOpinion = null;
+    window.ordenOpinionesActual = orden; // Guardamos el estado actual
+
+    const divLista = q('listaOpiniones'); 
+    if (divLista) divLista.innerHTML = "<p style='text-align:center;'>Cargando datos...</p>";
+
     try {
-        const queryData = window.query(window.collection(window.db, "opiniones"), window.where("idGasolinera", "==", String(ideess)), window.orderBy("fecha", "desc"), window.limit(15));
-        const querySnapshot = await window.getDocs(queryData); pintarOpinionesHTML(querySnapshot, true);
-    } catch (error) { divLista.innerHTML = "<p style='text-align:center; color:var(--text-muted);'>Error al cargar las opiniones.</p>"; }
+        let queryData;
+        if (orden === 'relevancia') {
+            // Ordena por más likes, y si empatan, por fecha más nueva
+            queryData = window.query(
+                window.collection(window.db, "opiniones"), 
+                window.where("idGasolinera", "==", String(ideess)), 
+                window.orderBy("numLikes", "desc"), 
+                window.orderBy("fecha", "desc"), 
+                window.limit(15)
+            );
+        } else {
+            // Orden clásico por fecha
+            queryData = window.query(
+                window.collection(window.db, "opiniones"), 
+                window.where("idGasolinera", "==", String(ideess)), 
+                window.orderBy("fecha", "desc"), 
+                window.limit(15)
+            );
+        }
+        
+        const querySnapshot = await window.getDocs(queryData); 
+        window.pintarOpinionesHTML(querySnapshot, true);
+    } catch (error) { 
+        console.error(error);
+        if (divLista) divLista.innerHTML = "<p style='text-align:center; color:#e74c3c;'>Error al cargar. Revisa la consola si necesitas crear un índice en Firebase.</p>"; 
+    }
 }
 
 export async function cargarMasOpiniones() {
     const btnCargarMas = q('btnCargarMasOpiniones'); if (btnCargarMas) btnCargarMas.innerText = "⏳ Cargando...";
     try {
-        const queryData = window.query(window.collection(window.db, "opiniones"), window.where("idGasolinera", "==", String(window.gasolineraActualOpiniones)), window.orderBy("fecha", "desc"), window.startAfter(window.ultimoDocumentoOpinion), window.limit(15));
-        const querySnapshot = await window.getDocs(queryData); pintarOpinionesHTML(querySnapshot, false);
+        let queryData;
+        if (window.ordenOpinionesActual === 'relevancia') {
+            queryData = window.query(
+                window.collection(window.db, "opiniones"), 
+                window.where("idGasolinera", "==", String(window.gasolineraActualOpiniones)), 
+                window.orderBy("numLikes", "desc"), 
+                window.orderBy("fecha", "desc"), 
+                window.startAfter(window.ultimoDocumentoOpinion), 
+                window.limit(15)
+            );
+        } else {
+            queryData = window.query(
+                window.collection(window.db, "opiniones"), 
+                window.where("idGasolinera", "==", String(window.gasolineraActualOpiniones)), 
+                window.orderBy("fecha", "desc"), 
+                window.startAfter(window.ultimoDocumentoOpinion), 
+                window.limit(15)
+            );
+        }
+        
+        const querySnapshot = await window.getDocs(queryData); 
+        window.pintarOpinionesHTML(querySnapshot, false);
         if (btnCargarMas) btnCargarMas.innerText = "👇 Cargar más opiniones";
-    } catch (error) { if (btnCargarMas) btnCargarMas.innerText = "Error. Reintentar"; }
+    } catch (error) { 
+        if (btnCargarMas) btnCargarMas.innerText = "Error. Reintentar"; 
+    }
 }
 
 export async function abrirMisOpiniones() {
@@ -427,15 +520,20 @@ export async function abrirMisOpiniones() {
                 if (gasCache) nombreGas = gasCache.Rótulo || gasCache.Nombre;
             }
 
-            let serviciosHTML = "";
+                        let serviciosHTML = "";
             if (d.servicios) {
-                if (d.servicios.aireGratis) serviciosHTML += '<span style="background:var(--accent-green); color:white; font-size:9px; padding:2px 6px; border-radius:10px; margin-right:4px;">💨 AIRE</span>';
-                if (d.servicios.bano) serviciosHTML += '<span style="background:var(--accent-green); color:white; font-size:9px; padding:2px 6px; border-radius:10px; margin-right:4px;">🚻 BAÑO</span>';
-                if (d.servicios.tienda) serviciosHTML += '<span style="background:var(--accent-green); color:white; font-size:9px; padding:2px 6px; border-radius:10px; margin-right:4px;">☕ TIENDA</span>';
-                if (d.servicios.lavado) serviciosHTML += '<span style="background:var(--accent-green); color:white; font-size:9px; padding:2px 6px; border-radius:10px; margin-right:4px;">🧼 LAVADO</span>';
-                if (d.servicios.restaurante) serviciosHTML += '<span style="background:var(--accent-green); color:white; font-size:9px; padding:2px 6px; border-radius:10px; margin-right:4px;">🍔 COMIDA</span>';
-                if (d.servicios.duchas) serviciosHTML += '<span style="background:var(--accent-green); color:white; font-size:9px; padding:2px 6px; border-radius:10px; margin-right:4px;">🚿 DUCHAS</span>';
+                if (d.servicios.aireGratis) serviciosHTML += '<span style="background:var(--accent-green); color:white; font-size:9px; font-weight:bold; padding:2px 6px; border-radius:10px; margin-right:4px; display:inline-block; margin-bottom:4px;">💨 AIRE</span>';
+                if (d.servicios.bano) serviciosHTML += '<span style="background:var(--accent-green); color:white; font-size:9px; font-weight:bold; padding:2px 6px; border-radius:10px; margin-right:4px; display:inline-block; margin-bottom:4px;">🚻 BAÑO</span>';
+                if (d.servicios.tienda) serviciosHTML += '<span style="background:var(--accent-green); color:white; font-size:9px; font-weight:bold; padding:2px 6px; border-radius:10px; margin-right:4px; display:inline-block; margin-bottom:4px;">☕ TIENDA</span>';
+                if (d.servicios.lavado || d.servicios.lavadero) serviciosHTML += '<span style="background:var(--accent-green); color:white; font-size:9px; font-weight:bold; padding:2px 6px; border-radius:10px; margin-right:4px; display:inline-block; margin-bottom:4px;">🧼 LAVADERO</span>';
+                if (d.servicios.restaurante) serviciosHTML += '<span style="background:var(--accent-green); color:white; font-size:9px; font-weight:bold; padding:2px 6px; border-radius:10px; margin-right:4px; display:inline-block; margin-bottom:4px;">🍔 COMIDA</span>';
+                if (d.servicios.duchas) serviciosHTML += '<span style="background:var(--accent-green); color:white; font-size:9px; font-weight:bold; padding:2px 6px; border-radius:10px; margin-right:4px; display:inline-block; margin-bottom:4px;">🚿 DUCHAS</span>';
+                if (d.servicios.aguaPotable) serviciosHTML += '<span style="background:#3498db; color:white; font-size:9px; font-weight:bold; padding:2px 6px; border-radius:10px; margin-right:4px; display:inline-block; margin-bottom:4px;">🚰 AGUA</span>';
+                if (d.servicios.grises) serviciosHTML += '<span style="background:#7f8c8d; color:white; font-size:9px; font-weight:bold; padding:2px 6px; border-radius:10px; margin-right:4px; display:inline-block; margin-bottom:4px;">🕳️ GRISES</span>';
+                if (d.servicios.negras) serviciosHTML += '<span style="background:#2c3e50; color:white; font-size:9px; font-weight:bold; padding:2px 6px; border-radius:10px; margin-right:4px; display:inline-block; margin-bottom:4px;">🚾 NEGRAS</span>';
+                if (d.servicios.electricidad) serviciosHTML += '<span style="background:#f1c40f; color:black; font-size:9px; font-weight:bold; padding:2px 6px; border-radius:10px; margin-right:4px; display:inline-block; margin-bottom:4px;">⚡ LUZ</span>';
             }
+
 
             html += `
             <div style="background:var(--bg-panel); border:1px solid var(--border-color); border-radius:8px; padding:12px; margin-bottom: 10px; text-align:left;">
