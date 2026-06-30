@@ -242,38 +242,61 @@ window.mostrarTendenciaZona = async function() {
 
 window.calcularSemaforoPredictivo = function(precio, tData) {
     let score = 0; 
+    
+    // 1. ANÁLISIS DE INERCIA Y TENDENCIA
     let detalleInercia = { txt: "Estable (Últimos 7 días sin cambios graves)", color: "var(--text-muted)", icon: "⚖️" };
     if (tData) {
         if (tData.dir === 1) { score += 1.5; detalleInercia = { txt: "Ligera tendencia alcista (Subiendo)", color: "#e74c3c", icon: "📈" }; }
         if (tData.dir === -1) { score -= 1.5; detalleInercia = { txt: "Ligera tendencia bajista (Bajando)", color: "var(--accent-green)", icon: "📉" }; }
+        
         if (tData.c >= 7 && tData.dir === 1) { score += 2; detalleInercia = { txt: "Alerta: Lleva 7 días subiendo", color: "#c0392b", icon: "🚀" }; }
         else if (tData.c >= 3 && tData.dir === 1) { score += 1; detalleInercia = { txt: "Inercia alcista sostenida (+3 días)", color: "#e74c3c", icon: "📈" }; }
+        
         if (tData.c >= 7 && tData.dir === -1) { score -= 2; detalleInercia = { txt: "Gran bajada: Lleva 7 días bajando", color: "#1e7a44", icon: "⏬" }; }
         else if (tData.c >= 3 && tData.dir === -1) { score -= 1; detalleInercia = { txt: "Inercia bajista sostenida (+3 días)", color: "var(--accent-green)", icon: "📉" }; }
     }
+    
+    // 2. ANÁLISIS DEL DÍA DE LA SEMANA
     let hoy = new Date(); let dia = hoy.getDay(); 
     let detalleSemana = { txt: "Día neutro para repostar", color: "var(--text-muted)", icon: "📅" };
+    
     if (dia === 4 || dia === 5) { score += 1.5; detalleSemana = { txt: "Jueves/Viernes (Suelen subir precios)", color: "#e74c3c", icon: "⚠️" }; }
     if (dia === 0 || dia === 6) { score -= 1.5; detalleSemana = { txt: "Fin de semana (Suelen bajar el lunes)", color: "var(--accent-green)", icon: "📉" }; }
     
+    // 3. ANÁLISIS DEL CALENDARIO ANUAL (Operaciones salida y festivos)
     let mes = hoy.getMonth(); let diaMes = hoy.getDate();
     let detalleCalendario = { txt: "Mes normal de demanda", color: "var(--text-muted)", icon: "🛣️" };
-    if ((mes === 6 || mes === 7) && (diaMes >= 28 || diaMes <= 3 || (diaMes >= 13 && diaMes <= 16))) { score += 2.5; detalleCalendario = { txt: "Operación Salida (Verano)", color: "#e74c3c", icon: "🏖️" }; } 
+    
+    // 3.1. Operación Verano (Salidas, Quincenas y Retorno)
+    if (
+        (mes === 5 && diaMes >= 27) || // Prevención a finales de Junio
+        (mes === 6 && (diaMes <= 3 || (diaMes >= 11 && diaMes <= 16) || diaMes >= 27)) || // Julio: días 1-3, quincena (11-16) y prevención final
+        (mes === 7 && (diaMes <= 3 || (diaMes >= 11 && diaMes <= 16) || diaMes >= 27)) || // Agosto: días 1-3, quincena (11-16) y prevención final
+        (mes === 8 && diaMes <= 3)     // Operación retorno a principios de Septiembre
+    ) { score += 2.5; detalleCalendario = { txt: "Operación Salida/Retorno (Verano)", color: "#e74c3c", icon: "🏖️" }; } 
+    
+    // 3.2. Semana Santa (Cálculo de Pascua por algoritmo de Gauss)
     let y = hoy.getFullYear(); let a = y % 19, b = Math.floor(y / 100), c = y % 100, d = Math.floor(b / 4), e = b % 4, f = Math.floor((b + 8) / 25), g = Math.floor((b - f + 1) / 3), h = (19 * a + b - d - g + 15) % 30, i = Math.floor(c / 4), k = c % 4, l = (32 + 2 * e + 2 * i - h - k) % 7, m = Math.floor((a + 11 * h + 22 * l) / 451), n = h + l - 7 * m + 114;
     let mesPascua = Math.floor(n / 31) - 1; let diaPascua = (n % 31) + 1; let domingoResurreccion = new Date(y, mesPascua, diaPascua); let diasParaPascua = (domingoResurreccion - hoy) / (1000 * 60 * 60 * 24);
+    
     if (diasParaPascua >= 2 && diasParaPascua <= 12) { score += 2.5; detalleCalendario = { txt: "Operación Salida (Semana Santa)", color: "#e74c3c", icon: "⛪" }; }
+    
+    // 3.3. Resto de festivos fijos y puentes
     if (mes === 3 && diaMes >= 27) { score += 2; detalleCalendario = { txt: "Operación Salida (Puente de Mayo)", color: "#e74c3c", icon: "🎒" }; }
     if (mes === 9 && diaMes >= 8 && diaMes <= 11) { score += 2; detalleCalendario = { txt: "Operación Salida (Puente del Pilar)", color: "#e74c3c", icon: "🎒" }; }
     if (mes === 9 && diaMes >= 28) { score += 2; detalleCalendario = { txt: "Operación Salida (Todos los Santos)", color: "#e74c3c", icon: "🎒" }; }
     if (mes === 11 && diaMes >= 2 && diaMes <= 5) { score += 2.5; detalleCalendario = { txt: "Operación Salida (Puente de Diciembre)", color: "#e74c3c", icon: "❄️" }; }
     if (mes === 11 && ((diaMes >= 20 && diaMes <= 23) || (diaMes >= 27 && diaMes <= 30))) { score += 2.5; detalleCalendario = { txt: "Operación Salida (Navidad)", color: "#e74c3c", icon: "🎄" }; }
 
+    // 4. RESULTADO FINAL DEL SEMÁFORO
     let resultado;
     if (score >= 2) resultado = { color: "var(--accent-green)", icon: "🟢", texto: "LLENAR HOY (Prev. Subida)" };
     else if (score <= -1.5) resultado = { color: "#e74c3c", icon: "🔴", texto: "ESPERAR (Prev. Bajada)" };
     else resultado = { color: "#f39c12", icon: "🟡", texto: "ESTABLE (Sin alertas)" };
+    
     return { resultado: resultado, detalles: { inercia: detalleInercia, semana: detalleSemana, calendario: detalleCalendario } };
 };
+
 
 window.abrirInfoPrediccion = function(e, nombre, jsonDetalles, icon, texto, color) {
     if (e) { e.preventDefault(); e.stopPropagation(); }
