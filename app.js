@@ -263,9 +263,9 @@ window.calcularSemaforoPredictivo = function(precio, tData) {
     let mesPascua = Math.floor(n / 31) - 1; let diaPascua = (n % 31) + 1; let domingoResurreccion = new Date(y, mesPascua, diaPascua); let diasParaPascua = (domingoResurreccion - hoy) / (1000 * 60 * 60 * 24);
     if (diasParaPascua >= 2 && diasParaPascua <= 12) { score += 2.5; detalleCalendario = { txt: "Operación Salida (Semana Santa)", color: "#e74c3c", icon: "⛪" }; }
     if (mes === 3 && diaMes >= 27) { score += 2; detalleCalendario = { txt: "Operación Salida (Puente de Mayo)", color: "#e74c3c", icon: "🎒" }; }
-    if (mes === 8 && diaMes >= 8 && diaMes <= 11) { score += 2; detalleCalendario = { txt: "Operación Salida (Puente del Pilar)", color: "#e74c3c", icon: "🎒" }; }
+    if (mes === 9 && diaMes >= 8 && diaMes <= 11) { score += 2; detalleCalendario = { txt: "Operación Salida (Puente del Pilar)", color: "#e74c3c", icon: "🎒" }; }
     if (mes === 9 && diaMes >= 28) { score += 2; detalleCalendario = { txt: "Operación Salida (Todos los Santos)", color: "#e74c3c", icon: "🎒" }; }
-    if (mes === 10 && diaMes >= 2 && diaMes <= 5) { score += 2.5; detalleCalendario = { txt: "Operación Salida (Puente de Diciembre)", color: "#e74c3c", icon: "❄️" }; }
+    if (mes === 11 && diaMes >= 2 && diaMes <= 5) { score += 2.5; detalleCalendario = { txt: "Operación Salida (Puente de Diciembre)", color: "#e74c3c", icon: "❄️" }; }
     if (mes === 11 && ((diaMes >= 20 && diaMes <= 23) || (diaMes >= 27 && diaMes <= 30))) { score += 2.5; detalleCalendario = { txt: "Operación Salida (Navidad)", color: "#e74c3c", icon: "🎄" }; }
 
     let resultado;
